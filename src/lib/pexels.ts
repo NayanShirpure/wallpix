@@ -1,9 +1,6 @@
 
 import type { PexelsCuratedResponse, PexelsSearchResponse, PexelsPhoto } from '@/types/pexels';
 
-// The API key is now expected to be set in next.config.ts as NEXT_PUBLIC_PEXELS_API_KEY
-// and will be available here via process.env.NEXT_PUBLIC_PEXELS_API_KEY.
-const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 // Mock photo generation logic is commented out as it's not currently used.
@@ -35,31 +32,49 @@ const PEXELS_API_URL = 'https://api.pexels.com/v1';
 // };
 
 async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
-  if (!PEXELS_API_KEY) {
-    console.error("PEXELS API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured or available in src/lib/pexels.ts. Cannot make API calls.");
+  // Use the environment variable if available and valid (not an empty string), otherwise use the fallback.
+  const apiKeyFromEnv = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+  const fallbackApiKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+
+  const apiKeyToUse = (apiKeyFromEnv && apiKeyFromEnv.trim() !== "")
+    ? apiKeyFromEnv
+    : fallbackApiKey;
+
+  if (!apiKeyToUse) { // Should ideally not happen if fallback is always a valid string
+    console.error("Pexels API key is effectively missing. Cannot make API calls.");
     return null;
   }
 
   try {
     const response = await fetch(`${PEXELS_API_URL}${endpoint}`, {
       headers: {
-        Authorization: PEXELS_API_KEY,
+        Authorization: apiKeyToUse,
       },
       cache: 'no-store', 
     });
 
     if (!response.ok) {
-      const errorBody = await response.text();
-      let detailedErrorMessage = `Pexels API Error: ${response.status} ${response.statusText}. Endpoint: ${PEXELS_API_URL}${endpoint}.`;
-      if (response.status === 401 || response.status === 403) {
-        detailedErrorMessage += " This might be due to an invalid or unauthorized API key.";
+      let errorBodyText = "Could not read error body.";
+      try {
+        errorBodyText = await response.text();
+      } catch (textError) {
+        console.warn("Failed to read error response body from Pexels:", textError);
       }
-      detailedErrorMessage += ` Body: ${errorBody}`;
+      const detailedErrorMessage = `Pexels API Error: ${response.status} ${response.statusText}. Endpoint: ${PEXELS_API_URL}${endpoint}. Body: ${errorBodyText}`;
       console.error(detailedErrorMessage);
       return null;
     }
-    return response.json() as Promise<T>;
-  } catch (error) {
+
+    // Get response as text first to handle potential non-JSON responses gracefully
+    const responseText = await response.text();
+    try {
+      return JSON.parse(responseText) as T;
+    } catch (jsonError) {
+      console.error(`Pexels API Error: Failed to parse JSON response. Endpoint: ${PEXELS_API_URL}${endpoint}. Status: ${response.status}. Response text (first 500 chars): ${responseText.substring(0,500)}`, jsonError);
+      return null;
+    }
+
+  } catch (error) { // Catches network errors or other unexpected errors during the fetch process
     console.error(`Failed to fetch from Pexels API. Endpoint: ${PEXELS_API_URL}${endpoint}. Error:`, error);
     return null;
   }
