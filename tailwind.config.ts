@@ -1,11 +1,16 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
     darkMode: ["class"],
     content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    // Entry for the 'pages' directory removed, assuming project uses App Router primarily.
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}", // General app glob
+    // Adding a more specific pattern for the search dynamic route,
+    // in case the general glob has issues with it.
+    "./src/app/search/[query]/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/search/[query]/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
   	extend: {
