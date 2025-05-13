@@ -1,25 +1,30 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-import type { DeviceOrientationCategory } from '@/types/pexels';
+import type { DeviceOrientationCategory, PexelsPhoto, PexelsResponse } from '@/types/pexels';
+import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
+import { WallpaperSection } from '@/components/wallpaper-section';
+import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
+import { useToast } from '@/hooks/use-toast';
+import { downloadFile } from '@/lib/utils';
+import { getCuratedPhotos, searchPhotos as pexelsSearchPhotosLib } from '@/lib/pexels'; // Use the lib
 
 interface DiscoverCategory {
   id: string;
   title: string;
   description: string;
-  query: string; // for navigation to search page
-  imageUrl: string; // placeholder image URL
-  dataAiHint: string; // For AI image suggestion
+  query: string;
+  imageUrl: string;
+  dataAiHint: string;
 }
 
-// Curated list of categories for the Discover page
 const discoverPageCategories: DiscoverCategory[] = [
   { id: 'abstract', title: 'Abstract Art', description: 'Explore mind-bending patterns and colors.', query: 'Abstract Art', imageUrl: 'https://picsum.photos/seed/discover-abstract/600/400', dataAiHint: 'abstract colorful' },
   { id: 'nature', title: 'Nature Escapes', description: 'Breathtaking landscapes and serene wilderness.', query: 'Nature Landscape', imageUrl: 'https://picsum.photos/seed/discover-nature/600/400', dataAiHint: 'nature forest' },
@@ -29,19 +34,78 @@ const discoverPageCategories: DiscoverCategory[] = [
   { id: 'cityscapes', title: 'Urban Dreams', description: 'Iconic city skylines and vibrant streets.', query: 'Cityscape Night', imageUrl: 'https://picsum.photos/seed/discover-cityscapes/600/400', dataAiHint: 'city night' },
   { id: 'dark_moody', title: 'Dark & Moody', description: 'Atmospheric and intriguing dark themes.', query: 'Dark Moody Forest', imageUrl: 'https://picsum.photos/seed/discover-darkmoody/600/400', dataAiHint: 'dark abstract' },
   { id: 'vibrant', title: 'Vibrant Hues', description: 'Explosions of color to energize your screen.', query: 'Vibrant Colorful Pattern', imageUrl: 'https://picsum.photos/seed/discover-vibrant/600/400', dataAiHint: 'colorful vibrant' },
-  { id: 'vintage', title: 'Retro Rewind', description: 'Nostalgic designs and classic aesthetics.', query: 'Vintage Retro Pattern', imageUrl: 'https://picsum.photos/seed/discover-vintage/600/400', dataAiHint: 'vintage pattern' },
-  { id: 'technology', title: 'Tech & Innovation', description: 'Futuristic concepts and digital art.', query: 'Technology Circuits', imageUrl: 'https://picsum.photos/seed/discover-tech/600/400', dataAiHint: 'tech abstract' },
-  { id: 'food', title: 'Delicious Delights', description: 'Mouth-watering food photography.', query: 'Food Photography Flatlay', imageUrl: 'https://picsum.photos/seed/discover-food/600/400', dataAiHint: 'food delicious' },
-  { id: 'patterns', title: 'Intricate Patterns', description: 'Geometric shapes and repeating designs.', query: 'Seamless Pattern Geometric', imageUrl: 'https://picsum.photos/seed/discover-patterns/600/400', dataAiHint: 'pattern geometric' },
 ];
 
 export default function DiscoverPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
+  
+  const [wallpaperOfTheDay, setWallpaperOfTheDay] = useState<PexelsPhoto | null>(null);
+  const [loadingWOTD, setLoadingWOTD] = useState(true);
+  
+  const [trendingWallpapers, setTrendingWallpapers] = useState<PexelsPhoto[]>([]);
+  const [loadingTrending, setLoadingTrending] = useState(true);
+  
+  const [editorsPicks, setEditorsPicks] = useState<PexelsPhoto[]>([]);
+  const [loadingEditorsPicks, setLoadingEditorsPicks] = useState(true);
+  
+  const [seasonalWallpapers, setSeasonalWallpapers] = useState<PexelsPhoto[]>([]);
+  const [loadingSeasonal, setLoadingSeasonal] = useState(true);
+  
+  const [themeCollectionCyberpunk, setThemeCollectionCyberpunk] = useState<PexelsPhoto[]>([]);
+  const [loadingThemeCyberpunk, setLoadingThemeCyberpunk] = useState(true);
+
+  const [themeCollectionVintage, setThemeCollectionVintage] = useState<PexelsPhoto[]>([]);
+  const [loadingThemeVintage, setLoadingThemeVintage] = useState(true);
+
+  const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchSectionPhotos = useCallback(async (
+    query: string,
+    setter: React.Dispatch<React.SetStateAction<PexelsPhoto[]>>,
+    loader: React.Dispatch<React.SetStateAction<boolean>>,
+    orientation?: 'landscape' | 'portrait' | 'square',
+    perPage: number = 10
+  ) => {
+    loader(true);
+    const response = await pexelsSearchPhotosLib(query, 1, perPage, orientation);
+    if (response && response.photos) {
+      setter(response.photos);
+    } else {
+      setter([]); // Set to empty array on failure to avoid type errors
+      console.warn(`Failed to fetch photos for query: ${query}`);
+    }
+    loader(false);
+  }, []);
+
+  useEffect(() => {
+    const orientationParam = currentDeviceOrientation === 'desktop' ? 'landscape' : 'portrait';
+
+    // Fetch Wallpaper of the Day
+    setLoadingWOTD(true);
+    getCuratedPhotos(1, 1).then(data => {
+      if (data && data.photos && data.photos.length > 0) {
+        setWallpaperOfTheDay(data.photos[0]);
+      } else {
+        setWallpaperOfTheDay(null);
+        console.warn("Failed to fetch wallpaper of the day.");
+      }
+      setLoadingWOTD(false);
+    });
+
+    // Fetch other sections
+    fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending, orientationParam);
+    fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks, orientationParam);
+    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal, orientationParam); // Example seasonal
+    fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk, orientationParam);
+    fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage, orientationParam);
+
+  }, [currentDeviceOrientation, fetchSectionPhotos]);
 
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
     setCurrentDeviceOrientation(newCategory);
-    // Future searches/navigations from header will use this orientation context
   };
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -54,6 +118,41 @@ export default function DiscoverPage() {
     }
   };
 
+  const handleViewWallpaper = (photo: PexelsPhoto) => {
+    setSelectedWallpaper(photo);
+    setIsModalOpen(true);
+  };
+
+  const handleDownloadWallpaper = async (photo: PexelsPhoto | null) => {
+    if (!photo) return;
+    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
+    const filename = `wallify_${photographerName}_${photo.id}_original.jpg`;
+    
+    toast({
+      title: "Download Starting",
+      description: `Preparing ${filename} for download...`,
+    });
+    try {
+      await downloadFile(photo.src.original, filename);
+      toast({
+        title: "Download Complete",
+        description: `${filename} has been downloaded.`,
+      });
+    } catch (error) {
+      console.error('Error downloading wallpaper:', error);
+      toast({
+        title: "Download Failed",
+        description: "Could not download the wallpaper. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedWallpaper(null), 300);
+  };
+
   return (
     <>
       <GlobalHeader
@@ -61,17 +160,67 @@ export default function DiscoverPage() {
         onDeviceOrientationChange={handleDeviceOrientationChange}
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm="" // Keep search bar in header fresh for discovery context
+        initialSearchTerm="Discover" 
       />
-      <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12">
-        <div className="space-y-8">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl sm:text-4xl font-bold text-primary">Explore Wallpaper Categories</h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-              Dive into diverse themes and find the perfect backdrop for your device.
-            </p>
-          </div>
+      <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12 space-y-10 sm:space-y-12">
+        
+        <WallpaperOfTheDay
+          wallpaper={wallpaperOfTheDay}
+          loading={loadingWOTD}
+          orientation={currentDeviceOrientation}
+          onViewClick={handleViewWallpaper}
+          onDownloadClick={handleDownloadWallpaper}
+        />
 
+        <WallpaperSection
+          title="Trending Wallpapers"
+          wallpapers={trendingWallpapers}
+          loading={loadingTrending}
+          orientation={currentDeviceOrientation}
+          onWallpaperClick={handleViewWallpaper}
+          itemCount={8}
+        />
+
+        <WallpaperSection
+          title="Editor's Picks"
+          wallpapers={editorsPicks}
+          loading={loadingEditorsPicks}
+          orientation={currentDeviceOrientation}
+          onWallpaperClick={handleViewWallpaper}
+          itemCount={8}
+        />
+        
+        <WallpaperSection
+          title="Autumn Vibes" // Example Seasonal Collection
+          wallpapers={seasonalWallpapers}
+          loading={loadingSeasonal}
+          orientation={currentDeviceOrientation}
+          onWallpaperClick={handleViewWallpaper}
+          itemCount={8}
+        />
+
+        <div className="space-y-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary px-1">Theme-Based Collections</h2>
+            <WallpaperSection
+              title="Cyberpunk Worlds"
+              wallpapers={themeCollectionCyberpunk}
+              loading={loadingThemeCyberpunk}
+              orientation={currentDeviceOrientation}
+              onWallpaperClick={handleViewWallpaper}
+              itemCount={6}
+            />
+            <WallpaperSection
+              title="Vintage Rides"
+              wallpapers={themeCollectionVintage}
+              loading={loadingThemeVintage}
+              orientation={currentDeviceOrientation}
+              onWallpaperClick={handleViewWallpaper}
+              itemCount={6}
+            />
+        </div>
+
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Explore Popular Categories</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {discoverPageCategories.map((category) => (
               <Link key={category.id} href={`/search/${encodeURIComponent(category.query)}`} passHref legacyBehavior>
@@ -108,6 +257,11 @@ export default function DiscoverPage() {
           </div>
         </div>
       </main>
+      <PreviewDialog
+        photo={selectedWallpaper}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </>
   );
 }

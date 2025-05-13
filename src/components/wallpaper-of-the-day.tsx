@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';

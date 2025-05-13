@@ -23,7 +23,6 @@ function getApiKey(): string | null {
   }
 
   // Check 2: If env var is not valid, log a warning (dev only) and try the hardcoded FALLBACK_API_KEY_CONSTANT.
-  // This fallback should only be used if the env var is truly missing or placeholder.
   const envKeyName = context === 'Server' ? 'PEXELS_API_KEY' : 'NEXT_PUBLIC_PEXELS_API_KEY';
   let problem = "missing or placeholder";
   if (apiKey && apiKey.trim() === "") problem = "empty";
@@ -33,24 +32,22 @@ function getApiKey(): string | null {
     console.warn(`[lib/pexels ${context}] Environment variable ${envKeyName} is ${problem}. Attempting to use hardcoded fallback PEXELS API key.`);
   }
   
-  // Use the hardcoded fallback if the env var was invalid.
   if (FALLBACK_API_KEY_CONSTANT && FALLBACK_API_KEY_CONSTANT.trim() !== "" && !PLACEHOLDER_TEXT_PATTERN.test(FALLBACK_API_KEY_CONSTANT)) {
     return FALLBACK_API_KEY_CONSTANT;
   }
 
-  // Check 3: If both environment variable and fallback are invalid
   console.error(`[lib/pexels ${context}] Critical: No valid PEXELS_API_KEY found. Both environment variable and hardcoded fallback are invalid or missing. API calls will likely fail or use mock data.`);
-  return null; // Indicates no valid key is available
+  return null;
 }
 
-async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
+async function fetchPexelsAPI<T>(endpoint: string, cacheOption: RequestCache = 'no-store'): Promise<T | null> {
   const apiKeyToUse = getApiKey();
 
   if (!apiKeyToUse) {
     const context = typeof window === 'undefined' ? 'Server' : 'Client';
     const errorMessage = `[${context}] Pexels API key is not configured or available. Cannot make API calls. Ensure ${context === 'Server' ? 'PEXELS_API_KEY' : 'NEXT_PUBLIC_PEXELS_API_KEY'} is set in your .env.local file. Displaying mock data or failing.`;
     console.error(errorMessage);
-    return null; // Return null to allow callers to handle mock data
+    return null;
   }
 
   try {
@@ -58,7 +55,7 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
       headers: {
         Authorization: apiKeyToUse,
       },
-      cache: 'no-store', 
+      cache: cacheOption, 
     });
 
     if (!response.ok) {
@@ -66,9 +63,9 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
       try {
         errorBodyText = await response.text();
       } catch (textError) {
-        // Non-critical if reading error body fails
+        // Non-critical
       }
-      const detailedErrorMessage = `Pexels API Error: ${response.status} ${response.statusText}. Endpoint: ${PEXELS_API_URL}${endpoint}. Key Used: ${apiKeyToUse.substring(0,5)}... . Response (first 200 chars): ${errorBodyText.substring(0, 200)}`;
+      const detailedErrorMessage = `Pexels API Error: ${response.status} ${response.statusText}. Endpoint: ${PEXELS_API_URL}${endpoint}. Key Used: ${apiKeyToUse.substring(0,5)}... . Response: ${errorBodyText.substring(0, 200)}`;
       console.error(detailedErrorMessage);
       return null;
     }
@@ -77,7 +74,7 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
     try {
       return JSON.parse(responseText) as T;
     } catch (jsonError) {
-      console.error(`Pexels API Error: Failed to parse JSON response. Endpoint: ${PEXELS_API_URL}${endpoint}. Status: ${response.status}. Response text (first 500 chars): ${responseText.substring(0,500)}`, jsonError);
+      console.error(`Pexels API Error: Failed to parse JSON response. Endpoint: ${PEXELS_API_URL}${endpoint}. Status: ${response.status}. Response: ${responseText.substring(0,500)}`, jsonError);
       return null;
     }
 
@@ -88,7 +85,8 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
 }
 
 export async function getCuratedPhotos(page: number = 1, perPage: number = 20): Promise<PexelsCuratedResponse | null> {
-  return fetchPexelsAPI<PexelsCuratedResponse>(`/curated?page=${page}&per_page=${perPage}`);
+  // Curated photos can be cached more aggressively if desired, e.g. 'default' or 'force-cache'
+  return fetchPexelsAPI<PexelsCuratedResponse>(`/curated?page=${page}&per_page=${perPage}`, 'default');
 }
 
 export async function searchPhotos(
@@ -101,9 +99,11 @@ export async function searchPhotos(
   if (orientation) {
     endpoint += `&orientation=${orientation}`;
   }
-  return fetchPexelsAPI<PexelsSearchResponse>(endpoint);
+  // Searches are typically dynamic, so 'no-store' is often appropriate
+  return fetchPexelsAPI<PexelsSearchResponse>(endpoint, 'no-store');
 }
 
 export async function getPhotoById(id: string): Promise<PexelsPhoto | null> {
-  return fetchPexelsAPI<PexelsPhoto>(`/photos/${id}`);
+  // Specific photo data might not change often, consider 'default'
+  return fetchPexelsAPI<PexelsPhoto>(`/photos/${id}`, 'default');
 }
