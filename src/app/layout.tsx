@@ -11,6 +11,7 @@ import type { WithContext, WebSite, SearchAction } from 'schema-dts';
 
 const inter = Inter({
   subsets: ['latin'],
+  display: 'swap', // Added display: 'swap'
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -86,7 +87,7 @@ export default function RootLayout({
           urlTemplate: `${BASE_URL}explorer?query={search_term_string}`,
         },
         'query-input': 'required name=search_term_string',
-    } as SearchAction, 
+    } as SearchAction,
   };
 
   return (
@@ -95,7 +96,7 @@ export default function RootLayout({
          <StructuredData data={webSiteSchema} />
       </head>
       <body className={cn(
-        inter.className, // Apply font class directly
+        inter.className,
         'antialiased'
        )}>
         <ThemeProvider
