@@ -22,19 +22,19 @@ export async function generateMetadata(
   const previousImages = (await parent).openGraph?.images || [];
   const ogImage = post.opengraphImage
     ? `${BASE_URL}${post.opengraphImage.replace(/^\//, '')}`
-    : `${BASE_URL}/blog/og-blog-main.png`; // Corrected path
+    : `${BASE_URL}/blog/og-blog-main.png`;
 
   return {
     title: post.title,
     description: post.summary,
     keywords: post.keywords || post.tags,
     alternates: {
-      canonical: `${BASE_URL}/blog/${slug}`, // Corrected path
+      canonical: `${BASE_URL}/blog/${slug}`,
     },
     openGraph: {
       title: post.title,
       description: post.summary,
-      url: `${BASE_URL}/blog/${slug}`, // Corrected path
+      url: `${BASE_URL}/blog/${slug}`,
       type: 'article',
       publishedTime: new Date(post.date).toISOString(),
       authors: post.author ? [post.author] : ['Wallify Team'],
@@ -60,8 +60,10 @@ export async function generateMetadata(
 
 export default function BlogPostLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { slug: string };
 }) {
   return <>{children}</>;
 }
