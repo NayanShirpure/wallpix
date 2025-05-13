@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,14 +14,14 @@ interface SearchBarProps {
 
 export function SearchBar({ 
   onSubmitSearch, 
-  initialValue = '', 
+  initialValue, // Removed default empty string here to handle undefined explicitly
   navigateToSearchPage = true 
 }: SearchBarProps) {
-  const [query, setQuery] = useState(initialValue);
+  const [query, setQuery] = useState(initialValue || ''); // Use fallback here
   const router = useRouter();
 
   useEffect(() => {
-    setQuery(initialValue); // Update query if initialValue prop changes
+    setQuery(initialValue || ''); // Update query if initialValue prop changes, with fallback
   }, [initialValue]);
 
   const handleSearch = (e: React.FormEvent) => {
