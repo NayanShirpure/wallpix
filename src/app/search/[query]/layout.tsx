@@ -1,18 +1,23 @@
 import { ReactNode } from 'react';
 import type { Metadata, ResolvingMetadata } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+// const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-interface SearchLayoutProps {
-  children: ReactNode;
-}
+// interface SearchLayoutProps {
+//   children: ReactNode;
+// }
 
-interface GenerateMetadataProps {
+// ✅ Only used inside generateMetadata
+type GenerateMetadataProps = {
   params: { query: string };
-}
+};
+
+// interface GenerateMetadataProps {
+//   params: { query: string };
+// }
 
 export async function generateMetadata(
-  { params }: { params: GenerateMetadataProps['params'] }, // 👈 Updated type here
+  { params }: { params: GenerateMetadataProps['params'] }, // 👈 This is the crucial type correction
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const rawQueryParam = params.query || '';
@@ -53,6 +58,6 @@ export async function generateMetadata(
   };
 }
 
-export default function SearchLayout({ children }: { children: ReactNode }) {
+export default function SearchLayout({ children }: { children: ReactNode }) { // 👈 But the component's props are directly typed here
   return <div>{children}</div>;
 }
