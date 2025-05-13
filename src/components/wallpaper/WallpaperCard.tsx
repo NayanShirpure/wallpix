@@ -32,9 +32,7 @@ export function WallpaperCard({ photo, onClick, orientation }: WallpaperCardProp
           alt={photo.alt || 'Wallpaper thumbnail'}
           fill
           style={{ objectFit: 'cover' }}
-          sizes={orientation === 'desktop' 
-            ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" 
-            : "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"}
+          sizes="(max-width: 639px) 50vw, (max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw"
           className="transition-transform duration-300 group-hover:scale-105"
           priority={photo.id < 3000000} // Prioritize first few images based on typical Pexels ID range
           placeholder="blur"

@@ -106,6 +106,10 @@
     @apply bg-background text-foreground;
      /* Ensure smooth scrolling on touch devices */
     -webkit-overflow-scrolling: touch;
+
+    /* Firefox scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--accent)) hsl(var(--secondary) / 0.5);
   }
 
    /* Optimize focus rings for touch devices */
@@ -131,6 +135,13 @@
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-accent/80; /* Thumb color on hover, slightly lighter accent */
+  }
+
+  /* Firefox scrollbar styling (fallback if @supports is not read by older processors, body level is preferred)*/
+  /* This is duplicated from body but might be useful if body-level is stripped by some tools */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--accent)) hsl(var(--secondary) / 0.5);
   }
 }
 

@@ -16,15 +16,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs, type DeviceOrientationCategory } from '@/config/categories';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { SearchBar } from '@/components/wallpaper/SearchBar'; // Assuming SearchBar takes onSubmit prop
+import { SearchBar } from '@/components/wallpaper/SearchBar'; 
 
 interface GlobalHeaderProps {
   currentDeviceOrientation: DeviceOrientationCategory;
   onDeviceOrientationChange: (newCategory: DeviceOrientationCategory) => void;
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
-  initialSearchTerm?: string; // Optional, for SearchBar prefill if needed
-  showExplorerLink?: boolean; // To show/hide the Explorer link
+  initialSearchTerm?: string; 
+  showExplorerLink?: boolean; 
 }
 
 export function GlobalHeader({
@@ -84,7 +84,7 @@ export function GlobalHeader({
           </div>
           
           {/* Search Bar - pass onSearchSubmit and initialSearchTerm */}
-          <div className="w-full max-w-[130px] xs:max-w-[150px] sm:max-w-xs">
+          <div className="w-full max-w-[160px] xs:max-w-[200px] sm:max-w-xs">
             <SearchBar onSubmitSearch={onSearchSubmit} initialValue={initialSearchTerm} />
           </div>
 
@@ -97,7 +97,7 @@ export function GlobalHeader({
                    <span className="sr-only">Open navigation menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="max-h-[70vh] overflow-y-auto">
                 <DropdownMenuLabel>Device</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {deviceOrientationTabs.map(opt => (
