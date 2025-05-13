@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, UserCircle } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
-import type { BlogPosting, WithContext } from 'schema-dts';
+import type { BlogPosting, MinimalWithContext, MinimalThing } from '@/types/schema-dts'; // Adjusted import
 import Image from 'next/image';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -12,20 +12,19 @@ export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
 }
 
-// ✅ Now handles Promise-based `params`
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+interface BlogPostPageProps {
+  params: { slug: string };
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const slug = params.slug; // Directly access slug from params
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) notFound();
 
   const PostContent = (await post.contentComponent()).default;
 
-  const articleSchema: WithContext<BlogPosting> = {
+  const articleSchema: MinimalWithContext<BlogPosting> = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,

@@ -5,11 +5,15 @@ import { blogPosts } from '@/config/blog';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
+interface BlogPostLayoutProps {
+  params: { slug: string };
+}
+
 export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: BlogPostLayoutProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = await params;
+  const slug = params.slug; // Directly access slug from params
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) {

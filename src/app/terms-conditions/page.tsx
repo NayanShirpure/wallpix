@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react'; 
 import { StructuredData } from '@/components/structured-data';
 import type { WebPage, WithContext } from 'schema-dts';
-// ThemeToggle removed, it's in global Header now.
-// import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeToggle } from '@/components/theme-toggle'; 
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
@@ -37,7 +36,7 @@ export default function TermsConditionsPage() {
   return (
     <>
       <StructuredData data={webPageSchema} />
-       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden"> {/* z-index lower than global header */}
+       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden">
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
           <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
@@ -50,8 +49,9 @@ export default function TermsConditionsPage() {
           <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-120px)] sm:max-w-[calc(100%-160px)] md:max-w-[calc(100%-200px)]">
             Terms &amp; Conditions
           </h1>
-          {/* ThemeToggle removed from here */}
-          <div className="w-16 sm:w-20"> {/* Placeholder for alignment, or remove */} </div>
+          <div className="flex items-center">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main className="flex-grow container mx-auto max-w-4xl p-4 py-8 md:p-6 md:py-12">

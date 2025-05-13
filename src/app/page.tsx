@@ -4,11 +4,10 @@
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-// Link component is not used directly in this file after header removal, but kept for potential future use or if sub-components need it.
-// import Link from 'next/link'; 
+import Link from 'next/link'; 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Download, X, Menu } from 'lucide-react'; // Removed Search icon as it's in global header
+import { Download, X, Menu, Camera } from 'lucide-react'; 
 import {
   Dialog,
   DialogContent,
@@ -33,8 +32,8 @@ import {
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
 import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
-// ThemeToggle is now in global header, so not needed here
-// import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeToggle } from '@/components/theme-toggle'; 
+import { SearchBar } from '@/components/wallpaper/SearchBar'; 
 
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
@@ -139,24 +138,13 @@ export default function Home() {
     fetchWallpapers(searchTerm, currentCategory, 1, false);
   }, [searchTerm, currentCategory, fetchWallpapers]);
 
-  // handleSearchSubmit is removed as search is now handled by global SearchBar
-
   const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentCategory) {
            setCurrentCategory(newCategory);
-           // When device category changes, we might want to reset the "searchTerm" for this page's view.
-           // Or, we can keep the current searchTerm to see results for it in the new orientation.
-           // For simplicity, let's refetch with the current searchTerm and new category.
-           // The global search bar is independent of this.
        }
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    // This should set the `searchTerm` for the current page view, not navigate.
-    // Navigation to a full search page is handled by the global search bar.
-    // If clicking a category here should also navigate, then use:
-    // router.push(`/search/${encodeURIComponent(categoryValue)}`);
-    // For now, let's assume it updates the current view's content:
     setSearchTerm(categoryValue); 
   };
 
@@ -256,17 +244,29 @@ export default function Home() {
   return (
     <>
       {imageSchema && <StructuredData data={imageSchema} />}
-      {/* Header is now global, removed from here */}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
+        <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-4">
+          <Link href="/" className="mr-3 flex items-center space-x-2 sm:mr-6">
+            <Camera className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl text-primary">Wallify</span>
+          </Link>
+          <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
+            <div className="w-full flex-1 sm:w-auto sm:flex-none">
+               <SearchBar />
+            </div>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
       
       <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
         <div className="my-6 sm:my-8 text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-primary"> {/* Changed from h2 to h1 for semantic reasons on homepage */}
+            <h1 className="text-3xl sm:text-4xl font-bold text-primary">
               {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">Browse our collection or use the search in the header.</p>
         </div>
 
-        {/* Moved filter controls here */}
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 p-2 rounded-lg bg-muted/50">
             <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as DeviceOrientationCategory)} className="w-auto">
                 <TabsList className="grid grid-cols-2 h-9 text-xs sm:h-10 sm:text-sm">

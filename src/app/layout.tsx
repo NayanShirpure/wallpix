@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
 import type { WithContext, WebSite, SearchAction } from 'schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
-import { Header } from '@/components/layout/Header';
+// import { Header } from '@/components/layout/Header'; // Removed
 
 
 const inter = Inter({
@@ -107,7 +107,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
+          {/* <Header /> Removed */}
           <div className="flex-grow flex flex-col">
             {children}
           </div>

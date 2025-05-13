@@ -2,8 +2,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Rss } from 'lucide-react'; 
-// ThemeToggle removed, it's in global Header now.
-// import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
@@ -40,7 +39,7 @@ export default function BlogLayout({
 }) {
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden"> {/* z-index lower than global header */}
+      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden">
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
           <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
@@ -56,7 +55,7 @@ export default function BlogLayout({
             <a href="/blog/rss.xml" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-accent transition-colors" aria-label="RSS Feed">
               <Rss className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
-            {/* ThemeToggle removed from here */}
+            <ThemeToggle />
           </div>
         </div>
       </header>
