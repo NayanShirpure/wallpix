@@ -1,9 +1,11 @@
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import { WallpaperCard } from './WallpaperCard';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { cn } from '@/lib/utils';
 
 interface WallpaperGridProps {
   photos: PexelsPhoto[];
@@ -13,8 +15,6 @@ interface WallpaperGridProps {
 
 export function WallpaperGrid({ photos, orientation, onPhotoClick }: WallpaperGridProps) {
 
-  // Determine if mock data is being used due to API key issues.
-  // This check is primarily for development to guide the user.
   const isLikelyUsingMockData =
     photos &&
     photos.length > 0 &&
@@ -26,7 +26,7 @@ export function WallpaperGrid({ photos, orientation, onPhotoClick }: WallpaperGr
 
   if (isLikelyUsingMockData && isApiKeyMissingOrPlaceholder && process.env.NODE_ENV === 'development') {
      return (
-        <Alert variant="default" className="bg-primary/10 border-primary/30 text-primary-foreground my-4">
+        <Alert variant="default" className="bg-primary/10 border-primary/30 text-primary-foreground my-4 mx-auto max-w-3xl">
           <Info className="h-5 w-5 text-primary" />
           <AlertTitle className="text-primary font-semibold">PEXELS API Key Notice</AlertTitle>
           <AlertDescription className="text-primary/90">
@@ -51,9 +51,15 @@ export function WallpaperGrid({ photos, orientation, onPhotoClick }: WallpaperGr
     );
   }
 
+  // Enhanced grid classes for responsiveness and spacing
+  const gridClasses = cn(
+    "grid gap-2 sm:gap-3 md:gap-4 p-1", // Base gap and padding
+    "grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" // Responsive columns
+  );
+
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className={gridClasses}>
         {photos.map((photo) => (
           <WallpaperCard
             key={`${photo.id}-${orientation}`}

@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
@@ -13,6 +14,7 @@ import { WallpaperSection } from '@/components/wallpaper-section';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
+import { cn } from '@/lib/utils';
 
 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
@@ -69,12 +71,9 @@ export default function ExplorerPage() {
       effectiveApiKey = FALLBACK_PEXELS_API_KEY;
       if (process.env.NODE_ENV === 'development') {
         console.warn(`[Explorer Page] Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured or is a placeholder. Using default fallback key for ${endpoint}.`);
-        // This toast is informative that we are *trying* the fallback. It doesn't mean mock data yet.
-        // Removed the toast from here to avoid spamming if fallback is used often. Console log is sufficient.
       }
     }
     
-    // If effectiveApiKey is STILL a placeholder or empty (e.g. if FALLBACK_PEXELS_API_KEY itself was bad)
     if (!effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey)) {
       console.warn(`[Explorer Page] No valid Pexels API key available (checked env & fallback) for ${endpoint}. Displaying mock data.`);
       const mockPhoto: PexelsPhoto = {
@@ -88,7 +87,7 @@ export default function ExplorerPage() {
       if (process.env.NODE_ENV === 'development') {
           toast({
             title: "PEXELS API Key Notice",
-            description: `Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) and fallback are not configured or valid for ${endpoint}. Displaying mock data.`,
+            description: `Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured or is a placeholder. Using default fallback key for ${endpoint}.`,
             variant: "default",
             duration: 10000,
           });
@@ -112,7 +111,6 @@ export default function ExplorerPage() {
         } else {
             throw new Error(`HTTP error! status: ${response.status} for ${endpoint}`);
         }
-        // Fallback to mock data if API key was bad AND it was the fallback (meaning primary env var was missing/placeholder)
         if (isEnvKeyMissingOrPlaceholder && effectiveApiKey === FALLBACK_PEXELS_API_KEY) {
             console.warn(`[Explorer Page] Fallback API key failed for ${endpoint}. Displaying mock data.`);
             const mockPhoto: PexelsPhoto = {
@@ -134,7 +132,6 @@ export default function ExplorerPage() {
       if (!error.message.includes("API Key Invalid")) {
         toast({ title: "Fetch Error", description: `Failed to fetch ${endpoint} content. Displaying mock data if applicable or check console.`, variant: "destructive" });
       }
-      // If any error occurs and the original env key was bad (so fallback was tried), then show mock data
       if (isEnvKeyMissingOrPlaceholder) {
         console.warn(`[Explorer Page] Fetch error occurred for ${endpoint} (likely with fallback key). Displaying mock data.`);
         const mockPhoto: PexelsPhoto = {
@@ -160,7 +157,7 @@ export default function ExplorerPage() {
       const photos = await genericFetchWallpapers('search', {
         query: finalQuery,
         orientation,
-        per_page: 30, // Fetch more for main grid
+        per_page: 30, 
         page: pageNum,
       });
 
@@ -171,9 +168,7 @@ export default function ExplorerPage() {
       });
       setHasMore(photos.length === 30);
     } catch (error) {
-      // Error handling is done inside genericFetchWallpapers, which might return mock data
-      // If it returns empty, that's handled by the UI
-      setHasMore(false); // Assume no more if fetch failed catastrophically beyond genericFetchWallpapers handling
+      setHasMore(false); 
     } finally {
       setLoading(false);
     }
@@ -190,7 +185,7 @@ export default function ExplorerPage() {
   useEffect(() => {
     const loadFeaturedSections = async () => {
       const orientationParam = currentDeviceOrientation === 'desktop' ? 'landscape' : 'portrait';
-      const perPageFeatured = 8; // Number of items for featured carousels
+      const perPageFeatured = 10; // Increased item count for carousels
 
       setTrendingLoading(true);
       genericFetchWallpapers('curated', { orientation: orientationParam, per_page: perPageFeatured })
@@ -216,13 +211,13 @@ export default function ExplorerPage() {
         .finally(() => setRecentlyAddedLoading(false));
 
       setWallpaperOfTheDayLoading(true);
-      genericFetchWallpapers('search', { query: "Daily Inspiration Wallpaper", orientation: orientationParam, per_page: 5 }) // Fetch a few for WOTD, pick one
+      genericFetchWallpapers('search', { query: "Daily Inspiration Wallpaper", orientation: orientationParam, per_page: 5 }) 
         .then(photos => {
           if (photos.length > 0) {
             const randomIndex = Math.floor(Math.random() * photos.length);
             setWallpaperOfTheDay(photos[randomIndex]);
           } else {
-            setWallpaperOfTheDay(null); // Explicitly set to null if no photos
+            setWallpaperOfTheDay(null);
           }
         })
         .finally(() => setWallpaperOfTheDayLoading(false));
@@ -234,7 +229,7 @@ export default function ExplorerPage() {
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentDeviceOrientation) {
            setCurrentDeviceOrientation(newCategory);
-           setSearchTerm('Explore'); // Reset search term on orientation change for explorer
+           setSearchTerm('Explore'); 
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
@@ -242,7 +237,7 @@ export default function ExplorerPage() {
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue); // Update search term to the selected category
+    setSearchTerm(categoryValue);
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
@@ -272,7 +267,7 @@ export default function ExplorerPage() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setTimeout(() => setSelectedWallpaper(null), 300); // Delay for modal close animation
+    setTimeout(() => setSelectedWallpaper(null), 300); 
   };
 
   const handleWotdDownload = async (wallpaperToDownload: PexelsPhoto | null) => {
@@ -349,17 +344,22 @@ export default function ExplorerPage() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={searchTerm}
-        showExplorerLink={false} // Hide "Explorer" link on the Explorer page itself
+        showExplorerLink={false} 
       />
 
-      <main className="flex-grow container mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8">
-        <div className="my-6 sm:my-8 text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-primary">Explore Wallpapers</h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Discover trending, popular, and new wallpapers. Use the filters in the header or search to find your perfect wallpaper.</p>
+      <main className={cn(
+          "flex-grow container mx-auto max-w-full px-2 py-6 sm:px-4 sm:py-8 md:px-6 lg:px-8",
+          "space-y-10 md:space-y-12 lg:space-y-16" // Added more generous vertical spacing
+        )}>
+        <div className="mt-0 mb-4 sm:my-8 text-center px-2"> {/* Reduced top margin for title section */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary tracking-tight">Wallpaper Explorer</h1>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
+                Discover trending, popular, and new wallpapers. Use the filters in the header or search to find your perfect background.
+            </p>
         </div>
 
         {/* Featured Content Section */}
-        <section className="space-y-8 md:space-y-10 lg:space-y-12 mb-10 md:mb-12 lg:mb-16">
+        <div className="space-y-10 md:space-y-12 lg:space-y-14"> {/* Consistent spacing for featured sections */}
             <WallpaperOfTheDay
             wallpaper={wallpaperOfTheDay}
             loading={wallpaperOfTheDayLoading}
@@ -374,7 +374,7 @@ export default function ExplorerPage() {
             loading={trendingLoading}
             orientation={currentDeviceOrientation}
             onWallpaperClick={openModal}
-            itemCount={8}
+            itemCount={10} // Increased count for carousels
             />
 
             <WallpaperSection
@@ -383,7 +383,7 @@ export default function ExplorerPage() {
             loading={editorsPicksLoading}
             orientation={currentDeviceOrientation}
             onWallpaperClick={openModal}
-            itemCount={8}
+            itemCount={10}
             />
 
             <WallpaperSection
@@ -392,7 +392,7 @@ export default function ExplorerPage() {
             loading={mostDownloadedLoading}
             orientation={currentDeviceOrientation}
             onWallpaperClick={openModal}
-            itemCount={8}
+            itemCount={10}
             />
 
             <WallpaperSection
@@ -401,20 +401,16 @@ export default function ExplorerPage() {
             loading={recentlyAddedLoading}
             orientation={currentDeviceOrientation}
             onWallpaperClick={openModal}
-            itemCount={8}
+            itemCount={10}
             />
-        </section>
+        </div>
 
-        {/* Browse All Section */}
-        <section>
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">
-            {searchTerm === "Explore" ? `Browse All ${currentDeviceOrientation === 'desktop' ? 'Desktop' : 'Phone'} Wallpapers` : `Browsing: "${searchTerm}"`}
-            </h2>
-
+        {/* Browse All Section - Title moved below the grid */}
+        <section className="mt-10 md:mt-12 lg:mt-16">
             {loading && wallpapers.length === 0 ? (
-                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
-                    {[...Array(15)].map((_, i) => (
-                    <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                <div className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 p-1`}>
+                    {[...Array(18)].map((_, i) => ( // Show more skeletons for initial load
+                    <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg shadow-sm`} />
                     ))}
                 </div>
             ) : (
@@ -425,6 +421,11 @@ export default function ExplorerPage() {
                 />
             )}
 
+            <h2 className="text-xl sm:text-2xl font-semibold text-center text-primary mt-6 sm:mt-8 mb-4 sm:mb-6 px-1">
+            {searchTerm === "Explore" ? `Browse All ${currentDeviceOrientation === 'desktop' ? 'Desktop' : 'Phone'} Wallpapers` : `Results for "${searchTerm}"`}
+            </h2>
+
+
             {hasMore && !loading && wallpapers.length > 0 && (
                 <div className="flex justify-center mt-6 sm:mt-8 mb-4">
                     <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
@@ -433,11 +434,10 @@ export default function ExplorerPage() {
                 </div>
             )}
 
-            {/* Skeleton for loading more items */}
             {loading && wallpapers.length > 0 && (
-                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
-                    {[...Array(5)].map((_, i) => (
-                    <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                 <div className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 p-1 mt-4`}>
+                    {[...Array(6)].map((_, i) => (
+                    <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg shadow-sm`} />
                     ))}
                 </div>
             )}

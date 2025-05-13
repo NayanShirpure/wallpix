@@ -1,12 +1,14 @@
 
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Download } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card'; // Added Card and CardContent
-import { cn } from '@/lib/utils'; // Added cn
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { WallpaperCard } from './wallpaper/WallpaperCard'; // Import WallpaperCard for consistent item rendering
 
 interface WallpaperSectionProps {
   title: string;
@@ -21,89 +23,49 @@ export function WallpaperSection({
   title,
   wallpapers,
   loading,
-  orientation,
+  orientation, // This orientation is for the *type* of content (desktop/phone)
   onWallpaperClick,
-  itemCount = 8, // Default to 8 items for carousels
+  itemCount = 10, // Default to 10 items for carousels
 }: WallpaperSectionProps) {
-  const aspectRatio = orientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
-  // Define image container width based on orientation for better responsive behavior in a carousel
-  const imageContainerClass = orientation === 'desktop' 
-    ? 'w-60 xs:w-64 sm:w-72 md:w-80 lg:w-[340px]' // Wider for desktop carousels
-    : 'w-28 xs:w-32 sm:w-36 md:w-40 lg:w-44';   // Narrower for phone carousels
+  // For carousel display, items are typically landscape-like or square-ish for better fit.
+  // We'll use a fixed aspect ratio for carousel items, e.g., 16:9 or 4:3 for desktop, 3:4 for phone items in carousel
+  const carouselItemOrientation = orientation === 'desktop' ? 'desktop' : 'smartphone'; // This will determine the card's aspect ratio.
 
   const displayedWallpapers = wallpapers.slice(0, itemCount);
 
-  const getSrc = (photo: PexelsPhoto) => {
-    // For carousels, medium or large is usually sufficient and loads faster.
-    // For desktop, landscape or large2x. For phone, portrait or large.
-    if (orientation === 'desktop') {
-      return photo.src.landscape || photo.src.large2x || photo.src.original;
-    }
-    return photo.src.portrait || photo.src.large || photo.src.original;
-  };
-
-  // Attempt to parse a single width for the 'sizes' attribute from the Tailwind classes.
-  // This is a simplified approach for fixed-width items in a carousel.
-  const imageWidthForSizes = () => {
-    const widthClasses = imageContainerClass.split(' ');
-    let baseW = widthClasses.find(c => c.startsWith('w-') && !c.includes(':'))?.replace('w-', '');
-    if (baseW?.startsWith('[')) baseW = baseW.replace('[', '').replace('px]', ''); // Handles w-[340px]
-    // For classes like w-60 (meaning 15rem), convert to a rough pixel estimate if needed, or use a large enough default.
-    // Here, we'll just return a common large size if direct px isn't found, letting browser optimize.
-    return baseW && !isNaN(parseInt(baseW)) ? `${baseW}px` : '320px'; // Fallback width for sizes
-  };
-
+  // Skeleton item width should match card width in carousel
+  const skeletonItemWidth = orientation === 'desktop' 
+    ? 'w-60 xs:w-64 sm:w-72 md:w-80 lg:w-[340px]'
+    : 'w-28 xs:w-32 sm:w-36 md:w-40 lg:w-44';
 
   return (
-    <section>
+    <section className="py-2"> {/* Added padding for better separation */}
       <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">{title}</h2>
       {loading ? (
         <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
-          {[...Array(Math.min(itemCount, 5))].map((_, i) => ( // Show up to 5 skeletons
-            <div key={`skeleton-${title}-${i}`} className={`flex-shrink-0 ${imageContainerClass}`}>
-              <Skeleton className={`${aspectRatio} w-full rounded-lg`} />
+          {[...Array(Math.min(itemCount, 6))].map((_, i) => ( // Show up to 6 skeletons
+            <div key={`skeleton-${title}-${i}`} className={cn("flex-shrink-0", skeletonItemWidth)}>
+              {/* The skeleton should mimic the aspect ratio of the WallpaperCard */}
+              <Skeleton className={cn(
+                "w-full rounded-md md:rounded-lg shadow-sm",
+                carouselItemOrientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]' 
+                )} />
             </div>
           ))}
         </div>
       ) : wallpapers.length > 0 ? (
         <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
           {displayedWallpapers.map((wallpaper) => (
-            <Card
-              key={`${wallpaper.id}-${orientation}-${title}`}
-              className={cn(
-                "flex-shrink-0 overflow-hidden cursor-pointer group hover:shadow-xl focus-within:shadow-xl transition-shadow duration-300 ease-in-out",
-                imageContainerClass // Applies width classes like w-60, sm:w-72 etc.
-              )}
-              onClick={() => onWallpaperClick(wallpaper)}
-              role="button"
-              aria-label={`View wallpaper: ${wallpaper.alt || `by ${wallpaper.photographer}`}`}
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onWallpaperClick(wallpaper)}
+            <div 
+              key={`${wallpaper.id}-${carouselItemOrientation}-${title}`} 
+              className={cn("flex-shrink-0", skeletonItemWidth)} // Apply width classes here
             >
-              <CardContent className={cn("p-0 relative", aspectRatio)}>
-                <Image
-                  src={getSrc(wallpaper)}
-                  alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
-                  fill
-                  sizes={imageWidthForSizes()}
-                  className="object-cover transition-transform duration-300 group-hover:scale-105 group-focus-within:scale-105"
-                  placeholder="blur"
-                  blurDataURL={wallpaper.src.tiny}
-                  data-ai-hint={`${orientation === 'desktop' ? 'desktop abstract' : 'phone nature'} ${wallpaper.alt ? wallpaper.alt.split(' ').slice(0,2).join(' ') : 'wallpaper image'}`}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-2">
-                  <p className="text-white text-[10px] xs:text-xs font-medium truncate drop-shadow-sm leading-tight">
-                    {wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
-                  </p>
-                  <div className="flex justify-between items-center mt-0.5">
-                      <p className="text-gray-300 text-[9px] xs:text-[10px] truncate drop-shadow-sm">
-                          {wallpaper.photographer}
-                      </p>
-                      <Download size={12} className="text-white/70 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <WallpaperCard
+                photo={wallpaper}
+                onClick={() => onWallpaperClick(wallpaper)}
+                orientation={carouselItemOrientation} // Pass orientation for aspect ratio
+              />
+            </div>
           ))}
         </div>
       ) : (
@@ -112,3 +74,4 @@ export function WallpaperSection({
     </section>
   );
 }
+
