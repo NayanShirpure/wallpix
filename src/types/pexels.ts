@@ -3,35 +3,32 @@ export interface PexelsPhoto {
   id: number;
   width: number;
   height: number;
-  url: string; // Pexels URL to the photo page
+  url: string;
   photographer: string;
   photographer_url: string;
   photographer_id: number;
   avg_color: string;
-  src: PexelsPhotoSrc;
+  src: {
+    original: string;
+    large2x: string;
+    large: string;
+    medium: string;
+    small: string;
+    portrait: string;
+    landscape: string;
+    tiny: string;
+  };
   liked: boolean;
   alt: string;
 }
 
-export interface PexelsPhotoSrc {
-  original: string;
-  large2x: string;
-  large: string;
-  medium: string;
-  small: string;
-  portrait: string;
-  landscape: string;
-  tiny: string;
-}
-
-export interface PexelsCuratedResponse {
+export interface PexelsResponse {
   page: number;
   per_page: number;
   photos: PexelsPhoto[];
-  total_results?: number; 
+  total_results: number;
   next_page?: string;
 }
 
-export interface PexelsSearchResponse extends PexelsCuratedResponse {
-  total_results: number;
-}
+export type Category = 'smartphone' | 'desktop';
+export type DeviceOrientationCategory = 'smartphone' | 'desktop';
