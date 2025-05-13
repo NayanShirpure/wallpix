@@ -19,25 +19,33 @@ interface StructuredDataProps<T extends MinimalThing> {
 }
 
 export function StructuredData<T extends MinimalThing>({ data }: StructuredDataProps<T>) {
-  // Temporarily return null to isolate issues.
-  // This will prevent the <script> tag from being rendered.
-  return null;
+   if (!data || typeof data['@type'] !== 'string') {
+     // console.warn('StructuredData: Input data is invalid (null, undefined, or missing @type), skipping render.');
+     return null;
+   }
 
-  // Original logic that was in place after removing schema-dts:
-  //  if (!data || typeof data['@type'] !== 'string') {
-  //    // console.warn('StructuredData: data or data["@type"] is undefined, skipping render.');
-  //    return null;
-  //  }
-  //  try {
-  //    return (
-  //      <script
-  //        type="application/ld+json"
-  //        dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-  //        key={`structured-data-${data['@type']}-${(data as any).url || (data as any).name || JSON.stringify(data).substring(0,50)}`}
-  //      />
-  //    );
-  //  } catch (error) {
-  //    // console.error('StructuredData: Error stringifying data', error, data);
-  //    return null;
-  //  }
+   let jsonString: string;
+   try {
+     jsonString = JSON.stringify(data);
+   } catch (error) {
+     // console.error('StructuredData: Error stringifying data. Skipping render.', error, data);
+     return null; // Don't render if data can't be stringified
+   }
+
+   // Construct a simple, relatively stable key.
+   // Using @type and a common identifier like url or name.
+   const type = data['@type'];
+   let identifier = String((data as any).url || (data as any).name || '');
+   // Basic sanitization and length limit for the key.
+   identifier = identifier.replace(/[^a-zA-Z0-9-_]/g, '').substring(0, 50);
+   const key = `structured-data-${type}-${identifier || 'default'}`;
+
+   return (
+     <script
+       type="application/ld+json"
+       dangerouslySetInnerHTML={{ __html: jsonString }}
+       key={key}
+     />
+   );
 }
+

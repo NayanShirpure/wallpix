@@ -5,7 +5,8 @@ import type { PexelsPhoto } from '@/types/pexels';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Search as SearchIcon } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
+// ThemeToggle removed, it's in global Header now.
+// import { ThemeToggle } from '@/components/theme-toggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,20 +19,17 @@ interface SearchPageProps {
 export async function generateMetadata({ params }: SearchPageProps) {
   const rawQueryParam = typeof params.query === 'string' ? params.query : '';
   let queryDisplay = "Invalid Search";
-  // Use the raw query param for canonical URL, as it came from the URL
-  // If it was empty or somehow not a string, it'll be empty string here.
   const canonicalQuery = rawQueryParam;
 
   try {
     const decodedQuery = decodeURIComponent(rawQueryParam);
     if (!decodedQuery.trim()) {
-      queryDisplay = "Search"; // For empty decoded query
+      queryDisplay = "Search"; 
     } else {
       queryDisplay = decodedQuery;
     }
   } catch (e) {
     console.warn("Failed to decode query for metadata:", rawQueryParam, e);
-    // queryDisplay remains "Invalid Search"
   }
 
   return {
@@ -41,7 +39,6 @@ export async function generateMetadata({ params }: SearchPageProps) {
       ? ['Wallify search', 'wallpapers', 'backgrounds'] 
       : [queryDisplay, 'wallpapers', 'backgrounds', `${queryDisplay} backgrounds`, 'Wallify search'],
     alternates: {
-        // Ensure canonicalQuery is not empty for the path segment
         canonical: `/search/${canonicalQuery || 'query'}`,
     }
   };
@@ -57,9 +54,9 @@ export default async function SearchPage({ params }: SearchPageProps) {
     console.error("Failed to decode query parameter in SearchPage:", rawQueryParam, e);
     return (
       <>
-        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+        <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden"> {/* z-index lower than global header */}
           <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-            <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors z-10" aria-label="Back to Wallify homepage">
+            <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
               <span className="hidden sm:inline">Back to Wallify</span>
               <span className="sm:hidden">Home</span>
@@ -67,7 +64,8 @@ export default async function SearchPage({ params }: SearchPageProps) {
             <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2">
               Invalid Search
             </h1>
-            <ThemeToggle />
+            {/* ThemeToggle removed */}
+            <div className="w-8 h-8"></div> {/* Placeholder for alignment */}
           </div>
         </header>
         <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12 text-center">
@@ -87,9 +85,9 @@ export default async function SearchPage({ params }: SearchPageProps) {
   if (!query.trim()) {
      return (
       <>
-        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+        <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden"> {/* z-index lower than global header */}
           <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-            <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors z-10" aria-label="Back to Wallify homepage">
+            <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
               <span className="hidden sm:inline">Back to Wallify</span>
               <span className="sm:hidden">Home</span>
@@ -97,7 +95,8 @@ export default async function SearchPage({ params }: SearchPageProps) {
             <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2">
               Empty Search
             </h1>
-            <ThemeToggle />
+            {/* ThemeToggle removed */}
+            <div className="w-8 h-8"></div> {/* Placeholder for alignment */}
           </div>
         </header>
         <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12 text-center">
@@ -114,22 +113,23 @@ export default async function SearchPage({ params }: SearchPageProps) {
     );
   }
 
-  const data = await searchPhotos(query, 1, 30); // Fetch 30 photos per page
+  const data = await searchPhotos(query, 1, 30); 
   const photos: PexelsPhoto[] = data?.photos || [];
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden"> {/* z-index lower than global header */}
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-          <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors z-10" aria-label="Back to Wallify homepage">
+          <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
             <span className="hidden sm:inline">Back to Wallify</span>
             <span className="sm:hidden">Home</span>
           </Link>
-          <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-180px)] sm:max-w-[calc(100%-220px)] md:max-w-[calc(100%-280px)]">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-180px)] sm:max-w-[calc(100%-220px)] md:max-w-[calc(100%-260px)]">
             Results for: <span className="text-accent">{query}</span>
           </h1>
-          <ThemeToggle />
+          {/* ThemeToggle removed */}
+           <div className="w-8 h-8"></div> {/* Placeholder for alignment */}
         </div>
       </header>
       <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">

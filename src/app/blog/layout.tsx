@@ -1,8 +1,9 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, Rss } from 'lucide-react'; // Removed social icons
-import { ThemeToggle } from '@/components/theme-toggle';
+import { ArrowLeft, Rss } from 'lucide-react'; 
+// ThemeToggle removed, it's in global Header now.
+// import { ThemeToggle } from '@/components/theme-toggle';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
@@ -38,12 +39,10 @@ export default function BlogLayout({
   children: React.ReactNode;
 }) {
   return (
-    // Removed min-h-screen, flex, flex-col. Root layout handles this.
-    // The GlobalFooter will be rendered by the root layout.
     <>
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden"> {/* z-index lower than global header */}
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-          <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors z-10" aria-label="Back to Wallify homepage">
+          <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
             <span className="hidden sm:inline">
               Back to Wallify
@@ -57,14 +56,13 @@ export default function BlogLayout({
             <a href="/blog/rss.xml" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-accent transition-colors" aria-label="RSS Feed">
               <Rss className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
-            <ThemeToggle />
+            {/* ThemeToggle removed from here */}
           </div>
         </div>
       </header>
-      <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12"> {/* flex-grow to ensure main content takes available space */}
+      <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12">
         {children}
       </main>
-      {/* Footer removed, GlobalFooter from root layout will be used */}
     </>
   );
 }

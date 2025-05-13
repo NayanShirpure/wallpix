@@ -4,11 +4,11 @@
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Added useRouter
-import { Input } from '@/components/ui/input';
+// Link component is not used directly in this file after header removal, but kept for potential future use or if sub-components need it.
+// import Link from 'next/link'; 
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Search, Download, X, Menu } from 'lucide-react';
+import { Download, X, Menu } from 'lucide-react'; // Removed Search icon as it's in global header
 import {
   Dialog,
   DialogContent,
@@ -33,14 +33,15 @@ import {
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
 import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
-import { ThemeToggle } from '@/components/theme-toggle';
+// ThemeToggle is now in global header, so not needed here
+// import { ThemeToggle } from '@/components/theme-toggle';
 
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState('Wallpaper'); // This will be the default category/view for the homepage
+  const [searchTerm, setSearchTerm] = useState('Wallpaper'); 
   const [currentCategory, setCurrentCategory] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter(); 
 
    const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
@@ -138,24 +139,25 @@ export default function Home() {
     fetchWallpapers(searchTerm, currentCategory, 1, false);
   }, [searchTerm, currentCategory, fetchWallpapers]);
 
-
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const newSearchTerm = formData.get('search') as string;
-    const trimmedSearchTerm = newSearchTerm.trim();
-    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; // Default search term if input is empty
-    router.push(`/search/${encodeURIComponent(effectiveSearchTerm)}`);
-  };
+  // handleSearchSubmit is removed as search is now handled by global SearchBar
 
   const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentCategory) {
            setCurrentCategory(newCategory);
+           // When device category changes, we might want to reset the "searchTerm" for this page's view.
+           // Or, we can keep the current searchTerm to see results for it in the new orientation.
+           // For simplicity, let's refetch with the current searchTerm and new category.
+           // The global search bar is independent of this.
        }
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    router.push(`/search/${encodeURIComponent(categoryValue)}`);
+    // This should set the `searchTerm` for the current page view, not navigate.
+    // Navigation to a full search page is handled by the global search bar.
+    // If clicking a category here should also navigate, then use:
+    // router.push(`/search/${encodeURIComponent(categoryValue)}`);
+    // For now, let's assume it updates the current view's content:
+    setSearchTerm(categoryValue); 
   };
 
 
@@ -254,49 +256,34 @@ export default function Home() {
   return (
     <>
       {imageSchema && <StructuredData data={imageSchema} />}
-      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
-            <Link href="/" className="text-primary self-center sm:self-auto" aria-label="Wallify Homepage">
-              <h1 className="text-xl sm:text-2xl font-bold">Wallify</h1>
-            </Link>
+      {/* Header is now global, removed from here */}
+      
+      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
+        <div className="my-6 sm:my-8 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold text-primary"> {/* Changed from h2 to h1 for semantic reasons on homepage */}
+              {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
+            </h1>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Browse our collection or use the search in the header.</p>
+        </div>
 
-            <form onSubmit={handleSearchSubmit} className="flex gap-2 items-center w-full sm:w-auto sm:flex-grow max-w-xs sm:max-w-sm md:max-w-md">
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                    <Input
-                        type="search"
-                        name="search"
-                        placeholder="Search..."
-                        className="pl-8 w-full bg-secondary border-border focus:ring-1 focus:ring-ring text-foreground rounded-full h-8 text-sm"
-                        // The defaultValue is for the visual input field.
-                        // `searchTerm` state still dictates the initial fetch for this page.
-                        defaultValue={searchTerm === "Wallpaper" ? "" : searchTerm}
-                        aria-label="Search wallpapers"
-                    />
-                </div>
-                <Button type="submit" variant="default" size="icon" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-8 w-8 text-sm shrink-0">
-                    <Search className="h-3.5 w-3.5" />
-                    <span className="sr-only">Search</span>
-                </Button>
-            </form>
-
-            <div className="flex items-center gap-2">
-              <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as DeviceOrientationCategory)} className="w-auto">
-                <TabsList className="grid grid-cols-2 h-8 text-xs">
+        {/* Moved filter controls here */}
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 p-2 rounded-lg bg-muted/50">
+            <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as DeviceOrientationCategory)} className="w-auto">
+                <TabsList className="grid grid-cols-2 h-9 text-xs sm:h-10 sm:text-sm">
                   {deviceOrientationTabs.map(opt => (
-                    <TabsTrigger key={opt.value} value={opt.value} className="text-xs px-2.5 py-1">{opt.label}</TabsTrigger>
+                    <TabsTrigger key={opt.value} value={opt.value} className="px-3 py-1.5 sm:px-4 sm:py-2">{opt.label}</TabsTrigger>
                   ))}
                 </TabsList>
-              </Tabs>
+            </Tabs>
 
-              <DropdownMenu>
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-8 w-8">
-                    <Menu className="h-4 w-4" />
-                    <span className="sr-only">Categories Menu</span>
+                  <Button variant="outline" className="h-9 text-xs sm:h-10 sm:text-sm">
+                    <Menu className="mr-1.5 h-4 w-4" />
+                    Categories
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto">
+                <DropdownMenuContent align="center" className="w-64 max-h-96 overflow-y-auto">
                   <DropdownMenuLabel>Filter Wallpapers By</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
@@ -311,17 +298,9 @@ export default function Home() {
                     </React.Fragment>
                   ))}
                 </DropdownMenuContent>
-              </DropdownMenu>
-              <ThemeToggle />
-            </div>
+            </DropdownMenu>
         </div>
-      </header>
 
-      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-primary my-6 sm:my-8 text-center">
-          {/* This title now reflects the content fetched for the homepage based on `searchTerm` state */}
-          {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
-        </h2>
         {loading && wallpapers.length === 0 ? ( 
              <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
                 {[...Array(15)].map((_, i) => (
@@ -429,4 +408,3 @@ export default function Home() {
     </>
   );
 }
-

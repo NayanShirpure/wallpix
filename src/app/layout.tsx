@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
 import type { WithContext, WebSite, SearchAction } from 'schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
+import { Header } from '@/components/layout/Header';
 
 
 const inter = Inter({
@@ -85,10 +86,10 @@ export default function RootLayout({
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${BASE_URL}explorer?query={search_term_string}`, // Assuming explorer is the main search page
+          urlTemplate: `${BASE_URL}search/{search_term_string}`, 
         },
         'query-input': 'required name=search_term_string',
-    } as SearchAction, // Type assertion for potentialAction
+    } as SearchAction, 
   };
 
   return (
@@ -106,7 +107,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex-grow flex flex-col"> {/* This div will allow content to grow and push footer down */}
+          <Header />
+          <div className="flex-grow flex flex-col">
             {children}
           </div>
           <GlobalFooter />
