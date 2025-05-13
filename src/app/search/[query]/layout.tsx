@@ -1,16 +1,22 @@
+// src/app/search/[query]/layout.tsx
+
 import { ReactNode } from 'react';
 import type { Metadata, ResolvingMetadata } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-// This interface is only for the component
+// ✅ This is ONLY for the layout component
 interface SearchLayoutProps {
   children: ReactNode;
 }
 
-// ✅ This is the correct type for generateMetadata parameters
+// ✅ Only used inside generateMetadata
+type GenerateMetadataProps = {
+  params: { query: string };
+};
+
 export async function generateMetadata(
-  { params }: { params: { query: string } },
+  { params }: GenerateMetadataProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const rawQueryParam = params.query || '';
@@ -51,7 +57,7 @@ export async function generateMetadata(
   };
 }
 
-// ✅ layout does NOT need params unless you explicitly want to use them inside the component
+// ✅ Keep this function synchronous unless you truly need `async`
 export default function SearchLayout({ children }: SearchLayoutProps) {
   return <div>{children}</div>;
 }
