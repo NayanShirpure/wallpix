@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
@@ -36,6 +35,7 @@ import { WallpaperSection } from '@/components/wallpaper-section';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { ThemeToggle } from '@/components/theme-toggle'; 
 import { SearchBar } from '@/components/wallpaper/SearchBar'; 
+import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
@@ -112,7 +112,7 @@ export default function ExplorerPage() {
       }
       return [];
     }
-  }, [toast]);
+  }, [toast, PEXELS_API_KEY]);
 
 
    const fetchBrowseAllWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
@@ -146,7 +146,7 @@ export default function ExplorerPage() {
     } finally {
       setLoading(false);
     }
-   }, [toast, genericFetchWallpapers]);
+   }, [toast, genericFetchWallpapers, PEXELS_API_KEY]);
 
 
   useEffect(() => {
@@ -249,18 +249,8 @@ export default function ExplorerPage() {
     }
   };
 
-   const gridImageSrc = (wallpaper: PexelsPhoto) => {
-      if (currentCategory === 'desktop' && wallpaper.src.landscape) return wallpaper.src.landscape;
-      if (currentCategory === 'smartphone' && wallpaper.src.portrait) return wallpaper.src.portrait;
-      if (currentCategory === 'desktop') return wallpaper.src.large2x || wallpaper.src.large || wallpaper.src.original;
-      if (currentCategory === 'smartphone') return wallpaper.src.large || wallpaper.src.medium || wallpaper.src.original;
-      return wallpaper.src.large; 
-   };
-
    const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
-   const gridImageFit = 'object-cover';
-
-
+   
    const modalAspectRatio = selectedWallpaper
     ? selectedWallpaper.width / selectedWallpaper.height > 1.2 
         ? 'aspect-video'
@@ -421,56 +411,26 @@ export default function ExplorerPage() {
                  <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
                 ))}
             </div>
-        ) : wallpapers.length > 0 ? (
-             <>
-                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
-                    {wallpapers.map((wallpaper) => (
-                    <div
-                        key={`${wallpaper.id}-${currentCategory}-main`} 
-                        className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
-                        onClick={() => openModal(wallpaper)}
-                        role="button"
-                        aria-label={`View wallpaper: ${wallpaper.alt || `by ${wallpaper.photographer}`}`}
-                        tabIndex={0}
-                        onKeyDown={(e) => e.key === 'Enter' && openModal(wallpaper)}
-                    >
-                        <Image
-                        src={gridImageSrc(wallpaper)}
-                        alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                        className={`${gridImageFit} transition-opacity duration-300 group-hover:opacity-80`}
-                        placeholder="blur"
-                        blurDataURL={wallpaper.src.tiny}
-                        data-ai-hint={`${currentCategory === 'desktop' ? 'desktop background' : 'phone wallpaper'} ${wallpaper.alt ? wallpaper.alt.split(' ').slice(0,2).join(' ') : 'wallpaper'}`}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-1.5 sm:p-2 justify-between">
-                         <p className="text-white text-[10px] sm:text-xs truncate drop-shadow-sm">{wallpaper.alt || `By ${wallpaper.photographer}`}</p>
-                         <Download size={14} className="text-white/80 shrink-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 sm:size-4" />
-                        </div>
-                    </div>
-                    ))}
-                </div>
-
-                 {hasMore && !loading && (
-                    <div className="flex justify-center mt-6 sm:mt-8 mb-4">
-                        <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
-                        Load More
-                        </Button>
-                    </div>
-                 )}
-
-                 {loading && wallpapers.length > 0 && ( 
-                     <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
-                        {[...Array(5)].map((_, i) => (
-                         <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
-                        ))}
-                    </div>
-                 )}
-            </>
         ) : (
-             !loading && <p className="text-center text-muted-foreground mt-10 text-lg">No {currentCategory} wallpapers found for "{searchTerm}". Try a different search term or category.</p>
+             // Use WallpaperGrid for the main listing as well
+             <WallpaperGrid photos={wallpapers} />
         )}
+
+         {hasMore && !loading && wallpapers.length > 0 && (
+            <div className="flex justify-center mt-6 sm:mt-8 mb-4">
+                <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
+                Load More
+                </Button>
+            </div>
+          )}
+
+          {loading && wallpapers.length > 0 && ( 
+              <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                ))}
+            </div>
+          )}
       </main>
 
         <Dialog open={isModalOpen} onOpenChange={(isOpen) => {
@@ -522,3 +482,4 @@ export default function ExplorerPage() {
     </>
   );
 }
+

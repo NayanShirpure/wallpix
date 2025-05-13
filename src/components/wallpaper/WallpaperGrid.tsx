@@ -34,7 +34,8 @@ export function WallpaperGrid({ photos, initialSelectedPhotoId }: WallpaperGridP
     // window.history.pushState({}, '', window.location.pathname); 
   };
   
-  if (!process.env.NEXT_PUBLIC_PEXELS_API_KEY && photos.every(p => p.photographer === 'Mock Photographer')) {
+  // Updated condition: check photos.length > 0 before photos.every
+  if (!process.env.NEXT_PUBLIC_PEXELS_API_KEY && photos && photos.length > 0 && photos.every(p => p.photographer === 'Mock Photographer')) {
      return (
         <Alert variant="default" className="bg-primary/10 border-primary/30 text-primary-foreground">
           <Info className="h-5 w-5 text-primary" />
@@ -75,3 +76,4 @@ export function WallpaperGrid({ photos, initialSelectedPhotoId }: WallpaperGridP
     </>
   );
 }
+
