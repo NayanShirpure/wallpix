@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Info, Users, Target } from 'lucide-react'; 
+import { Info, Users, Target, Award, Palette, Smartphone, Monitor } from 'lucide-react'; 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
@@ -22,11 +22,11 @@ export default function AboutUsPage() {
     url: BASE_URL,
     logo: `${BASE_URL}opengraph-image.png`, 
     description: 'Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices, sourced from Pexels.',
-    contactPoint: { // This needs to conform to ContactPoint from @/types/schema-dts if used strictly
+    contactPoint: { 
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
       url: `${BASE_URL}contact`,
-    } as ContactPoint, // Cast to ensure it matches the defined ContactPoint type
+    } as ContactPoint, 
     sameAs: [ 
         "https://x.com/NayanShirpure",
         "https://instagram.com/NayanShirpure",
@@ -46,19 +46,19 @@ export default function AboutUsPage() {
         <ThemeToggle />
       </PageHeader>
       <main className="flex-grow container mx-auto max-w-4xl p-4 py-8 md:p-6 md:py-12">
-        <div className="space-y-12">
+        <div className="space-y-10">
           <section className="text-center">
             <Image
               src="https://picsum.photos/seed/wallify-brand-visual/300/150"
               alt="Wallify Brand Visual"
               width={300}
               height={150}
-              className="mx-auto mb-6 rounded-lg shadow-lg"
+              className="mx-auto mb-6 rounded-lg shadow-xl"
               data-ai-hint="app brand concept"
               priority
             />
             <h2 className="text-3xl font-bold text-primary mb-4">Welcome to Wallify</h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
               Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices.
               We believe that a beautiful background can inspire creativity, bring tranquility, and personalize
               your digital space.
@@ -91,33 +91,48 @@ export default function AboutUsPage() {
                   What We Offer
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-primary text-lg">Curated Collections</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Access a diverse range of wallpapers, from breathtaking landscapes and abstract art to
-                    minimalist designs and vibrant patterns, all easily searchable and categorized.
-                  </p>
+              <CardContent className="space-y-6">
+                <div className="flex items-start">
+                  <Palette className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-semibold text-primary text-lg">Curated Collections</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Access a diverse range of wallpapers, from breathtaking landscapes and abstract art to
+                      minimalist designs and vibrant patterns, all easily searchable and categorized.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-primary text-lg">High Quality Images</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    All wallpapers are sourced from Pexels, ensuring high resolution and stunning clarity for
-                    your devices.
-                  </p>
+                <div className="flex items-start">
+                  <Award className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-semibold text-primary text-lg">High Quality Images</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      All wallpapers are sourced from Pexels, ensuring high resolution and stunning clarity for
+                      your devices.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-primary text-lg">User-Friendly Interface</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Our app is designed to be intuitive and easy to navigate, making it effortless to find and
-                    download your next favorite wallpaper.
-                  </p>
+                <div className="flex items-start">
+                  <Users className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" /> 
+                  <div>
+                    <h3 className="font-semibold text-primary text-lg">User-Friendly Interface</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Our app is designed to be intuitive and easy to navigate, making it effortless to find and
+                      download your next favorite wallpaper.
+                    </p>
+                  </div>
                 </div>
-                 <div>
-                  <h3 className="font-semibold text-primary text-lg">Optimized for All Devices</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Easily switch between smartphone (portrait) and desktop (landscape) optimized wallpapers to find the perfect fit.
-                  </p>
+                 <div className="flex items-start">
+                   <div className="mr-4 flex-shrink-0 mt-1">
+                    <Smartphone className="inline h-6 w-6 text-accent" />
+                    <Monitor className="inline h-6 w-6 text-accent ml-1" />
+                   </div>
+                  <div>
+                    <h3 className="font-semibold text-primary text-lg">Optimized for All Devices</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Easily switch between smartphone (portrait) and desktop (landscape) optimized wallpapers to find the perfect fit.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -141,8 +156,8 @@ export default function AboutUsPage() {
             </Card>
           </section>
 
-           <section className="text-center">
-            <p className="text-muted-foreground">
+           <section className="text-center pt-4">
+            <p className="text-lg text-muted-foreground">
               Thank you for choosing Wallify. We hope you enjoy our collection!
             </p>
             <p className="text-sm text-muted-foreground mt-2">
