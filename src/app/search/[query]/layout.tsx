@@ -47,17 +47,17 @@ export async function generateMetadata(
         ? ['Wallify search', 'wallpapers', 'backgrounds']
         : [queryDisplay, 'wallpapers', 'backgrounds', `${queryDisplay} backgrounds`, 'Wallify search'],
     alternates: {
-      canonical: `${BASE_URL}search/${rawQueryParam || 'query'}`,
+      canonical: `https://nayanshirpure.github.io/Wallify/search/${rawQueryParam || 'query'}`,
     },
     openGraph: {
       title,
       description,
-      url: `${BASE_URL}search/${rawQueryParam || 'query'}`,
+      url: `https://nayanshirpure.github.io/Wallify/search/${rawQueryParam || 'query'}`,
     },
   };
 }
 
 // ✅ Keep this function synchronous unless you truly need `async`
-export default function SearchLayout({ children }: SearchLayoutProps) {
+export default function SearchLayout({ children }: { children: ReactNode }) {
   return <div>{children}</div>;
 }
