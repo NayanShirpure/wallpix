@@ -5,14 +5,8 @@ import { blogPosts } from '@/config/blog';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-// The interface BlogPostLayoutProps was causing a type conflict.
-// It's removed as the generateMetadata function now uses an inline type for its props.
-// interface BlogPostLayoutProps {
-//   params: { slug: string };
-// }
-
 export async function generateMetadata(
-  { params }: { params: { slug: string } }, // Changed to inline type definition
+  { params }: { params: { slug: string } },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const slug = params.slug;
@@ -28,19 +22,19 @@ export async function generateMetadata(
   const previousImages = (await parent).openGraph?.images || [];
   const ogImage = post.opengraphImage
     ? `${BASE_URL}${post.opengraphImage.replace(/^\//, '')}`
-    : `${BASE_URL}blog/og-blog-main.png`;
+    : `${BASE_URL}/blog/og-blog-main.png`; // Corrected path
 
   return {
     title: post.title,
     description: post.summary,
     keywords: post.keywords || post.tags,
     alternates: {
-      canonical: `${BASE_URL}blog/${slug}`,
+      canonical: `${BASE_URL}/blog/${slug}`, // Corrected path
     },
     openGraph: {
       title: post.title,
       description: post.summary,
-      url: `${BASE_URL}blog/${slug}`,
+      url: `${BASE_URL}/blog/${slug}`, // Corrected path
       type: 'article',
       publishedTime: new Date(post.date).toISOString(),
       authors: post.author ? [post.author] : ['Wallify Team'],
@@ -64,7 +58,6 @@ export async function generateMetadata(
   };
 }
 
-// Layout component must be synchronous
 export default function BlogPostLayout({
   children,
 }: {
