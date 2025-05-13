@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation'; 
-import { searchPhotos as pexelsSearchPhotos } from '@/lib/pexels'; // Renamed to avoid conflict
+import { useParams } from 'next/navigation';
+import { searchPhotos as pexelsSearchPhotos } from '@/lib/pexels';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Link from 'next/link';
@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { useToast } from '@/hooks/use-toast';
 import { StructuredData } from '@/components/structured-data';
-// Updated import for local minimal types
 import type { SearchResultsPage as SchemaSearchResultsPage, MinimalWithContext } from '@/types/schema-dts';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -52,21 +51,21 @@ export default function SearchPage() {
         console.error("Failed to decode query parameter:", rawQueryParam, e);
         setErrorState("Invalid search query.");
         setDecodedQueryDisplay("Invalid Search");
-        decoded = ''; 
+        decoded = '';
       }
     } else {
         setErrorState("Empty search query.");
         setDecodedQueryDisplay("Search");
     }
     setCurrentSearchQuery(decoded);
-    setPhotos([]); 
-    setPage(1); 
-    setHasMore(true); 
+    setPhotos([]);
+    setPage(1);
+    setHasMore(true);
   }, [params.query]);
 
 
   const fetchSearchResults = useCallback(async (query: string, pageNum: number, append: boolean = false) => {
-    if (!query.trim() || errorState) { 
+    if (!query.trim() || errorState) {
       setLoading(false);
       setHasMore(false);
       if (!errorState && !query.trim()) setErrorState("Empty search query.");
@@ -75,47 +74,64 @@ export default function SearchPage() {
 
     setLoading(true);
     try {
-      const data = await pexelsSearchPhotos(query, pageNum, 30); 
+      const data = await pexelsSearchPhotos(query, pageNum, 30);
       if (data && data.photos) {
-        setPhotos(prev => append ? [...prev, ...data.photos] : data.photos);
-        setHasMore(!!data.next_page && data.photos.length > 0);
+        setPhotos(prevPhotos => {
+          const newPhotos = data.photos || [];
+          const combined = append ? [...prevPhotos, ...newPhotos] : newPhotos;
+          // Optional: Deduplicate if Pexels API might return overlapping results on pagination (rare but possible)
+          const uniqueMap = new Map(combined.map(item => [item.id, item]));
+          return Array.from(uniqueMap.values());
+        });
+        setHasMore(!!data.next_page && data.photos.length > 0 && data.photos.length === 30);
       } else {
-        setPhotos(append ? photos : []); 
+        setPhotos(prevPhotos => append ? prevPhotos : []);
         setHasMore(false);
-        if(!data && process.env.NEXT_PUBLIC_PEXELS_API_KEY) { // Only toast if API key is present, implying an actual API issue
-           toast({ title: "API Error", description: "Could not fetch search results.", variant: "destructive" });
-        } else if (!process.env.NEXT_PUBLIC_PEXELS_API_KEY) {
-            // Mock data for missing API key scenario
+        // Check if NEXT_PUBLIC_PEXELS_API_KEY is set client-side (build-time value)
+        const clientApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+        const fallbackKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+        const placeholderTextPattern = /your_actual_pexels_api_key/i;
+
+        const isApiKeyEffectivelyMissing = !clientApiKey || clientApiKey.trim() === "" || placeholderTextPattern.test(clientApiKey) || clientApiKey === fallbackKey;
+
+        if(!data && !isApiKeyEffectivelyMissing) { 
+           toast({ title: "API Error", description: "Could not fetch search results from Pexels.", variant: "destructive" });
+        } else if (isApiKeyEffectivelyMissing) {
+             if (process.env.NODE_ENV === 'development') {
+                toast({ title: "API Key Missing", description: "Displaying mock data for search. Pexels API key not found or is placeholder.", variant: "default" });
+            }
             const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
-                id: i + pageNum * 1000, width: 1080, height: 1920, url: `https://picsum.photos/seed/search${query}${i}/1080/1920`,
+                id: i + pageNum * 1000 + Date.now(), width: 1080, height: 1920, url: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/1080/1920`,
                 photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#123456',
-                src: { original: `https://picsum.photos/seed/search${query}${i}/1080/1920`, large2x: `https://picsum.photos/seed/search${query}${i}/1080/1920`, large: `https://picsum.photos/seed/search${query}${i}/800/1200`, medium: `https://picsum.photos/seed/search${query}${i}/400/600`, small: `https://picsum.photos/seed/search${query}${i}/200/300`, portrait: `https://picsum.photos/seed/search${query}${i}/800/1200`, landscape: `https://picsum.photos/seed/search${query}${i}/1200/800`, tiny: `https://picsum.photos/seed/search${query}${i}/20/30` },
-                liked: false, alt: `Mock search result for ${query} ${i}`,
+                src: { original: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/1080/1920`, large2x: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/1080/1920`, large: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/800/1200`, medium: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/400/600`, small: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/200/300`, portrait: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/800/1200`, landscape: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/1200/800`, tiny: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}/20/30` },
+                liked: false, alt: `Mock search result for ${query} ${i} page ${pageNum}`,
             }));
-            setPhotos(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
-            setHasMore(false); // No real pagination for mock
+            setPhotos(prevPhotos => append ? [...prevPhotos, ...mockPhotos] : mockPhotos);
+            setHasMore(pageNum < 2); // Allow one "load more" for mock data
         }
       }
     } catch (error) {
       console.error("Error fetching search results:", error);
       toast({ title: "Error", description: "Failed to fetch search results.", variant: "destructive" });
-      setPhotos(append ? photos : []);
+      setPhotos(prevPhotos => append ? prevPhotos : []);
       setHasMore(false);
     } finally {
       setLoading(false);
     }
-  }, [toast, photos, errorState]); 
+  }, [toast, errorState]);
 
   useEffect(() => {
     if (currentSearchQuery && !errorState) {
+      setPage(1); // Reset page for new search
+      setPhotos([]); // Clear old photos for new search
+      setHasMore(true); // Assume new search has more
       fetchSearchResults(currentSearchQuery, 1, false);
-    } else {
-      setLoading(false); 
+    } else if (errorState) {
+      setLoading(false);
       setPhotos([]);
       setHasMore(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSearchQuery, errorState]); 
+  }, [currentSearchQuery, errorState, fetchSearchResults]);
 
   const handleLoadMore = () => {
     if (!loading && hasMore && currentSearchQuery && !errorState) {
@@ -135,10 +151,9 @@ export default function SearchPage() {
     setTimeout(() => setSelectedWallpaper(null), 300);
   };
 
-  const gridAspectRatio = 'aspect-[9/16]'; 
-  const displayOrientation: DeviceOrientationCategory = 'smartphone'; 
+  const gridAspectRatio = 'aspect-[9/16]';
+  const displayOrientation: DeviceOrientationCategory = 'smartphone';
 
-  // Correctly typed with MinimalWithContext<SchemaSearchResultsPage>
   const searchPageSchema: MinimalWithContext<SchemaSearchResultsPage> = {
     '@context': 'https://schema.org',
     '@type': 'SearchResultsPage',
@@ -207,7 +222,7 @@ export default function SearchPage() {
           </div>
         ) : photos.length > 0 ? (
           <WallpaperGrid photos={photos} onPhotoClick={openModal} orientation={displayOrientation} />
-        ) : (
+        ) : !loading && photos.length === 0 ? ( // Added !loading condition for "No results" message
           <div className="text-center py-10 mt-8">
             <SearchIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
             <p className="text-xl text-muted-foreground">
@@ -220,17 +235,17 @@ export default function SearchPage() {
               <Link href="/explorer"><SearchIcon className="mr-2 h-4 w-4" /> Explore Wallpapers</Link>
             </Button>
           </div>
-        )}
+        ) : null }
 
         {hasMore && !loading && photos.length > 0 && (
           <div className="flex justify-center mt-6 sm:mt-8 mb-4">
-            <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
-              Load More
+            <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5" disabled={loading}>
+              {loading ? 'Loading...' : 'Load More'}
             </Button>
           </div>
         )}
 
-        {loading && photos.length > 0 && (
+        {loading && photos.length > 0 && ( // Skeleton for loading more
           <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
             {[...Array(5)].map((_, i) => (
               <Skeleton key={`search-loading-more-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />

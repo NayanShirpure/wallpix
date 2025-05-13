@@ -5,8 +5,7 @@ import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/t
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link'; 
 import { Button } from '@/components/ui/button';
-import { Download, Menu, Camera } from 'lucide-react'; 
-import { Dialog } from '@/components/ui/dialog';
+import { Download, Menu, Camera, Check } from 'lucide-react'; 
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog'; 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
-// Updated import for local minimal types, including specific schema types
 import type { ImageObject as SchemaImageObject, WebPage as SchemaWebPage, MinimalWithContext, Person as SchemaPerson, Organization as SchemaOrganization } from '@/types/schema-dts';
 import { WallpaperSection } from '@/components/wallpaper-section';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
@@ -72,7 +70,6 @@ export default function ExplorerPage() {
   ): Promise<PexelsPhoto[]> => {
     if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
-       // Display mock data or a specific message if API key is missing
       const mockPhoto: PexelsPhoto = {
         id: Date.now(),
         width: 1080,
@@ -102,7 +99,7 @@ export default function ExplorerPage() {
             variant: "default",
           });
       }
-      return isSingleItem ? [mockPhoto] : Array(10).fill(mockPhoto).map((p,i)=>({...p, id: p.id+i}));
+      return isSingleItem ? [mockPhoto] : Array(10).fill(null).map((_,i)=>({...mockPhoto, id: mockPhoto.id+i, alt: `${mockPhoto.alt} ${i}`}));
     }
 
     const queryParams = new URLSearchParams();
@@ -119,7 +116,7 @@ export default function ExplorerPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data: PexelsResponse = await response.json();
-      const photos = data.photos || [];
+      const photos = data.photos || (isSingleItem && data && 'id' in data ? [data as PexelsPhoto] : []); // Handle single photo response too
       return isSingleItem && photos.length > 0 ? [photos[0]] : photos;
     } catch (error: any) {
       console.error(`Error fetching from ${endpoint}:`, error.message);
@@ -140,16 +137,14 @@ export default function ExplorerPage() {
    const fetchBrowseAllWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
       setLoading(false);
-      setHasMore(false);
-      // Mock data handled by genericFetchWallpapers if key is missing
-      // Fallback for direct call:
+      setHasMore(pageNum < 3); // Mock 3 pages
       const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
-        id: i + pageNum * 100, // semi-unique id
-        width: 1080, height: 1920, url: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`,
+        id: i + pageNum * 100, 
+        width: 1080, height: 1920, url: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1080/1920`,
         photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i,
         avg_color: '#000000',
-        src: { original: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`, large2x: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`, large: `https://picsum.photos/seed/${query}${category}${i}/800/1200`, medium: `https://picsum.photos/seed/${query}${category}${i}/400/600`, small: `https://picsum.photos/seed/${query}${category}${i}/200/300`, portrait: `https://picsum.photos/seed/${query}${category}${i}/800/1200`, landscape: `https://picsum.photos/seed/${query}${category}${i}/1200/800`, tiny: `https://picsum.photos/seed/${query}${category}${i}/20/30` },
-        liked: false, alt: `Mock wallpaper for ${query} ${i}`,
+        src: { original: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1080/1920`, large2x: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1080/1920`, large: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/800/1200`, medium: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/400/600`, small: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/200/300`, portrait: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/800/1200`, landscape: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1200/800`, tiny: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/20/30` },
+        liked: false, alt: `Mock wallpaper for ${query} ${i} page ${pageNum}`,
       }));
       setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
       if (process.env.NODE_ENV === 'development') {
@@ -160,7 +155,9 @@ export default function ExplorerPage() {
 
     setLoading(true);
     const orientation = category === 'desktop' ? 'landscape' : 'portrait';
-    let finalQuery = query.trim() || 'Popular Wallpaper'; 
+    let finalQuery = query.trim() || (category === 'desktop' ? 'Desktop Wallpaper' : 'Phone Wallpaper');
+    if (finalQuery === 'Explore') finalQuery = (category === 'desktop' ? 'Desktop Wallpaper' : 'Phone Wallpaper');
+
 
     try {
       const photos = await genericFetchWallpapers('search', {
@@ -221,7 +218,7 @@ export default function ExplorerPage() {
         .finally(() => setRecentlyAddedLoading(false));
         
       setWallpaperOfTheDayLoading(true);
-      genericFetchWallpapers('search', { query: "Daily Inspiration", orientation: orientationParam, per_page: 1 }, true)
+      genericFetchWallpapers('search', { query: "Daily Inspiration Wallpaper", orientation: orientationParam, per_page: 1 }, true)
         .then(photos => setWallpaperOfTheDay(photos.length > 0 ? photos[0] : null))
         .catch(err => console.error("Wallpaper of the Day fetch error:", err))
         .finally(() => setWallpaperOfTheDayLoading(false));
@@ -233,12 +230,18 @@ export default function ExplorerPage() {
   const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentCategory) {
            setCurrentCategory(newCategory); 
-           setSearchTerm('Explore'); 
+           setSearchTerm('Explore'); // Reset search term to default for explorer when device changes
+           setPage(1);
+           setWallpapers([]);
+           setHasMore(true);
        }
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
     setSearchTerm(categoryValue);
+    setPage(1);
+    setWallpapers([]);
+    setHasMore(true);
   };
 
 
@@ -287,7 +290,6 @@ export default function ExplorerPage() {
 
    const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
    
-  // Correctly typed with MinimalWithContext<SchemaImageObject>
   const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
@@ -316,7 +318,6 @@ export default function ExplorerPage() {
     } as SchemaOrganization,
   } : null;
 
-  // Correctly typed with MinimalWithContext<SchemaWebPage>
   const explorerPageSchema: MinimalWithContext<SchemaWebPage> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
@@ -337,38 +338,30 @@ export default function ExplorerPage() {
             <Camera className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl text-primary">Wallify</span>
           </Link>
-          <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
-            <div className="w-full flex-1 sm:w-auto sm:flex-none">
-               <SearchBar />
-            </div>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
-        <div className="my-6 sm:my-8 text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-primary">Explore Wallpapers</h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Discover trending, popular, and new wallpapers. Use the filters below or search in the header.</p>
-        </div>
-        
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 p-2 rounded-lg bg-muted/50">
+          
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Desktop/Tablet: Device Orientation Tabs */}
+            <div className="hidden sm:block">
               <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as DeviceOrientationCategory)} className="w-auto">
-                <TabsList className="grid grid-cols-2 h-9 text-xs sm:h-10 sm:text-sm">
+                <TabsList className="h-9 text-xs sm:text-sm">
                   {deviceOrientationTabs.map(opt => (
-                    <TabsTrigger key={opt.value} value={opt.value} className="px-3 py-1.5 sm:px-4 sm:py-2">{opt.label}</TabsTrigger>
+                    <TabsTrigger key={opt.value} value={opt.value} className="px-2.5 py-1.5 sm:px-3">{opt.label}</TabsTrigger>
                   ))}
                 </TabsList>
               </Tabs>
+            </div>
 
+            {/* Desktop/Tablet: Categories Dropdown */}
+            <div className="hidden sm:block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="h-9 text-xs sm:h-10 sm:text-sm">
-                    <Menu className="mr-1.5 h-4 w-4" />
-                    Categories
+                  <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
+                    <Menu className="mr-1 h-3.5 w-3.5" />
+                     <span className="hidden md:inline">Categories</span>
+                     <span className="md:hidden">Cat.</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="w-64 max-h-96 overflow-y-auto">
+                <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto">
                   <DropdownMenuLabel>Filter Wallpapers By</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
@@ -384,7 +377,64 @@ export default function ExplorerPage() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+            </div>
+            
+            {/* Search Bar */}
+            <div className="w-full max-w-[150px] sm:max-w-xs">
+              <SearchBar />
+            </div>
+
+            {/* Mobile Combined Menu */}
+            <div className="sm:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-9 w-9">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Device</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {deviceOrientationTabs.map(opt => (
+                    <DropdownMenuItem key={`mobile-device-${opt.value}`} onSelect={() => handleDeviceCategoryChange(opt.value as DeviceOrientationCategory)}>
+                      {opt.label}
+                      {currentCategory === opt.value && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Categories</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
+                    <React.Fragment key={`mobile-group-${group.groupLabel}`}>
+                      <DropdownMenuLabel className="text-xs text-muted-foreground px-2 pt-1">{group.groupLabel}</DropdownMenuLabel>
+                      {group.categories.map((cat) => (
+                        <DropdownMenuItem key={`mobile-cat-${cat.value}`} onSelect={() => handleWallpaperCategorySelect(cat.value)}>
+                          {cat.label}
+                        </DropdownMenuItem>
+                      ))}
+                      {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <DropdownMenuSeparator className="my-1"/>}
+                    </React.Fragment>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            <ThemeToggle />
+          </div>
         </div>
+      </header>
+
+      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
+        <div className="my-6 sm:my-8 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold text-primary">Explore Wallpapers</h1>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Discover trending, popular, and new wallpapers. Use the filters in the header or search to find your perfect wallpaper.</p>
+        </div>
+        
+        {/* This section is removed as controls are moved to header
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 p-2 rounded-lg bg-muted/50">
+             ...
+        </div>
+        */}
 
 
         <WallpaperOfTheDay
@@ -432,7 +482,7 @@ export default function ExplorerPage() {
         />
         
         <h2 className="text-xl sm:text-2xl font-semibold text-primary mt-8 mb-3 sm:mb-4 px-1">
-          {searchTerm === "Explore" ? "Browse All" : `Browsing: "${searchTerm}"`} 
+          {searchTerm === "Explore" ? `Browse All ${currentCategory === 'desktop' ? 'Desktop' : 'Phone'} Wallpapers` : `Browsing: "${searchTerm}"`} 
         </h2>
 
         {loading && wallpapers.length === 0 ? ( 
@@ -474,3 +524,4 @@ export default function ExplorerPage() {
     </>
   );
 }
+

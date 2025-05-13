@@ -4,16 +4,25 @@ import type { PexelsCuratedResponse, PexelsSearchResponse, PexelsPhoto } from '@
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
-  const apiKeyFromEnv = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-  const fallbackApiKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+  const envApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+  const actualFallbackKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+  const placeholderTextPattern = /your_actual_pexels_api_key/i; // Case-insensitive check for "YOUR_ACTUAL_PEXELS_API_KEY"
 
-  const apiKeyToUse = (apiKeyFromEnv && apiKeyFromEnv.trim() !== "")
-    ? apiKeyFromEnv
-    : fallbackApiKey;
+  let apiKeyToUse: string;
 
-  if (!apiKeyToUse) {
-    console.error("Pexels API key is effectively missing. Cannot make API calls.");
-    return null;
+  if (envApiKey && envApiKey.trim() !== "" && !placeholderTextPattern.test(envApiKey) && envApiKey !== actualFallbackKey) {
+    apiKeyToUse = envApiKey;
+  } else {
+    apiKeyToUse = actualFallbackKey; // Default to actual fallback key
+    if (!envApiKey) {
+      // This warning is useful if the key is expected to be set via env var
+      // console.warn(`[Server/lib/pexels] NEXT_PUBLIC_PEXELS_API_KEY is not set. Using hardcoded fallback Pexels API key.`);
+    } else if (placeholderTextPattern.test(envApiKey)) {
+      console.warn(`[Server/lib/pexels] NEXT_PUBLIC_PEXELS_API_KEY is set to a placeholder text. Using hardcoded fallback Pexels API key.`);
+    } else if (envApiKey.trim() === "") {
+       console.warn(`[Server/lib/pexels] NEXT_PUBLIC_PEXELS_API_KEY is empty. Using hardcoded fallback Pexels API key.`);
+    }
+    // If envApiKey === actualFallbackKey, it's using the fallback, which is intended in this branch. No special warning needed.
   }
 
   try {
@@ -21,7 +30,7 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
       headers: {
         Authorization: apiKeyToUse,
       },
-      cache: 'no-store', 
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -44,7 +53,7 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
       return null;
     }
 
-  } catch (error) { 
+  } catch (error) {
     console.error(`Failed to fetch from Pexels API. Endpoint: ${PEXELS_API_URL}${endpoint}. Error:`, error);
     return null;
   }
@@ -55,8 +64,8 @@ export async function getCuratedPhotos(page: number = 1, perPage: number = 20): 
 }
 
 export async function searchPhotos(
-  query: string, 
-  page: number = 1, 
+  query: string,
+  page: number = 1,
   perPage: number = 20,
   orientation?: 'landscape' | 'portrait' | 'square'
 ): Promise<PexelsSearchResponse | null> {
@@ -70,4 +79,3 @@ export async function searchPhotos(
 export async function getPhotoById(id: string): Promise<PexelsPhoto | null> {
   return fetchPexelsAPI<PexelsPhoto>(`/photos/${id}`);
 }
-
