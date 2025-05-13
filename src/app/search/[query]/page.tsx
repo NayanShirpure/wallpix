@@ -53,7 +53,7 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
       const data = await searchPhotosLib(finalQuery, pageNum, 30, orientation);
       if (data && data.photos) {
         const newPhotos = data.photos;
-        setWallpapers(prev => {
+        setWallpapers((prev: PexelsPhoto[]): PexelsPhoto[] => {
           const combined = append ? [...prev, ...newPhotos] : newPhotos;
           const uniqueMap = new Map(combined.map((item: PexelsPhoto) => [`${item.id}-${category}`, item]));
           return Array.from(uniqueMap.values());
@@ -93,26 +93,40 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
+    // Initial fetch based on params and currentDeviceOrientation
     fetchWallpapers(queryFromParams, currentDeviceOrientation, 1, false);
-  }, [params, currentDeviceOrientation, fetchWallpapers, currentSearchTerm]); 
+     // eslint-disable-next-line react-hooks/exhaustive-deps 
+  }, [params, currentDeviceOrientation]); // Removed fetchWallpapers and currentSearchTerm to avoid re-fetch loop from currentSearchTerm updates by initial fetch
 
+  // This effect handles subsequent fetches when currentSearchTerm or currentDeviceOrientation changes *after* initial load
+  // However, the above useEffect should correctly set currentSearchTerm from params initially,
+  // and re-fetch if currentDeviceOrientation changes.
+  // This might be redundant or cause double fetches if not careful.
+  // For now, the primary useEffect should handle changes in `params` and `currentDeviceOrientation`.
 
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
     if (newCategory !== currentDeviceOrientation) {
       setCurrentDeviceOrientation(newCategory);
-      setPage(1);
-      setWallpapers([]);
-      setHasMore(true);
+      // No need to reset search term here, as the useEffect above will refetch with new orientation
+      // and existing (or new from URL) search term.
     }
   };
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
+    // This should trigger a navigation, which then updates `params` and causes useEffect to run.
     router.push(`/search/${encodeURIComponent(categoryValue)}`);
   };
 
   const handleSearchSubmit = (newSearchTerm: string) => {
+    // This should trigger a navigation, which then updates `params` and causes useEffect to run.
     if (newSearchTerm.trim() && newSearchTerm.trim() !== currentSearchTerm) {
         router.push(`/search/${encodeURIComponent(newSearchTerm.trim())}`);
+    } else if (newSearchTerm.trim() && newSearchTerm.trim() === currentSearchTerm) {
+      // If search term is the same, but user submits again, perhaps force a refresh.
+      setPage(1);
+      setWallpapers([]);
+      setHasMore(true);
+      fetchWallpapers(currentSearchTerm, currentDeviceOrientation, 1, false);
     }
   };
 
@@ -188,7 +202,7 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={currentSearchTerm}
-        navigateToSearchPage={true} 
+        navigateToSearchPage={false} // On search page, onSubmitSearch already handles search, no need for SearchBar to navigate
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
@@ -202,8 +216,8 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
         </div>
 
         {loading && wallpapers.length === 0 ? (
-          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
-            {[...Array(15)].map((_, i) => (
+          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4`}>
+            {[...Array(18)].map((_, i) => ( // Show more skeletons for initial load on search
               <Skeleton key={`search-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
             ))}
           </div>
@@ -223,9 +237,10 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
           </div>
         )}
 
+        {/* Skeleton for loading more items */}
         {loading && wallpapers.length > 0 && (
-          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
-            {[...Array(5)].map((_, i) => (
+          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mt-4`}>
+            {[...Array(6)].map((_, i) => ( // Skeletons for loading more
               <Skeleton key={`search-loading-more-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
             ))}
           </div>
@@ -240,3 +255,4 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
     </>
   );
 }
+
