@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -101,12 +100,15 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     ? 'aspect-[9/16]' // Portrait-ish
     : 'aspect-square'; // Close to square or fallback
 
+  const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Wallpaper Preview';
+  const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Wallpaper preview';
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl w-[95vw] sm:w-full h-auto max-h-[90vh] flex flex-col p-0 border-none !rounded-xl overflow-hidden shadow-2xl bg-card/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
         <DialogHeader className="relative p-3 sm:p-4 flex flex-row justify-between items-start bg-gradient-to-b from-black/50 to-transparent z-10">
            <div className="flex flex-col mr-4 overflow-hidden">
-            <DialogTitle className="text-sm sm:text-base font-semibold text-white truncate">{photo.alt || 'Wallpaper Preview'}</DialogTitle>
+            <DialogTitle className="text-sm sm:text-base font-semibold text-white truncate">{displayAlt}</DialogTitle>
             <DialogDescription className="text-xs text-gray-300">
                 Photo by <a href={photo.photographer_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">{photo.photographer}</a>
                 <span className="mx-1.5">·</span>
@@ -125,7 +127,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
         <div className={`relative w-full ${modalImageAspectRatio} flex-grow bg-black/50 flex items-center justify-center overflow-hidden`}>
           <Image
             src={photo.src.large2x || photo.src.original} // Use a high-quality source for preview
-            alt={photo.alt || 'Wallpaper preview'}
+            alt={imageAlt}
             fill
             sizes="(max-width: 768px) 90vw, 70vw"
             className="object-contain"

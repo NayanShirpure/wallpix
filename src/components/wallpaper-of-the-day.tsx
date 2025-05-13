@@ -57,6 +57,9 @@ export function WallpaperOfTheDay({
     );
   }
 
+  const imageAlt = (wallpaper.alt && wallpaper.alt.trim() !== '') ? wallpaper.alt : `Wallpaper of the day by ${wallpaper.photographer}`;
+  const titleAlt = (wallpaper.alt && wallpaper.alt.trim() !== '') ? wallpaper.alt : 'Featured Wallpaper';
+
   return (
     <section>
       <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Wallpaper of the Day</h2>
@@ -65,7 +68,7 @@ export function WallpaperOfTheDay({
       >
         <Image
           src={getSrc(wallpaper)}
-          alt={wallpaper.alt || `Wallpaper of the day by ${wallpaper.photographer}`}
+          alt={imageAlt}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1000px" // Adjusted sizes for better LCP
           className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 group-focus-within:scale-105"
@@ -77,7 +80,7 @@ export function WallpaperOfTheDay({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent flex flex-col justify-end p-3 xs:p-4 sm:p-6 md:p-8">
           <div className="text-white">
             <h3 className="text-base xs:text-lg sm:text-xl md:text-2xl font-bold drop-shadow-lg leading-tight">
-              {wallpaper.alt || 'Featured Wallpaper'}
+              {titleAlt}
             </h3>
             <p className="text-xs sm:text-sm text-gray-200 drop-shadow-md mt-0.5 sm:mt-1">
               By <a 

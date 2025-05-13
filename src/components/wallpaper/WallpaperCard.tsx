@@ -1,5 +1,4 @@
 
-
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +23,11 @@ export function WallpaperCard({ photo, onClick, orientation }: WallpaperCardProp
     ? "(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16.6vw" // Up to 6 cols on xl
     : "(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16.6vw"; // Similar for phone, as columns increase
 
+  const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Wallpaper thumbnail';
+  const cardAriaLabel = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `by ${photo.photographer}`;
+  const overlayTitle = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
+
+
   return (
     <Card
       className={cn(
@@ -35,12 +39,12 @@ export function WallpaperCard({ photo, onClick, orientation }: WallpaperCardProp
       role="button"
       tabIndex={0}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
-      aria-label={`View wallpaper: ${photo.alt || `by ${photo.photographer}`}`}
+      aria-label={`View wallpaper: ${cardAriaLabel}`}
     >
       <CardContent className={cn('p-0 relative w-full', aspectRatio)}>
         <Image
           src={imageSrc}
-          alt={photo.alt || 'Wallpaper thumbnail'}
+          alt={imageAlt}
           fill
           style={{ objectFit: 'cover' }}
           sizes={imageSizes}
@@ -58,7 +62,7 @@ export function WallpaperCard({ photo, onClick, orientation }: WallpaperCardProp
           )}
         >
           <p className="text-white text-[10px] xs:text-xs font-semibold truncate drop-shadow-sm leading-tight">
-            {photo.alt || `Wallpaper by ${photo.photographer}`}
+            {overlayTitle}
           </p>
           <p className="text-gray-300 text-[9px] xs:text-[10px] truncate drop-shadow-sm mt-0.5">
             by {photo.photographer}
