@@ -21,19 +21,28 @@ export default function BlogIndexPage() {
     name: 'Wallify Blog',
     description: 'Insights, trends, and guides on digital wallpapers from Wallify.',
     url: `${BASE_URL}blog`,
-    blogPost: sortedBlogPosts.map(post => ({
-      '@type': 'BlogPosting',
-      headline: post.title,
-      url: `${BASE_URL}blog/${post.slug}`,
-      datePublished: post.date,
-      author: {
-        '@type': 'Person',
-        name: post.author || 'Wallify Team',
-      } as Person,
-      image: post.opengraphImage ? `${BASE_URL}${post.opengraphImage.startsWith('/') ? post.opengraphImage.substring(1) : post.opengraphImage}` : `${BASE_URL}blog/og-blog-main.png`,
-      description: post.summary,
-      keywords: post.keywords?.join(', ') || post.tags?.join(', '),
-    } as BlogPosting)), // Cast inner items to BlogPosting
+    blogPost: sortedBlogPosts.map(post => {
+      const allTagsAndKeywords = [
+        ...(post.keywords || []),
+        ...(post.tags || [])
+      ];
+      const uniqueKeywords = Array.from(new Set(allTagsAndKeywords));
+      const keywordsString = uniqueKeywords.length > 0 ? uniqueKeywords.join(', ') : undefined;
+
+      return {
+        '@type': 'BlogPosting',
+        headline: post.title,
+        url: `${BASE_URL}blog/${post.slug}`,
+        datePublished: post.date,
+        author: {
+          '@type': 'Person',
+          name: post.author || 'Wallify Team',
+        } as Person,
+        image: post.opengraphImage ? `${BASE_URL}${post.opengraphImage.startsWith('/') ? post.opengraphImage.substring(1) : post.opengraphImage}` : `${BASE_URL}blog/og-blog-main.png`,
+        description: post.summary,
+        keywords: keywordsString,
+      } as BlogPosting; // Cast inner items to BlogPosting
+    }),
   };
 
 

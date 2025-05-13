@@ -33,13 +33,16 @@ export default async function BlogPostPage({
   const { slug } = await params;
   const post = blogPosts.find((p) => p.slug === slug);
 
-// export default async function BlogPostPage({ params }: BlogPostPageProps) {
-//   const slug = params.slug; 
-//   const post = blogPosts.find((p) => p.slug === slug);
-
   if (!post) notFound();
 
   const PostContent = (await post.contentComponent()).default;
+
+  const allTagsAndKeywords = [
+    ...(post.keywords || []),
+    ...(post.tags || [])
+  ];
+  const uniqueKeywords = Array.from(new Set(allTagsAndKeywords));
+  const keywordsString = uniqueKeywords.length > 0 ? uniqueKeywords.join(', ') : undefined;
 
   // Correctly typed with MinimalWithContext<BlogPosting>
   const articleSchema: MinimalWithContext<BlogPosting> = {
@@ -68,7 +71,7 @@ export default async function BlogPostPage({
       '@type': 'WebPage',
       '@id': `${BASE_URL}blog/${post.slug}`,
     } as SchemaWebPage, // Cast to ensure it matches the defined WebPage type
-    keywords: post.keywords?.join(', ') || post.tags?.join(', '),
+    keywords: keywordsString,
   };
 
   return (
