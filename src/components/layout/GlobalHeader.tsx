@@ -1,9 +1,10 @@
+
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Camera, Check, Compass } from 'lucide-react';
+import { Menu, Camera, Check } from 'lucide-react'; // Removed Compass import
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -23,7 +24,6 @@ interface GlobalHeaderProps {
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
   initialSearchTerm?: string; 
-  showExplorerLink?: boolean; // New prop to control Explorer link visibility
 }
 
 export function GlobalHeader({
@@ -32,7 +32,6 @@ export function GlobalHeader({
   onWallpaperCategorySelect,
   onSearchSubmit,
   initialSearchTerm,
-  showExplorerLink = true, // Default to true
 }: GlobalHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-card/90 backdrop-blur-md supports-[backdrop-filter]:bg-card/75 print:hidden">
@@ -119,31 +118,14 @@ export function GlobalHeader({
                     {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <DropdownMenuSeparator className="my-1" />}
                   </React.Fragment>
                 ))}
-                 {showExplorerLink && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/explorer" className="flex items-center w-full">
-                        <Compass className="mr-2 h-4 w-4" /> Explorer
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
-          {showExplorerLink && (
-            <Link href="/explorer" passHref legacyBehavior>
-              <Button variant="ghost" size="sm" className="hidden lg:inline-flex h-9 px-3">
-                <Compass className="mr-1.5 h-4 w-4" /> Explorer
-              </Button>
-            </Link>
-          )}
-          
+                    
           <ThemeToggle />
         </div>
       </div>
     </header>
   );
 }
+

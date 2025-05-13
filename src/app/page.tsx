@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
@@ -29,7 +30,7 @@ export default function Home() {
 
    const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     let effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-    const isEnvKeyMissingOrPlaceholder = !effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey);
+    const isEnvKeyMissingOrPlaceholder = !effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey || "");
 
     if (isEnvKeyMissingOrPlaceholder) {
         effectiveApiKey = FALLBACK_PEXELS_API_KEY;
@@ -210,7 +211,6 @@ export default function Home() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={searchTerm}
-        showExplorerLink={true} // Show Explorer link on Home page
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
@@ -261,3 +261,4 @@ export default function Home() {
     </>
   );
 }
+

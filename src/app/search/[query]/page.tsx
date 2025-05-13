@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -72,7 +73,7 @@ export default function SearchPage() {
     orientation: 'landscape' | 'portrait' | 'square' | undefined
   ): Promise<PexelsResponse | null> => {
       let effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-      const isEnvKeyMissingOrPlaceholder = !effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey);
+      const isEnvKeyMissingOrPlaceholder = !effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey || "");
 
       if (isEnvKeyMissingOrPlaceholder) {
           effectiveApiKey = FALLBACK_PEXELS_API_KEY;
@@ -94,7 +95,7 @@ export default function SearchPage() {
         const mockPhotosData: PexelsPhoto[] = Array.from({ length: perPage }).map((_, i) => ({
             id: i + pageNum * 1000 + Date.now() + Math.random(), width: 1080, height: 1920, url: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`,
             photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#123456',
-            src: { original: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/1080/1920`, large2x: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/1080/1920`, large: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/800/1200`, medium: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/400/600`, small: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/200/300`, portrait: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/800/1200`, landscape: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/1200/800`, tiny: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.Random()}/20/30` },
+            src: { original: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/20/30` },
             liked: false, alt: `Mock search result for ${query} ${orientation || 'any'} ${i} page ${pageNum}`,
         }));
         return { photos: mockPhotosData, page: pageNum, per_page: perPage, total_results: mockPhotosData.length * (pageNum < 2 ? 2 : 1) , next_page: pageNum < 2 ? "mock_next_page" : undefined };
@@ -118,7 +119,12 @@ export default function SearchPage() {
                  if (process.env.NODE_ENV === 'development') {
                      toast({ title: "PEXELS API Key Notice", description: `Fallback Pexels API key failed for search "${query}". Displaying mock data.`, variant: "default", duration: 10000 });
                  }
-                const mockPhotosData: PexelsPhoto[] = Array.from({ length: perPage }).map(/* same as above */);
+                const mockPhotosData: PexelsPhoto[] = Array.from({ length: perPage }).map((_, i) => ({
+                    id: i + pageNum * 1000 + Date.now() + Math.random(), width: 1080, height: 1920, url: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`,
+                    photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#123456',
+                    src: { original: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/searchfail${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/20/30` },
+                    liked: false, alt: `Mock search fail result for ${query} ${orientation || 'any'} ${i} page ${pageNum}`,
+                }));
                 return { photos: mockPhotosData, page: pageNum, per_page: perPage, total_results: mockPhotosData.length * (pageNum < 2 ? 2 : 1) , next_page: pageNum < 2 ? "mock_next_page" : undefined };
             }
             return null;
@@ -134,7 +140,12 @@ export default function SearchPage() {
              if (process.env.NODE_ENV === 'development') {
                 toast({ title: "PEXELS API Notice", description: `Error fetching search "${query}". Displaying mock data.`, variant: "default", duration: 10000 });
              }
-            const mockPhotosData: PexelsPhoto[] = Array.from({ length: perPage }).map(/* same as above */);
+            const mockPhotosData: PexelsPhoto[] = Array.from({ length: perPage }).map((_, i) => ({
+                 id: i + pageNum * 1000 + Date.now() + Math.random(), width: 1080, height: 1920, url: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`,
+                photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#123456',
+                src: { original: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/searcherr${query.replace(/\s+/g, '')}${orientation || 'any'}${i}${pageNum}${Math.random()}/20/30` },
+                liked: false, alt: `Mock search error result for ${query} ${orientation || 'any'} ${i} page ${pageNum}`,
+            }));
             return { photos: mockPhotosData, page: pageNum, per_page: perPage, total_results: mockPhotosData.length * (pageNum < 2 ? 2 : 1) , next_page: pageNum < 2 ? "mock_next_page" : undefined };
         }
         return null;
@@ -249,7 +260,6 @@ export default function SearchPage() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect} // This will trigger new search
         onSearchSubmit={handleSearchSubmit} // This will also trigger new search
         initialSearchTerm={decodedQueryDisplay} // Use decoded for display in header
-        showExplorerLink={true} // Show Explorer link on Search page
       />
       <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
         <div className="my-4 sm:my-6 text-center">
@@ -297,11 +307,13 @@ export default function SearchPage() {
                   No wallpapers found for &quot;{decodedQueryDisplay}&quot;.
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Try a different search term or explore our curated collections.
+                  Try a different search term.
                 </p>
-                <Button variant="outline" asChild className="mt-6">
-                  <Link href="/explorer"><SearchIcon className="mr-2 h-4 w-4" /> Explore Wallpapers</Link>
-                </Button>
+                <Button asChild variant="outline" className="mt-4 text-sm">
+                  <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+                  </Link>
+              </Button>
               </div>
             ) : null}
 
@@ -330,3 +342,4 @@ export default function SearchPage() {
 }
 
     
+
