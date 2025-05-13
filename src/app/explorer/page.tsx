@@ -1,25 +1,20 @@
+
 'use client';
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
+// Image component is used within sub-components
 import Link from 'next/link'; 
-import { useRouter } from 'next/navigation';
+// useRouter not directly used
 import { Button } from '@/components/ui/button';
-import { Download, X, Menu, Camera } from 'lucide-react'; 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog';
+import { Download, Menu, Camera } from 'lucide-react'; // Removed X, Eye from here as PreviewDialog manages close/preview
+// Dialog root for the main PreviewDialog
+import { Dialog } from '@/components/ui/dialog';
+import { PreviewDialog } from '@/components/wallpaper/PreviewDialog'; // Import the enhanced PreviewDialog
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { downloadFile } from '@/lib/utils';
+import { downloadFile } from '@/lib/utils'; // Kept for WallpaperOfTheDay direct download
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,7 +50,7 @@ export default function ExplorerPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { toast } = useToast();
-  const router = useRouter(); 
+  // const router = useRouter(); // Not directly used
 
   const [trendingWallpapers, setTrendingWallpapers] = useState<PexelsPhoto[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
@@ -112,7 +107,7 @@ export default function ExplorerPage() {
       }
       return [];
     }
-  }, [toast, PEXELS_API_KEY]);
+  }, [toast]); // PEXELS_API_KEY removed from deps as it's module const
 
 
    const fetchBrowseAllWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
@@ -136,7 +131,7 @@ export default function ExplorerPage() {
       
       setWallpapers(prev => {
         const combined = append ? [...prev, ...photos] : photos;
-        const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
+        const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item])); // Key includes category
         return Array.from(uniqueMap.values());
       });
       setHasMore(photos.length === 30);
@@ -146,7 +141,7 @@ export default function ExplorerPage() {
     } finally {
       setLoading(false);
     }
-   }, [toast, genericFetchWallpapers, PEXELS_API_KEY]);
+   }, [toast, genericFetchWallpapers]); // PEXELS_API_KEY removed from deps
 
 
   useEffect(() => {
@@ -225,10 +220,12 @@ export default function ExplorerPage() {
     setTimeout(() => setSelectedWallpaper(null), 300); 
   };
 
-  const handleDownload = async (wallpaperToDownload: PexelsPhoto | null = selectedWallpaper) => {
+  // This handleDownload is for the "Wallpaper of the Day" direct download button.
+  // The PreviewDialog handles its own multi-resolution downloads.
+  const handleWotdDownload = async (wallpaperToDownload: PexelsPhoto | null) => {
     if (!wallpaperToDownload) return;
     const photographerName = wallpaperToDownload.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
-    const filename = `wallify_explore_${photographerName}_${wallpaperToDownload.id}.jpg`;
+    const filename = `wallify_wotd_${photographerName}_${wallpaperToDownload.id}.jpg`;
     toast({
         title: "Download Starting",
         description: `Preparing ${filename} for download...`,
@@ -251,14 +248,6 @@ export default function ExplorerPage() {
 
    const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
    
-   const modalAspectRatio = selectedWallpaper
-    ? selectedWallpaper.width / selectedWallpaper.height > 1.2 
-        ? 'aspect-video'
-        : selectedWallpaper.height / selectedWallpaper.width > 1.2 
-        ? 'aspect-[9/16]'
-        : 'aspect-square' 
-    : gridAspectRatio; 
-
   const imageSchema: MinimalWithContext<MinimalThing> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
@@ -361,8 +350,8 @@ export default function ExplorerPage() {
           wallpaper={wallpaperOfTheDay}
           loading={wallpaperOfTheDayLoading}
           orientation={currentCategory}
-          onViewClick={openModal}
-          onDownloadClick={(wp) => handleDownload(wp)}
+          onViewClick={openModal} // openModal will show the PreviewDialog
+          onDownloadClick={handleWotdDownload} // Direct original download for WOTD
         />
 
         <WallpaperSection
@@ -370,7 +359,7 @@ export default function ExplorerPage() {
           wallpapers={trendingWallpapers}
           loading={trendingLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal}
+          onWallpaperClick={openModal} // openModal will show the PreviewDialog
           itemCount={8}
         />
 
@@ -379,7 +368,7 @@ export default function ExplorerPage() {
           wallpapers={editorsPicks}
           loading={editorsPicksLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal}
+          onWallpaperClick={openModal} // openModal will show the PreviewDialog
           itemCount={8}
         />
         
@@ -388,7 +377,7 @@ export default function ExplorerPage() {
           wallpapers={mostDownloaded}
           loading={mostDownloadedLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal}
+          onWallpaperClick={openModal} // openModal will show the PreviewDialog
           itemCount={8}
         />
 
@@ -397,7 +386,7 @@ export default function ExplorerPage() {
           wallpapers={recentlyAdded}
           loading={recentlyAddedLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal}
+          onWallpaperClick={openModal} // openModal will show the PreviewDialog
           itemCount={8}
         />
         
@@ -412,8 +401,11 @@ export default function ExplorerPage() {
                 ))}
             </div>
         ) : (
-             // Use WallpaperGrid for the main listing as well
-             <WallpaperGrid photos={wallpapers} />
+             <WallpaperGrid 
+                photos={wallpapers} 
+                orientation={currentCategory}
+                onPhotoClick={openModal} // openModal will show the PreviewDialog
+             />
         )}
 
          {hasMore && !loading && wallpapers.length > 0 && (
@@ -433,53 +425,12 @@ export default function ExplorerPage() {
           )}
       </main>
 
-        <Dialog open={isModalOpen} onOpenChange={(isOpen) => {
-          if (!isOpen) closeModal();
-          else setIsModalOpen(true);
-        }}>
-            <DialogContent className="max-w-md w-[90vw] sm:w-full p-0 border-none !rounded-xl overflow-hidden shadow-2xl bg-card/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
-                 {selectedWallpaper && (
-                <>
-                     <DialogHeader className="absolute top-0 left-0 right-0 z-30 p-3 sm:p-4 flex flex-row justify-between items-start bg-gradient-to-b from-black/50 to-transparent">
-                         <div className="flex flex-col mr-4 overflow-hidden">
-                             <DialogTitle className="text-sm sm:text-base font-semibold text-white truncate">{selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`}</DialogTitle>
-                             <DialogDescription className="text-xs text-gray-300">
-                                Photo by <a href={selectedWallpaper.photographer_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">{selectedWallpaper.photographer}</a>
-                             </DialogDescription>
-                         </div>
-                         <DialogClose
-                            onClick={closeModal}
-                            className="text-white bg-black/30 rounded-full p-1 sm:p-1.5 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors shrink-0"
-                            aria-label="Close preview"
-                         >
-                            <X size={16} className="sm:size-[18px]" />
-                        </DialogClose>
-                    </DialogHeader>
-
-                     <div className={`relative w-full ${modalAspectRatio} max-h-[70vh] sm:max-h-[75vh] bg-black/50 flex items-center justify-center overflow-hidden`}>
-                         <Image
-                            src={selectedWallpaper.src.large2x || selectedWallpaper.src.original}
-                            alt={selectedWallpaper.alt || `Preview of wallpaper by ${selectedWallpaper.photographer}`}
-                            fill
-                            sizes="(max-width: 768px) 90vw, 50vw"
-                            className="object-contain"
-                            priority
-                            placeholder="blur"
-                            blurDataURL={selectedWallpaper.src.tiny}
-                         />
-                    </div>
-
-                     <DialogFooter className="absolute bottom-0 left-0 right-0 z-30 p-3 sm:p-4 flex justify-end bg-gradient-to-t from-black/50 to-transparent">
-                        <Button onClick={() => handleDownload()} className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md rounded-full px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm">
-                            <Download className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                            Download Original
-                        </Button>
-                    </DialogFooter>
-                 </>
-                )}
-            </DialogContent>
-        </Dialog>
+      {/* Use the enhanced PreviewDialog component, managed by this page's state */}
+      <PreviewDialog
+        photo={selectedWallpaper}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </>
   );
 }
-

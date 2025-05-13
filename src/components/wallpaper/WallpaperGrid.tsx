@@ -1,38 +1,23 @@
+
 'use client';
 
-import type { PexelsPhoto } from '@/types/pexels';
+import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import { WallpaperCard } from './WallpaperCard';
-import { PreviewDialog } from './PreviewDialog';
-import { useState } from 'react';
+// PreviewDialog and related state are now managed by the parent page (e.g., page.tsx or explorer/page.tsx)
+// import { PreviewDialog } from './PreviewDialog'; 
+// import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
 interface WallpaperGridProps {
   photos: PexelsPhoto[];
-  initialSelectedPhotoId?: string;
+  orientation: DeviceOrientationCategory; // Added orientation prop
+  onPhotoClick: (photo: PexelsPhoto) => void; // Callback for when a photo is clicked
+  // initialSelectedPhotoId?: string; // This logic will be handled by parent
 }
 
-export function WallpaperGrid({ photos, initialSelectedPhotoId }: WallpaperGridProps) {
-  const [selectedPhoto, setSelectedPhoto] = useState<PexelsPhoto | null>(() => {
-    if (initialSelectedPhotoId) {
-      return photos.find(p => p.id.toString() === initialSelectedPhotoId) || null;
-    }
-    return null;
-  });
-  const [isPreviewOpen, setIsPreviewOpen] = useState(!!initialSelectedPhotoId);
-
-  const handleCardClick = (photo: PexelsPhoto) => {
-    setSelectedPhoto(photo);
-    setIsPreviewOpen(true);
-    // Update URL without navigation for better UX (optional)
-    // window.history.pushState({}, '', `/?photoId=${photo.id}`);
-  };
-
-  const handleClosePreview = () => {
-    setIsPreviewOpen(false);
-    // Update URL without navigation (optional)
-    // window.history.pushState({}, '', window.location.pathname); 
-  };
+export function WallpaperGrid({ photos, orientation, onPhotoClick }: WallpaperGridProps) {
+  // State for selectedPhoto and isPreviewOpen is removed. Parent will manage this.
   
   // Updated condition: check photos.length > 0 before photos.every
   if (!process.env.NEXT_PUBLIC_PEXELS_API_KEY && photos && photos.length > 0 && photos.every(p => p.photographer === 'Mock Photographer')) {
@@ -59,21 +44,17 @@ export function WallpaperGrid({ photos, initialSelectedPhotoId }: WallpaperGridP
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {photos.map((photo) => (
           <WallpaperCard
-            key={photo.id}
+            key={`${photo.id}-${orientation}`} // Ensure key is unique if orientation changes content significantly
             photo={photo}
-            onClick={() => handleCardClick(photo)}
+            onClick={() => onPhotoClick(photo)} // Call the passed-in handler
+            orientation={orientation} // Pass orientation to WallpaperCard
           />
         ))}
       </div>
-      <PreviewDialog
-        photo={selectedPhoto}
-        isOpen={isPreviewOpen}
-        onClose={handleClosePreview}
-      />
+      {/* PreviewDialog is no longer rendered here. Parent component (page.tsx / explorer.tsx) will render it. */}
     </>
   );
 }
-

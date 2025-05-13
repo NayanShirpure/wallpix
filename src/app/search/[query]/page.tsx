@@ -1,58 +1,150 @@
 
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation'; // Use useParams for client components
 import { searchPhotos } from '@/lib/pexels';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
-import type { PexelsPhoto } from '@/types/pexels';
+import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Search as SearchIcon } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle'; 
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
+import { useToast } from '@/hooks/use-toast';
+import { StructuredData } from '@/components/structured-data';
+import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
 
-export const dynamic = 'force-dynamic';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-interface SearchPageProps {
-  params: {
-    query: string;
-  };
-}
+// generateMetadata remains a server-side concern, so we might need a separate file or adjust approach
+// For now, we'll focus on making the page functional as a client component.
+// Metadata generation for client components with dynamic params needs careful handling,
+// often by fetching data in a Server Component parent or using a route handler if SEO is critical for these dynamic parts.
+// Since this file is now 'use client', a separate generateMetadata in this file won't work as expected for RSC.
+// We'll omit dynamic metadata generation from this client component for now to fix the runtime error.
+// A proper solution would involve rethinking metadata for this client-rendered dynamic route.
 
-export async function generateMetadata({ params }: SearchPageProps) {
-  const rawQueryParam = typeof params.query === 'string' ? params.query : '';
-  let queryDisplay = "Invalid Search";
-  const canonicalQuery = rawQueryParam;
+export default function SearchPage() {
+  const params = useParams();
+  const { toast } = useToast();
 
-  try {
-    const decodedQuery = decodeURIComponent(rawQueryParam);
-    if (!decodedQuery.trim()) {
-      queryDisplay = "Search"; 
+  const [photos, setPhotos] = useState<PexelsPhoto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentSearchQuery, setCurrentSearchQuery] = useState('');
+  const [decodedQueryDisplay, setDecodedQueryDisplay] = useState('');
+  const [errorState, setErrorState] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const rawQueryParam = typeof params.query === 'string' ? params.query : Array.isArray(params.query) ? params.query[0] : '';
+    let decoded = '';
+    if (rawQueryParam) {
+      try {
+        decoded = decodeURIComponent(rawQueryParam);
+        if (!decoded.trim()) {
+          setErrorState("Empty search query.");
+          setDecodedQueryDisplay("Search");
+        } else {
+          setDecodedQueryDisplay(decoded);
+          setErrorState(null);
+        }
+      } catch (e) {
+        console.error("Failed to decode query parameter:", rawQueryParam, e);
+        setErrorState("Invalid search query.");
+        setDecodedQueryDisplay("Invalid Search");
+        decoded = ''; // Ensure query is empty on error
+      }
     } else {
-      queryDisplay = decodedQuery;
+        setErrorState("Empty search query.");
+        setDecodedQueryDisplay("Search");
     }
-  } catch (e) {
-    console.warn("Failed to decode query for metadata:", rawQueryParam, e);
-  }
+    setCurrentSearchQuery(decoded);
+    setPhotos([]); // Reset photos on new query
+    setPage(1); // Reset page
+    setHasMore(true); // Reset hasMore
+  }, [params.query]);
 
-  return {
-    title: `Search: ${queryDisplay} - Wallify`,
-    description: `Find high-quality wallpapers matching "${queryDisplay}" on Wallify, your source for stunning backgrounds.`,
-    keywords: queryDisplay === "Invalid Search" || queryDisplay === "Search" 
-      ? ['Wallify search', 'wallpapers', 'backgrounds'] 
-      : [queryDisplay, 'wallpapers', 'backgrounds', `${queryDisplay} backgrounds`, 'Wallify search'],
-    alternates: {
-        canonical: `/search/${canonicalQuery || 'query'}`,
+
+  const fetchSearchResults = useCallback(async (query: string, pageNum: number, append: boolean = false) => {
+    if (!query.trim() || errorState) { // Don't fetch if query is empty or error state exists
+      setLoading(false);
+      setHasMore(false);
+      if (!errorState && !query.trim()) setErrorState("Empty search query.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await searchPhotos(query, pageNum, 30); // Fetches mixed orientation by default
+      if (data && data.photos) {
+        setPhotos(prev => append ? [...prev, ...data.photos] : data.photos);
+        setHasMore(!!data.next_page && data.photos.length > 0);
+      } else {
+        setPhotos(append ? photos : []); // Keep existing if appending and error, else clear
+        setHasMore(false);
+        if(!data) toast({ title: "API Error", description: "Could not fetch search results.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+      toast({ title: "Error", description: "Failed to fetch search results.", variant: "destructive" });
+      setPhotos(append ? photos : []);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  }, [toast, photos, errorState]); // Added photos and errorState to dependencies
+
+  useEffect(() => {
+    if (currentSearchQuery && !errorState) {
+      fetchSearchResults(currentSearchQuery, 1, false);
+    } else {
+      setLoading(false); // Ensure loading is false if there's an error or no query
+      setPhotos([]);
+      setHasMore(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSearchQuery, errorState]); // fetchSearchResults is memoized
+
+  const handleLoadMore = () => {
+    if (!loading && hasMore && currentSearchQuery && !errorState) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchSearchResults(currentSearchQuery, nextPage, true);
     }
   };
-}
 
-export default async function SearchPage({ params }: SearchPageProps) {
-  const rawQueryParam = typeof params.query === 'string' ? params.query : '';
-  let query: string;
+  const openModal = (wallpaper: PexelsPhoto) => {
+    setSelectedWallpaper(wallpaper);
+    setIsModalOpen(true);
+  };
 
-  try {
-    query = decodeURIComponent(rawQueryParam);
-  } catch (e) {
-    console.error("Failed to decode query parameter in SearchPage:", rawQueryParam, e);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedWallpaper(null), 300);
+  };
+
+  const gridAspectRatio = 'aspect-[9/16]'; // Default for search page items display
+  const displayOrientation: DeviceOrientationCategory = 'smartphone'; // For WallpaperGrid card rendering style
+
+  // Schema.org data
+    const searchPageSchema: MinimalWithContext<MinimalThing> = {
+    '@context': 'https://schema.org',
+    '@type': 'SearchResultsPage',
+    name: `Search results for "${decodedQueryDisplay}" on Wallify`,
+    url: `${BASE_URL}search/${params.query || ''}`,
+    description: `Find high-quality wallpapers matching "${decodedQueryDisplay}" on Wallify.`,
+  };
+
+  if (errorState) {
     return (
       <>
+        <StructuredData data={searchPageSchema} />
         <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden">
           <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
             <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
@@ -61,18 +153,20 @@ export default async function SearchPage({ params }: SearchPageProps) {
               <span className="sm:hidden">Home</span>
             </Link>
             <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2">
-              Invalid Search
+              {errorState === "Invalid search query." ? "Invalid Search" : "Empty Search"}
             </h1>
-            <div className="flex items-center">
-                <ThemeToggle />
-            </div>
+            <div className="flex items-center"><ThemeToggle /></div>
           </div>
         </header>
         <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12 text-center">
-          <SearchIcon className="mx-auto h-16 w-16 text-destructive mb-4" />
-          <h2 className="text-2xl font-bold text-destructive mb-4">Invalid Search Query</h2>
-          <p className="text-muted-foreground mb-6">The search query was malformed or could not be processed.</p>
-          <Button asChild variant="outline">
+          <SearchIcon className={`mx-auto h-16 w-16 mb-4 ${errorState === "Invalid search query." ? "text-destructive" : "text-muted-foreground"}`} />
+          <h2 className={`text-2xl font-bold mb-4 ${errorState === "Invalid search query." ? "text-destructive" : "text-primary"}`}>{errorState}</h2>
+          <p className="text-muted-foreground mb-6">
+            {errorState === "Invalid search query."
+              ? "The search query was malformed or could not be processed."
+              : "Please enter a search term to find wallpapers."}
+          </p>
+          <Button asChild variant="outline" className="mt-6">
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
             </Link>
@@ -82,43 +176,9 @@ export default async function SearchPage({ params }: SearchPageProps) {
     );
   }
 
-  if (!query.trim()) {
-     return (
-      <>
-        <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden">
-          <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-            <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
-              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-              <span className="hidden sm:inline">Back to Wallify</span>
-              <span className="sm:hidden">Home</span>
-            </Link>
-            <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2">
-              Empty Search
-            </h1>
-            <div className="flex items-center">
-                <ThemeToggle />
-            </div>
-          </div>
-        </header>
-        <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12 text-center">
-          <SearchIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold text-primary mb-4">Empty Search Query</h2>
-          <p className="text-muted-foreground mb-6">Please enter a search term to find wallpapers.</p>
-          <Button asChild variant="outline" className="mt-6">
-            <Link href="/explorer">
-              <SearchIcon className="mr-2 h-4 w-4" /> Explore Wallpapers
-            </Link>
-          </Button>
-        </main>
-      </>
-    );
-  }
-
-  const data = await searchPhotos(query, 1, 30); 
-  const photos: PexelsPhoto[] = data?.photos || [];
-
   return (
     <>
+      <StructuredData data={searchPageSchema} />
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden">
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
           <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
@@ -127,33 +187,52 @@ export default async function SearchPage({ params }: SearchPageProps) {
             <span className="sm:hidden">Home</span>
           </Link>
           <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-180px)] sm:max-w-[calc(100%-220px)] md:max-w-[calc(100%-260px)]">
-            Results for: <span className="text-accent">{query}</span>
+            Results for: <span className="text-accent">{decodedQueryDisplay}</span>
           </h1>
-           <div className="flex items-center">
-                <ThemeToggle />
-            </div>
+          <div className="flex items-center"><ThemeToggle /></div>
         </div>
       </header>
       <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
-        {photos.length > 0 ? (
-          <WallpaperGrid photos={photos} />
+        {loading && photos.length === 0 ? (
+          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
+            {[...Array(15)].map((_, i) => (
+              <Skeleton key={`search-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+            ))}
+          </div>
+        ) : photos.length > 0 ? (
+          <WallpaperGrid photos={photos} onPhotoClick={openModal} orientation={displayOrientation} />
         ) : (
           <div className="text-center py-10 mt-8">
             <SearchIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
             <p className="text-xl text-muted-foreground">
-              No wallpapers found for &quot;{query}&quot;.
+              No wallpapers found for &quot;{decodedQueryDisplay}&quot;.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               Try a different search term or explore our curated collections.
             </p>
             <Button variant="outline" asChild className="mt-6">
-              <Link href="/explorer">
-                <SearchIcon className="mr-2 h-4 w-4" /> Explore Wallpapers
-              </Link>
+              <Link href="/explorer"><SearchIcon className="mr-2 h-4 w-4" /> Explore Wallpapers</Link>
             </Button>
           </div>
         )}
+
+        {hasMore && !loading && photos.length > 0 && (
+          <div className="flex justify-center mt-6 sm:mt-8 mb-4">
+            <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
+              Load More
+            </Button>
+          </div>
+        )}
+
+        {loading && photos.length > 0 && (
+          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={`search-loading-more-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+            ))}
+          </div>
+        )}
       </main>
+      <PreviewDialog photo={selectedWallpaper} isOpen={isModalOpen} onClose={closeModal} />
     </>
   );
 }
