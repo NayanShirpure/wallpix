@@ -10,6 +10,15 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    screens: {
+      xxs: "380px", // Custom extra extra small breakpoint
+      xs: "480px",  // Custom extra small breakpoint
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
+    },
   	extend: {
   		colors: {
   			background: 'hsl(var(--background))',

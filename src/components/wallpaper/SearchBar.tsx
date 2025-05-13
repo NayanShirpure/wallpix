@@ -1,33 +1,54 @@
+
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Keep for direct navigation if needed, or remove if only onSubmitSearch is used
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 
-export function SearchBar() {
-  const [query, setQuery] = useState('');
+interface SearchBarProps {
+  onSubmitSearch?: (searchTerm: string) => void; // Callback for parent to handle search
+  initialValue?: string; // Optional initial value for the input
+  navigateToSearchPage?: boolean; // If true, will navigate to /search/[query]
+}
+
+export function SearchBar({ 
+  onSubmitSearch, 
+  initialValue = '', 
+  navigateToSearchPage = true 
+}: SearchBarProps) {
+  const [query, setQuery] = useState(initialValue);
   const router = useRouter();
+
+  useEffect(() => {
+    setQuery(initialValue); // Update query if initialValue prop changes
+  }, [initialValue]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      router.push(`/search/${encodeURIComponent(query.trim())}`);
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
+      if (onSubmitSearch) {
+        onSubmitSearch(trimmedQuery);
+      }
+      if (navigateToSearchPage) {
+        router.push(`/search/${encodeURIComponent(trimmedQuery)}`);
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex w-full max-w-sm items-center space-x-2">
+    <form onSubmit={handleSearch} className="flex w-full items-center space-x-1 sm:space-x-2">
       <Input
         type="text"
-        placeholder="Search wallpapers..."
+        placeholder="Search..." // Shortened placeholder
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="flex-grow"
+        className="h-9 flex-grow text-xs sm:text-sm" // Adjusted height and text size
         aria-label="Search wallpapers"
       />
-      <Button type="submit" size="icon" aria-label="Search">
+      <Button type="submit" size="icon" className="h-9 w-9 shrink-0" aria-label="Search">
         <Search className="h-4 w-4" />
       </Button>
     </form>

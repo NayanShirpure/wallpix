@@ -3,27 +3,14 @@
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link'; 
-import { Button } from '@/components/ui/button';
-import { Menu, Camera, Check } from 'lucide-react'; 
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog'; 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject as SchemaImageObject, MinimalWithContext, Person as SchemaPerson, Organization as SchemaOrganization } from '@/types/schema-dts';
-import { ThemeToggle } from '@/components/theme-toggle'; 
-import { SearchBar } from '@/components/wallpaper/SearchBar'; 
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
+import { GlobalHeader } from '@/components/layout/GlobalHeader';
+import { Button } from '@/components/ui/button';
 
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
@@ -31,7 +18,7 @@ const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('Wallpaper'); 
-  const [currentCategory, setCurrentCategory] = useState<DeviceOrientationCategory>('smartphone');
+  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
@@ -41,10 +28,14 @@ export default function Home() {
   const { toast } = useToast();
 
    const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
-    if (!PEXELS_API_KEY) {
-      console.error("Pexels API key is missing.");
+    const effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+    const placeholderKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+    const isApiKeyMissing = !effectiveApiKey || effectiveApiKey === placeholderKey;
+
+    if (isApiKeyMissing) {
+      console.warn("Pexels API key is missing or is the placeholder. Displaying mock data.");
       const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
-        id: i + pageNum * 1000, // Ensure somewhat unique IDs for mock data pagination
+        id: i + pageNum * 1000, 
         width: 1080,
         height: 1920,
         url: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1080/1920`,
@@ -68,7 +59,7 @@ export default function Home() {
       
       setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
       setLoading(false);
-      setHasMore(pageNum < 3); // Mock 3 pages of data
+      setHasMore(pageNum < 3); 
 
       if (process.env.NODE_ENV === 'development') {
           toast({
@@ -88,7 +79,7 @@ export default function Home() {
       const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
       const response = await fetch(apiUrl, {
         headers: {
-          Authorization: PEXELS_API_KEY,
+          Authorization: effectiveApiKey,
         },
       });
 
@@ -143,14 +134,13 @@ export default function Home() {
     setPage(1);
     setWallpapers([]);
     setHasMore(true); 
-    fetchWallpapers(searchTerm, currentCategory, 1, false);
-  }, [searchTerm, currentCategory, fetchWallpapers]);
+    fetchWallpapers(searchTerm, currentDeviceOrientation, 1, false);
+  }, [searchTerm, currentDeviceOrientation, fetchWallpapers]);
 
-  const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => {
-       if (newCategory !== currentCategory) {
-           setCurrentCategory(newCategory);
-           // Optionally reset search term when device category changes, or keep it
-           // setSearchTerm('Wallpaper'); // Uncomment to reset search term
+  const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
+       if (newCategory !== currentDeviceOrientation) {
+           setCurrentDeviceOrientation(newCategory);
+           setSearchTerm('Wallpaper'); 
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
@@ -164,12 +154,19 @@ export default function Home() {
     setHasMore(true);
   };
 
+  const handleSearchSubmit = (newSearchTerm: string) => {
+    setSearchTerm(newSearchTerm);
+    setPage(1);
+    setWallpapers([]);
+    setHasMore(true);
+  };
+
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchWallpapers(searchTerm, currentCategory, nextPage, true);
+      fetchWallpapers(searchTerm, currentDeviceOrientation, nextPage, true);
     }
   };
 
@@ -185,7 +182,7 @@ export default function Home() {
   };
 
 
-   const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
+   const gridAspectRatio = currentDeviceOrientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
 
   const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
@@ -219,111 +216,21 @@ export default function Home() {
   return (
     <>
       {imageSchema && <StructuredData data={imageSchema} />}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
-        <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-4">
-          <Link href="/" className="mr-3 flex items-center space-x-2 sm:mr-6">
-            <Camera className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl text-primary">Wallify</span>
-          </Link>
-          
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Desktop/Tablet: Device Orientation Tabs */}
-            <div className="hidden sm:block">
-              <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as DeviceOrientationCategory)} className="w-auto">
-                <TabsList className="h-9 text-xs sm:text-sm">
-                  {deviceOrientationTabs.map(opt => (
-                    <TabsTrigger key={opt.value} value={opt.value} className="px-2.5 py-1.5 sm:px-3">{opt.label}</TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            </div>
-
-            {/* Desktop/Tablet: Categories Dropdown */}
-            <div className="hidden sm:block">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
-                    <Menu className="mr-1 h-3.5 w-3.5" />
-                    <span className="hidden md:inline">Categories</span>
-                    <span className="md:hidden">Cat.</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto">
-                  <DropdownMenuLabel>Filter Wallpapers By</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
-                    <React.Fragment key={group.groupLabel}>
-                      <DropdownMenuLabel className="text-xs text-muted-foreground px-2 pt-2">{group.groupLabel}</DropdownMenuLabel>
-                      {group.categories.map((cat) => (
-                        <DropdownMenuItem key={cat.value} onSelect={() => handleWallpaperCategorySelect(cat.value)}>
-                          {cat.label}
-                        </DropdownMenuItem>
-                      ))}
-                      {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <DropdownMenuSeparator />}
-                    </React.Fragment>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            
-            {/* Search Bar */}
-            <div className="w-full max-w-[150px] sm:max-w-xs">
-              <SearchBar />
-            </div>
-
-            {/* Mobile Combined Menu */}
-            <div className="sm:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-9 w-9">
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Device</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {deviceOrientationTabs.map(opt => (
-                    <DropdownMenuItem key={`mobile-device-${opt.value}`} onSelect={() => handleDeviceCategoryChange(opt.value as DeviceOrientationCategory)}>
-                      {opt.label}
-                      {currentCategory === opt.value && <Check className="ml-auto h-4 w-4" />}
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Categories</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
-                    <React.Fragment key={`mobile-group-${group.groupLabel}`}>
-                      <DropdownMenuLabel className="text-xs text-muted-foreground px-2 pt-1">{group.groupLabel}</DropdownMenuLabel>
-                      {group.categories.map((cat) => (
-                        <DropdownMenuItem key={`mobile-cat-${cat.value}`} onSelect={() => handleWallpaperCategorySelect(cat.value)}>
-                          {cat.label}
-                        </DropdownMenuItem>
-                      ))}
-                      {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <DropdownMenuSeparator className="my-1"/>}
-                    </React.Fragment>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+      <GlobalHeader
+        currentDeviceOrientation={currentDeviceOrientation}
+        onDeviceOrientationChange={handleDeviceOrientationChange}
+        onWallpaperCategorySelect={handleWallpaperCategorySelect}
+        onSearchSubmit={handleSearchSubmit}
+        initialSearchTerm={searchTerm}
+      />
       
-      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
-        <div className="my-6 sm:my-8 text-center">
+      <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
+        <div className="my-4 sm:my-6 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-primary">
               {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">Browse our collection or use the search and filters in the header.</p>
         </div>
-
-        {/* This section is removed as controls are moved to header
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 p-2 rounded-lg bg-muted/50">
-            ...
-        </div>
-        */}
 
         {loading && wallpapers.length === 0 ? ( 
              <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
@@ -334,7 +241,7 @@ export default function Home() {
         ) : (
           <WallpaperGrid 
             photos={wallpapers} 
-            orientation={currentCategory} 
+            orientation={currentDeviceOrientation} 
             onPhotoClick={openModal} 
           />
         )}
@@ -364,4 +271,3 @@ export default function Home() {
     </>
   );
 }
-
