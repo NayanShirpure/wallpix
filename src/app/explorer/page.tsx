@@ -5,9 +5,10 @@ import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/t
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Added useRouter
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Download, X, Menu } from 'lucide-react'; // Removed Github, Instagram, Twitter
+import { Search, Download, X, Menu } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
-import type { ImageObject, WebPage, WithContext } from 'schema-dts';
+import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
 import { WallpaperSection } from '@/components/wallpaper-section';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -43,19 +44,20 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.gith
 
 
 export default function ExplorerPage() {
-  // Main grid state
-  const [searchTerm, setSearchTerm] = useState('Explore');
+  // Main grid state for "Browse All"
+  const [searchTerm, setSearchTerm] = useState('Explore'); // Represents the current context of the explorer page
   const [currentCategory, setCurrentCategory] = useState<DeviceOrientationCategory>('smartphone');
-  const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]); // For the "Browse All" section
+  const [loading, setLoading] = useState(true); // For the "Browse All" section
+  const [page, setPage] = useState(1); // For the "Browse All" section
+  const [hasMore, setHasMore] = useState(true); // For the "Browse All" section
 
   // Modal state
   const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { toast } = useToast();
+  const router = useRouter(); // Initialize useRouter
 
   // Featured Sections State
   const [trendingWallpapers, setTrendingWallpapers] = useState<PexelsPhoto[]>([]);
@@ -116,7 +118,7 @@ export default function ExplorerPage() {
   }, [toast]);
 
 
-   const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
+   const fetchBrowseAllWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
       setLoading(false);
       setHasMore(false);
@@ -125,7 +127,9 @@ export default function ExplorerPage() {
 
     setLoading(true);
     const orientation = category === 'desktop' ? 'landscape' : 'portrait';
-    let finalQuery = query.trim() || 'Explore';
+    // The 'query' for browse all will be a general term like "Explore" or "Popular"
+    // This is distinct from specific user searches which navigate away.
+    let finalQuery = query.trim() || 'Popular Wallpaper'; // Default for "Browse All" if not specified
 
     try {
       const photos = await genericFetchWallpapers('search', {
@@ -150,13 +154,16 @@ export default function ExplorerPage() {
    }, [toast, genericFetchWallpapers]);
 
 
+  // Fetch "Browse All" wallpapers when component mounts or category/searchTerm changes
+  // searchTerm here refers to the general theme of the "Browse All" section, not a specific user search.
   useEffect(() => {
     setPage(1); 
     setWallpapers([]); 
     setHasMore(true); 
-    fetchWallpapers(searchTerm, currentCategory, 1, false);
-  }, [searchTerm, currentCategory, fetchWallpapers]);
+    fetchBrowseAllWallpapers(searchTerm, currentCategory, 1, false);
+  }, [searchTerm, currentCategory, fetchBrowseAllWallpapers]);
 
+  // Load Featured Sections based on currentCategory (device orientation)
   useEffect(() => {
     const loadFeaturedSections = async () => {
       const orientationParam = currentCategory === 'desktop' ? 'landscape' : 'portrait';
@@ -201,19 +208,21 @@ export default function ExplorerPage() {
     const formData = new FormData(event.currentTarget);
     const newSearchTerm = formData.get('search') as string;
     const trimmedSearchTerm = newSearchTerm.trim();
-    const effectiveSearchTerm = trimmedSearchTerm || 'Explore';
+    const effectiveSearchTerm = trimmedSearchTerm || 'Explore'; // Default search if input is empty for navigation
 
-    setSearchTerm(effectiveSearchTerm);
+    router.push(`/search/${encodeURIComponent(effectiveSearchTerm)}`);
   };
 
   const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentCategory) {
-           setCurrentCategory(newCategory);
+           setCurrentCategory(newCategory); // This will re-trigger featured sections and "Browse All" with new orientation
+           setSearchTerm('Explore'); // Reset searchTerm for "Browse All" when orientation changes, or choose a relevant default
        }
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue);
+    // This action should navigate to the search page with the selected category
+    router.push(`/search/${encodeURIComponent(categoryValue)}`);
   };
 
 
@@ -221,7 +230,8 @@ export default function ExplorerPage() {
     if (!loading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchWallpapers(searchTerm, currentCategory, nextPage, true);
+      // Fetch more for the "Browse All" section
+      fetchBrowseAllWallpapers(searchTerm, currentCategory, nextPage, true);
     }
   };
 
@@ -280,7 +290,7 @@ export default function ExplorerPage() {
         : 'aspect-square' 
     : gridAspectRatio; 
 
-  const imageSchema = selectedWallpaper ? {
+  const imageSchema: MinimalWithContext<MinimalThing> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
     name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
@@ -306,9 +316,9 @@ export default function ExplorerPage() {
       name: 'Pexels',
       url: 'https://www.pexels.com',
     },
-  } as WithContext<ImageObject> : null;
+  } : null;
 
-  const explorerPageSchema: WithContext<WebPage> = {
+  const explorerPageSchema: MinimalWithContext<MinimalThing> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: 'Explore Wallpapers - Wallify',
@@ -322,7 +332,6 @@ export default function ExplorerPage() {
     <>
       <StructuredData data={explorerPageSchema} />
       {imageSchema && <StructuredData data={imageSchema} />}
-      {/* Removed outermost div with min-h-screen, flex, flex-col. Root layout handles this. */}
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
             <Link href="/" className="text-xl sm:text-2xl font-bold text-primary self-center sm:self-auto">Wallify</Link>
@@ -335,6 +344,8 @@ export default function ExplorerPage() {
                         name="search"
                         placeholder="Explore wallpapers..."
                         className="pl-8 w-full bg-secondary border-border focus:ring-1 focus:ring-ring text-foreground rounded-full h-8 text-sm"
+                        // This input's default value is tied to the Explorer page's current 'searchTerm' state.
+                        // Submitting this form will navigate to the /search/[query] page.
                         defaultValue={searchTerm === "Explore" ? "" : searchTerm}
                         aria-label="Search wallpapers to explore"
                     />
@@ -382,7 +393,7 @@ export default function ExplorerPage() {
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6"> {/* Ensure main content takes up available space */}
+      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-primary my-6 sm:my-8 text-center">Explore Wallpapers</h1>
 
         <WallpaperOfTheDay
@@ -429,8 +440,9 @@ export default function ExplorerPage() {
           itemCount={8}
         />
         
+        {/* This section now always shows a general browse list, driven by the 'searchTerm' and 'currentCategory' state of ExplorerPage itself */}
         <h2 className="text-xl sm:text-2xl font-semibold text-primary mt-8 mb-3 sm:mb-4 px-1">
-          {searchTerm === "Explore" ? "Browse All" : `Results for "${searchTerm}"`}
+          {searchTerm === "Explore" ? "Browse All" : `Browsing: "${searchTerm}"`} 
         </h2>
 
         {loading && wallpapers.length === 0 ? ( 
@@ -537,7 +549,6 @@ export default function ExplorerPage() {
                 )}
             </DialogContent>
         </Dialog>
-        {/* Footer removed, will be handled by GlobalFooter in root layout */}
     </>
   );
 }

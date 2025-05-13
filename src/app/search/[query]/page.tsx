@@ -16,20 +16,22 @@ interface SearchPageProps {
 }
 
 export async function generateMetadata({ params }: SearchPageProps) {
+  const rawQueryParam = typeof params.query === 'string' ? params.query : '';
   let queryDisplay = "Invalid Search";
-  let canonicalQuery = params.query; // Use raw param for canonical URL segment
+  // Use the raw query param for canonical URL, as it came from the URL
+  // If it was empty or somehow not a string, it'll be empty string here.
+  const canonicalQuery = rawQueryParam;
 
   try {
-    const decodedQuery = decodeURIComponent(params.query);
+    const decodedQuery = decodeURIComponent(rawQueryParam);
     if (!decodedQuery.trim()) {
       queryDisplay = "Search"; // For empty decoded query
     } else {
       queryDisplay = decodedQuery;
     }
   } catch (e) {
-    console.warn("Failed to decode query for metadata:", params.query, e);
+    console.warn("Failed to decode query for metadata:", rawQueryParam, e);
     // queryDisplay remains "Invalid Search"
-    // canonicalQuery remains params.query as is (best effort)
   }
 
   return {
@@ -39,17 +41,20 @@ export async function generateMetadata({ params }: SearchPageProps) {
       ? ['Wallify search', 'wallpapers', 'backgrounds'] 
       : [queryDisplay, 'wallpapers', 'backgrounds', `${queryDisplay} backgrounds`, 'Wallify search'],
     alternates: {
-        canonical: `/search/${canonicalQuery}`
+        // Ensure canonicalQuery is not empty for the path segment
+        canonical: `/search/${canonicalQuery || 'query'}`,
     }
   };
 }
 
 export default async function SearchPage({ params }: SearchPageProps) {
+  const rawQueryParam = typeof params.query === 'string' ? params.query : '';
   let query: string;
+
   try {
-    query = decodeURIComponent(params.query);
+    query = decodeURIComponent(rawQueryParam);
   } catch (e) {
-    console.error("Failed to decode query parameter in SearchPage:", params.query, e);
+    console.error("Failed to decode query parameter in SearchPage:", rawQueryParam, e);
     return (
       <>
         <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">

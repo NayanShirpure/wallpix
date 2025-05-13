@@ -5,9 +5,10 @@ import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/t
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Added useRouter
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Download, X, Menu } from 'lucide-react'; // Removed Github, Instagram, Twitter
+import { Search, Download, X, Menu } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
-import type { ImageObject, WithContext } from 'schema-dts';
+import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 
@@ -39,7 +40,7 @@ const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrek
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState('Wallpaper');
+  const [searchTerm, setSearchTerm] = useState('Wallpaper'); // This will be the default category/view for the homepage
   const [currentCategory, setCurrentCategory] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +49,7 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
+  const router = useRouter(); // Initialize useRouter
 
    const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
@@ -142,9 +144,8 @@ export default function Home() {
     const formData = new FormData(event.currentTarget);
     const newSearchTerm = formData.get('search') as string;
     const trimmedSearchTerm = newSearchTerm.trim();
-    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; 
-
-    setSearchTerm(effectiveSearchTerm);
+    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; // Default search term if input is empty
+    router.push(`/search/${encodeURIComponent(effectiveSearchTerm)}`);
   };
 
   const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => {
@@ -154,7 +155,7 @@ export default function Home() {
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue);
+    router.push(`/search/${encodeURIComponent(categoryValue)}`);
   };
 
 
@@ -221,7 +222,7 @@ export default function Home() {
         : 'aspect-square' 
     : gridAspectRatio; 
 
-  const imageSchema = selectedWallpaper ? {
+  const imageSchema: MinimalWithContext<MinimalThing> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
     name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
@@ -247,13 +248,12 @@ export default function Home() {
       name: 'Pexels',
       url: 'https://www.pexels.com',
     },
-  } as WithContext<ImageObject> : null;
+  } : null;
 
 
   return (
     <>
       {imageSchema && <StructuredData data={imageSchema} />}
-      {/* Removed outermost div with min-h-screen, flex, flex-col. Root layout handles this. */}
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
             <Link href="/" className="text-primary self-center sm:self-auto" aria-label="Wallify Homepage">
@@ -268,6 +268,8 @@ export default function Home() {
                         name="search"
                         placeholder="Search..."
                         className="pl-8 w-full bg-secondary border-border focus:ring-1 focus:ring-ring text-foreground rounded-full h-8 text-sm"
+                        // The defaultValue is for the visual input field.
+                        // `searchTerm` state still dictates the initial fetch for this page.
                         defaultValue={searchTerm === "Wallpaper" ? "" : searchTerm}
                         aria-label="Search wallpapers"
                     />
@@ -315,9 +317,10 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6"> {/* flex-grow added here to fill space IF this is the only main element. Root layout structure should ideally handle this better. */}
+      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
         <h2 className="text-2xl sm:text-3xl font-bold text-primary my-6 sm:my-8 text-center">
-          {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Results for "${searchTerm}"`}
+          {/* This title now reflects the content fetched for the homepage based on `searchTerm` state */}
+          {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
         </h2>
         {loading && wallpapers.length === 0 ? ( 
              <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
@@ -423,7 +426,7 @@ export default function Home() {
                 )}
             </DialogContent>
         </Dialog>
-      {/* Footer removed, will be handled by GlobalFooter in root layout */}
     </>
   );
 }
+
