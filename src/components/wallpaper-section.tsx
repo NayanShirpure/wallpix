@@ -1,9 +1,12 @@
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Download } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card'; // Added Card and CardContent
+import { cn } from '@/lib/utils'; // Added cn
 
 interface WallpaperSectionProps {
   title: string;
@@ -39,6 +42,18 @@ export function WallpaperSection({
     return photo.src.portrait || photo.src.large || photo.src.original;
   };
 
+  // Attempt to parse a single width for the 'sizes' attribute from the Tailwind classes.
+  // This is a simplified approach for fixed-width items in a carousel.
+  const imageWidthForSizes = () => {
+    const widthClasses = imageContainerClass.split(' ');
+    let baseW = widthClasses.find(c => c.startsWith('w-') && !c.includes(':'))?.replace('w-', '');
+    if (baseW?.startsWith('[')) baseW = baseW.replace('[', '').replace('px]', ''); // Handles w-[340px]
+    // For classes like w-60 (meaning 15rem), convert to a rough pixel estimate if needed, or use a large enough default.
+    // Here, we'll just return a common large size if direct px isn't found, letting browser optimize.
+    return baseW && !isNaN(parseInt(baseW)) ? `${baseW}px` : '320px'; // Fallback width for sizes
+  };
+
+
   return (
     <section>
       <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">{title}</h2>
@@ -51,39 +66,44 @@ export function WallpaperSection({
           ))}
         </div>
       ) : wallpapers.length > 0 ? (
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1"> {/* Added small padding for scrollbar */}
+        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
           {displayedWallpapers.map((wallpaper) => (
-            <div
+            <Card
               key={`${wallpaper.id}-${orientation}-${title}`}
-              className={`relative ${imageContainerClass} ${aspectRatio} flex-shrink-0 rounded-lg overflow-hidden cursor-pointer group shadow-md hover:shadow-xl focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background transition-all duration-300 ease-in-out hover:scale-[1.02] focus-within:scale-[1.02]`}
+              className={cn(
+                "flex-shrink-0 overflow-hidden cursor-pointer group hover:shadow-xl focus-within:shadow-xl transition-shadow duration-300 ease-in-out",
+                imageContainerClass // Applies width classes like w-60, sm:w-72 etc.
+              )}
               onClick={() => onWallpaperClick(wallpaper)}
               role="button"
               aria-label={`View wallpaper: ${wallpaper.alt || `by ${wallpaper.photographer}`}`}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onWallpaperClick(wallpaper)}
             >
-              <Image
-                src={getSrc(wallpaper)}
-                alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
-                fill
-                sizes={`${imageContainerClass.split(' ').find(c => c.startsWith('lg:w-'))?.replace('lg:w-','').replace('[','').replace(']','') || imageContainerClass.split(' ').find(c => c.startsWith('md:w-'))?.replace('md:w-','') || imageContainerClass.split(' ').find(c => c.startsWith('sm:w-'))?.replace('sm:w-','') || imageContainerClass.split(' ').find(c => c.startsWith('xs:w-'))?.replace('xs:w-','') || imageContainerClass.split(' ')[0].replace('w-','')}px`}
-                className="object-cover transition-transform duration-300 group-hover:scale-105" // Inner image scale for zoom effect
-                placeholder="blur"
-                blurDataURL={wallpaper.src.tiny}
-                data-ai-hint={`${orientation === 'desktop' ? 'desktop abstract' : 'phone nature'} ${wallpaper.alt ? wallpaper.alt.split(' ').slice(0,2).join(' ') : 'wallpaper image'}`}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-2">
-                <p className="text-white text-[10px] xs:text-xs font-medium truncate drop-shadow-sm leading-tight">
-                  {wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
-                </p>
-                <div className="flex justify-between items-center mt-0.5">
-                    <p className="text-gray-300 text-[9px] xs:text-[10px] truncate drop-shadow-sm">
-                        {wallpaper.photographer}
-                    </p>
-                    <Download size={12} className="text-white/70 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200" />
+              <CardContent className={cn("p-0 relative", aspectRatio)}>
+                <Image
+                  src={getSrc(wallpaper)}
+                  alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
+                  fill
+                  sizes={imageWidthForSizes()}
+                  className="object-cover transition-transform duration-300 group-hover:scale-105 group-focus-within:scale-105"
+                  placeholder="blur"
+                  blurDataURL={wallpaper.src.tiny}
+                  data-ai-hint={`${orientation === 'desktop' ? 'desktop abstract' : 'phone nature'} ${wallpaper.alt ? wallpaper.alt.split(' ').slice(0,2).join(' ') : 'wallpaper image'}`}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-2">
+                  <p className="text-white text-[10px] xs:text-xs font-medium truncate drop-shadow-sm leading-tight">
+                    {wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
+                  </p>
+                  <div className="flex justify-between items-center mt-0.5">
+                      <p className="text-gray-300 text-[9px] xs:text-[10px] truncate drop-shadow-sm">
+                          {wallpaper.photographer}
+                      </p>
+                      <Download size={12} className="text-white/70 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200" />
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : (
