@@ -7,45 +7,43 @@ const PLACEHOLDER_TEXT_PATTERN = /your_actual_pexels_api_key/i;
 
 function getApiKey(): string | null {
   const context = typeof window === 'undefined' ? 'Server' : 'Client';
-  let apiKey: string | undefined;
+  let envApiKey: string | undefined;
 
   if (context === 'Server') {
-    apiKey = process.env.PEXELS_API_KEY;
+    envApiKey = process.env.PEXELS_API_KEY;
   } else {
     // Client-side, Next.js exposes env vars prefixed with NEXT_PUBLIC_
     // next.config.js maps PEXELS_API_KEY to NEXT_PUBLIC_PEXELS_API_KEY for client
-    apiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+    envApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
   }
 
-  // Check if the retrieved API key is valid (not undefined, not empty, not placeholder, not the fallback key itself unless intended)
-  if (apiKey && apiKey.trim() !== "" && !PLACEHOLDER_TEXT_PATTERN.test(apiKey) && apiKey !== FALLBACK_API_KEY) {
-    return apiKey;
+  // Check 1: Is the environment variable API key valid?
+  if (envApiKey && envApiKey.trim() !== "" && !PLACEHOLDER_TEXT_PATTERN.test(envApiKey)) {
+    // Log if the env var happens to be the same as the hardcoded fallback, which is fine.
+    if (envApiKey === FALLBACK_API_KEY && process.env.NODE_ENV === 'development') {
+      // console.info(`[lib/pexels ${context}] Using PEXELS_API_KEY from environment, which matches the hardcoded fallback value.`);
+    }
+    return envApiKey;
   }
-  
-  // If the intended API key (server or client) is missing or invalid, try the fallback.
-  // This handles cases where PEXELS_API_KEY might be set to the fallback directly,
-  // or if NEXT_PUBLIC_PEXELS_API_KEY isn't properly propagated but PEXELS_API_KEY (fallback) exists.
-  
-  // Use FALLBACK_API_KEY if the primary key is problematic or if it IS the fallback key.
-  // Log a warning in development if the primary key was expected but faulty.
+
+  // Check 2: If env var is not valid, try the hardcoded FALLBACK_API_KEY
   if (process.env.NODE_ENV === 'development') {
     const expectedKeyName = context === 'Server' ? 'PEXELS_API_KEY' : 'NEXT_PUBLIC_PEXELS_API_KEY';
-    if (!apiKey || apiKey.trim() === "" || PLACEHOLDER_TEXT_PATTERN.test(apiKey)) {
-      if (apiKey !== FALLBACK_API_KEY) { // Avoid warning if apiKey is already the fallback
-         console.warn(`[lib/pexels ${context}] ${expectedKeyName} is missing, empty, or a placeholder. Attempting to use fallback key.`);
-      }
-    }
-  }
-  
-  // If the fallback key itself is a placeholder, then we have no valid key.
-  if (PLACEHOLDER_TEXT_PATTERN.test(FALLBACK_API_KEY) || FALLBACK_API_KEY.trim() === "") {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[lib/pexels ${context}] Critical: Fallback API key is also invalid or placeholder. API calls will likely fail.`);
-      }
-      return null; // No valid key available
+    // Provide more context in the warning
+    let problem = "missing";
+    if (envApiKey && envApiKey.trim() === "") problem = "empty";
+    else if (envApiKey && PLACEHOLDER_TEXT_PATTERN.test(envApiKey)) problem = "a placeholder";
+    
+    console.warn(`[lib/pexels ${context}] Environment variable ${expectedKeyName} is ${problem}. Attempting to use hardcoded fallback PEXELS_API_KEY.`);
   }
 
-  return FALLBACK_API_KEY; // Return fallback if primary key checks fail or if it's the intended fallback
+  if (FALLBACK_API_KEY && FALLBACK_API_KEY.trim() !== "" && !PLACEHOLDER_TEXT_PATTERN.test(FALLBACK_API_KEY)) {
+    return FALLBACK_API_KEY;
+  }
+
+  // Check 3: If both environment variable and fallback are invalid
+  console.error(`[lib/pexels ${context}] Critical: No valid PEXELS_API_KEY found. Both environment variable and hardcoded fallback are invalid or missing. API calls will likely fail.`);
+  return null;
 }
 
 async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
@@ -53,16 +51,10 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
 
   if (!apiKeyToUse) {
     const context = typeof window === 'undefined' ? 'Server' : 'Client';
-    const errorMessage = `[ ${context} ] PEXELS API key (PEXELS_API_KEY / NEXT_PUBLIC_PEXELS_API_KEY) is not configured or available in src/lib/pexels.ts. Cannot make API calls.`;
+    const errorMessage = `[ ${context} ] PEXELS API key is not configured or available in src/lib/pexels.ts. Cannot make API calls. Ensure PEXELS_API_KEY is set in your .env.local file and the server is restarted.`;
     console.error(errorMessage);
-    if (process.env.NODE_ENV === 'development' && context === 'Client') {
-        // Avoid throwing for client-side mock data to still render UI
-        console.warn("Displaying mock data due to missing API key on client.");
-    } else if (context === 'Server'){
-        // On server, this is a more critical failure if not handled.
-        // Consider if throwing here is the right approach or if mock data should be returned.
-        // For now, we'll allow it to proceed to return null, and pages should handle null response.
-    }
+    // For client-side development, allow mock data flow by returning null
+    // For server-side, this is a critical failure if not handled by the caller
     return null;
   }
 
@@ -75,13 +67,13 @@ async function fetchPexelsAPI<T>(endpoint: string): Promise<T | null> {
     });
 
     if (!response.ok) {
-      let errorBodyText = "Could not read error body.";
+      let errorBodyText = "Could not read error body from Pexels API response.";
       try {
         errorBodyText = await response.text();
       } catch (textError) {
-        // Non-critical
+        // Non-critical if reading error body fails
       }
-      const detailedErrorMessage = `Pexels API Error: ${response.status} ${response.statusText}. Endpoint: ${PEXELS_API_URL}${endpoint}. Body: ${errorBodyText.substring(0, 200)}`;
+      const detailedErrorMessage = `Pexels API Error: ${response.status} ${response.statusText}. Endpoint: ${PEXELS_API_URL}${endpoint}. Response (first 200 chars): ${errorBodyText.substring(0, 200)}`;
       console.error(detailedErrorMessage);
       return null;
     }
