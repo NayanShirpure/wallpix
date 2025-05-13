@@ -9,10 +9,10 @@ const BASE_URL =
 
 // Async metadata generator
 export async function generateMetadata(
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const slug = params.slug;
+  const { slug } = await params;
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) {
