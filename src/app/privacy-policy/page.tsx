@@ -5,7 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react'; 
 import { StructuredData } from '@/components/structured-data';
-import type { WebPage, WithContext } from 'schema-dts';
+// Updated import for local minimal types
+import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle'; 
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -19,16 +20,17 @@ export default function PrivacyPolicyPage() {
   
   const actualPolicyModificationDate = "2024-05-20"; 
 
-  const webPageSchema: WithContext<WebPage> = {
+  // Correctly typed with MinimalWithContext<SchemaWebPage>
+  const webPageSchema: MinimalWithContext<SchemaWebPage> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage', 
     name: 'Privacy Policy for Wallify Wallpaper Application',
     url: `${BASE_URL}privacy-policy`,
     description: 'Official Privacy Policy for the Wallify application, detailing data handling practices.',
-    mainEntityOfPage: {
+    mainEntityOfPage: { // This needs to conform to WebPage from @/types/schema-dts if used strictly
       '@type': 'WebPage',
       '@id': `${BASE_URL}privacy-policy`,
-    },
+    } as SchemaWebPage, // Cast to ensure it matches the defined WebPage type
     datePublished: "2024-01-01", 
     dateModified: actualPolicyModificationDate, 
   };

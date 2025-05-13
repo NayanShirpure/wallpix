@@ -5,7 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react'; 
 import { StructuredData } from '@/components/structured-data';
-import type { WebPage, WithContext } from 'schema-dts';
+// Updated import for local minimal types
+import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle'; 
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -19,16 +20,17 @@ export default function TermsConditionsPage() {
 
   const actualTermsModificationDate = "2024-05-20"; 
 
-  const webPageSchema: WithContext<WebPage> = {
+  // Correctly typed with MinimalWithContext<SchemaWebPage>
+  const webPageSchema: MinimalWithContext<SchemaWebPage> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage', 
     name: 'Terms and Conditions for Wallify Application',
     url: `${BASE_URL}terms-conditions`,
     description: 'Official Terms and Conditions governing the use of the Wallify wallpaper application.',
-    mainEntityOfPage: {
+    mainEntityOfPage: { // This needs to conform to WebPage from @/types/schema-dts if used strictly
       '@type': 'WebPage',
       '@id': `${BASE_URL}terms-conditions`,
-    },
+    } as SchemaWebPage, // Cast to ensure it matches the defined WebPage type
     datePublished: "2024-01-01", 
     dateModified: actualTermsModificationDate, 
   };

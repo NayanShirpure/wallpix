@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react'; 
 import { ContactForm } from '@/components/contact-form';
 import { StructuredData } from '@/components/structured-data';
-import type { ContactPage as SchemaContactPage, WithContext } from 'schema-dts';
+// Updated import for local minimal types
+import type { ContactPage as SchemaContactPage, WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle'; 
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function ContactPage() {
-  const contactPageSchema: WithContext<SchemaContactPage> = {
+  // Correctly typed with MinimalWithContext<SchemaContactPage>
+  const contactPageSchema: MinimalWithContext<SchemaContactPage> = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
     name: 'Contact Wallify Support and Feedback',
@@ -20,7 +22,7 @@ export default function ContactPage() {
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${BASE_URL}contact`,
-    },
+    } as SchemaWebPage, // Cast to ensure it matches the defined WebPage type
   };
   return (
     <>

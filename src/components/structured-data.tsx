@@ -1,18 +1,5 @@
-
 // src/components/structured-data.tsx
-
-// Define minimal local types if schema-dts is fully removed
-interface MinimalThing {
-  "@type": string;
-  [key: string]: any;
-}
-
-interface MinimalWithContext<T extends MinimalThing> {
-  "@context": "https://schema.org";
-  "@type": T["@type"];
-  [key: string]: any;
-}
-
+import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
 
 interface StructuredDataProps<T extends MinimalThing> {
   data: MinimalWithContext<T>;
@@ -48,4 +35,3 @@ export function StructuredData<T extends MinimalThing>({ data }: StructuredDataP
      />
    );
 }
-

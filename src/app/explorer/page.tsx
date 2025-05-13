@@ -3,18 +3,15 @@
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
-// Image component is used within sub-components
 import Link from 'next/link'; 
-// useRouter not directly used
 import { Button } from '@/components/ui/button';
-import { Download, Menu, Camera } from 'lucide-react'; // Removed X, Eye from here as PreviewDialog manages close/preview
-// Dialog root for the main PreviewDialog
+import { Download, Menu, Camera } from 'lucide-react'; 
 import { Dialog } from '@/components/ui/dialog';
-import { PreviewDialog } from '@/components/wallpaper/PreviewDialog'; // Import the enhanced PreviewDialog
+import { PreviewDialog } from '@/components/wallpaper/PreviewDialog'; 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { downloadFile } from '@/lib/utils'; // Kept for WallpaperOfTheDay direct download
+import { downloadFile } from '@/lib/utils'; 
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
-import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
+// Updated import for local minimal types, including specific schema types
+import type { ImageObject as SchemaImageObject, WebPage as SchemaWebPage, MinimalWithContext, Person as SchemaPerson, Organization as SchemaOrganization } from '@/types/schema-dts';
 import { WallpaperSection } from '@/components/wallpaper-section';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { ThemeToggle } from '@/components/theme-toggle'; 
@@ -50,7 +48,6 @@ export default function ExplorerPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { toast } = useToast();
-  // const router = useRouter(); // Not directly used
 
   const [trendingWallpapers, setTrendingWallpapers] = useState<PexelsPhoto[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
@@ -75,7 +72,37 @@ export default function ExplorerPage() {
   ): Promise<PexelsPhoto[]> => {
     if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
-      return [];
+       // Display mock data or a specific message if API key is missing
+      const mockPhoto: PexelsPhoto = {
+        id: Date.now(),
+        width: 1080,
+        height: 1920,
+        url: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1080/1920`,
+        photographer: 'Mock Photographer',
+        photographer_url: 'https://example.com',
+        photographer_id: 1,
+        avg_color: '#000000',
+        src: {
+          original: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1080/1920`,
+          large2x: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1080/1920`,
+          large: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/800/1200`,
+          medium: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/400/600`,
+          small: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/200/300`,
+          portrait: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/800/1200`,
+          landscape: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1200/800`,
+          tiny: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/20/30`,
+        },
+        liked: false,
+        alt: `Mock wallpaper for ${endpoint}`,
+      };
+      if (process.env.NODE_ENV === 'development') {
+          toast({
+            title: "API Key Missing",
+            description: `Pexels API key not found for ${endpoint}. Displaying mock data.`,
+            variant: "default",
+          });
+      }
+      return isSingleItem ? [mockPhoto] : Array(10).fill(mockPhoto).map((p,i)=>({...p, id: p.id+i}));
     }
 
     const queryParams = new URLSearchParams();
@@ -107,13 +134,27 @@ export default function ExplorerPage() {
       }
       return [];
     }
-  }, [toast]); // PEXELS_API_KEY removed from deps as it's module const
+  }, [toast]);
 
 
    const fetchBrowseAllWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
       setLoading(false);
       setHasMore(false);
+      // Mock data handled by genericFetchWallpapers if key is missing
+      // Fallback for direct call:
+      const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
+        id: i + pageNum * 100, // semi-unique id
+        width: 1080, height: 1920, url: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`,
+        photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i,
+        avg_color: '#000000',
+        src: { original: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`, large2x: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`, large: `https://picsum.photos/seed/${query}${category}${i}/800/1200`, medium: `https://picsum.photos/seed/${query}${category}${i}/400/600`, small: `https://picsum.photos/seed/${query}${category}${i}/200/300`, portrait: `https://picsum.photos/seed/${query}${category}${i}/800/1200`, landscape: `https://picsum.photos/seed/${query}${category}${i}/1200/800`, tiny: `https://picsum.photos/seed/${query}${category}${i}/20/30` },
+        liked: false, alt: `Mock wallpaper for ${query} ${i}`,
+      }));
+      setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
+      if (process.env.NODE_ENV === 'development') {
+        toast({ title: "API Key Missing", description: "Displaying mock data for main grid.", variant: "default" });
+      }
       return;
     }
 
@@ -131,7 +172,7 @@ export default function ExplorerPage() {
       
       setWallpapers(prev => {
         const combined = append ? [...prev, ...photos] : photos;
-        const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item])); // Key includes category
+        const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
         return Array.from(uniqueMap.values());
       });
       setHasMore(photos.length === 30);
@@ -141,7 +182,7 @@ export default function ExplorerPage() {
     } finally {
       setLoading(false);
     }
-   }, [toast, genericFetchWallpapers]); // PEXELS_API_KEY removed from deps
+   }, [toast, genericFetchWallpapers]); 
 
 
   useEffect(() => {
@@ -220,8 +261,6 @@ export default function ExplorerPage() {
     setTimeout(() => setSelectedWallpaper(null), 300); 
   };
 
-  // This handleDownload is for the "Wallpaper of the Day" direct download button.
-  // The PreviewDialog handles its own multi-resolution downloads.
   const handleWotdDownload = async (wallpaperToDownload: PexelsPhoto | null) => {
     if (!wallpaperToDownload) return;
     const photographerName = wallpaperToDownload.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
@@ -248,7 +287,8 @@ export default function ExplorerPage() {
 
    const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
    
-  const imageSchema: MinimalWithContext<MinimalThing> | null = selectedWallpaper ? {
+  // Correctly typed with MinimalWithContext<SchemaImageObject>
+  const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
     name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
@@ -261,22 +301,23 @@ export default function ExplorerPage() {
       '@type': 'Person',
       name: selectedWallpaper.photographer,
       url: selectedWallpaper.photographer_url,
-    },
+    } as SchemaPerson,
     copyrightHolder: { 
       '@type': 'Person',
       name: selectedWallpaper.photographer,
       url: selectedWallpaper.photographer_url,
-    },
+    } as SchemaPerson,
     license: 'https://www.pexels.com/license/',
     acquireLicensePage: selectedWallpaper.url, 
     provider: {
       '@type': 'Organization',
       name: 'Pexels',
       url: 'https://www.pexels.com',
-    },
+    } as SchemaOrganization,
   } : null;
 
-  const explorerPageSchema: MinimalWithContext<MinimalThing> = {
+  // Correctly typed with MinimalWithContext<SchemaWebPage>
+  const explorerPageSchema: MinimalWithContext<SchemaWebPage> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: 'Explore Wallpapers - Wallify',
@@ -350,8 +391,8 @@ export default function ExplorerPage() {
           wallpaper={wallpaperOfTheDay}
           loading={wallpaperOfTheDayLoading}
           orientation={currentCategory}
-          onViewClick={openModal} // openModal will show the PreviewDialog
-          onDownloadClick={handleWotdDownload} // Direct original download for WOTD
+          onViewClick={openModal} 
+          onDownloadClick={handleWotdDownload} 
         />
 
         <WallpaperSection
@@ -359,7 +400,7 @@ export default function ExplorerPage() {
           wallpapers={trendingWallpapers}
           loading={trendingLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal} // openModal will show the PreviewDialog
+          onWallpaperClick={openModal} 
           itemCount={8}
         />
 
@@ -368,7 +409,7 @@ export default function ExplorerPage() {
           wallpapers={editorsPicks}
           loading={editorsPicksLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal} // openModal will show the PreviewDialog
+          onWallpaperClick={openModal} 
           itemCount={8}
         />
         
@@ -377,7 +418,7 @@ export default function ExplorerPage() {
           wallpapers={mostDownloaded}
           loading={mostDownloadedLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal} // openModal will show the PreviewDialog
+          onWallpaperClick={openModal} 
           itemCount={8}
         />
 
@@ -386,7 +427,7 @@ export default function ExplorerPage() {
           wallpapers={recentlyAdded}
           loading={recentlyAddedLoading}
           orientation={currentCategory}
-          onWallpaperClick={openModal} // openModal will show the PreviewDialog
+          onWallpaperClick={openModal} 
           itemCount={8}
         />
         
@@ -404,7 +445,7 @@ export default function ExplorerPage() {
              <WallpaperGrid 
                 photos={wallpapers} 
                 orientation={currentCategory}
-                onPhotoClick={openModal} // openModal will show the PreviewDialog
+                onPhotoClick={openModal} 
              />
         )}
 
@@ -425,7 +466,6 @@ export default function ExplorerPage() {
           )}
       </main>
 
-      {/* Use the enhanced PreviewDialog component, managed by this page's state */}
       <PreviewDialog
         photo={selectedWallpaper}
         isOpen={isModalOpen}

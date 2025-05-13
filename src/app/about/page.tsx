@@ -5,25 +5,27 @@ import { ArrowLeft, Info, Users, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
-import type { Organization, WithContext } from 'schema-dts';
+// Updated import for local minimal types
+import type { Organization, MinimalWithContext, ContactPoint } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function AboutUsPage() {
-  const orgData: WithContext<Organization> = {
+  // Correctly typed with MinimalWithContext<Organization>
+  const orgData: MinimalWithContext<Organization> = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Wallify',
     url: BASE_URL,
     logo: `${BASE_URL}opengraph-image.png`, 
     description: 'Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices, sourced from Pexels.',
-    contactPoint: {
+    contactPoint: { // This needs to conform to ContactPoint from @/types/schema-dts if used strictly
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
       url: `${BASE_URL}contact`,
-    },
+    } as ContactPoint, // Cast to ensure it matches the defined ContactPoint type
     sameAs: [ 
         "https://x.com/NayanShirpure",
         "https://instagram.com/NayanShirpure",

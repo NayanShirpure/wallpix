@@ -3,7 +3,15 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, UserCircle } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
-import type { BlogPosting, MinimalWithContext, MinimalThing } from '@/types/schema-dts'; // Adjusted import
+// Updated import for local minimal types
+import type { 
+  BlogPosting, 
+  Person, 
+  Organization, 
+  ImageObject as SchemaImageObject, // Renamed to avoid conflict
+  WebPage as SchemaWebPage, // Renamed to avoid conflict
+  MinimalWithContext 
+} from '@/types/schema-dts';
 import Image from 'next/image';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -17,13 +25,14 @@ interface BlogPostPageProps {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const slug = params.slug; // Directly access slug from params
+  const slug = params.slug; 
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) notFound();
 
   const PostContent = (await post.contentComponent()).default;
 
+  // Correctly typed with MinimalWithContext<BlogPosting>
   const articleSchema: MinimalWithContext<BlogPosting> = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -37,19 +46,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     author: {
       '@type': 'Person',
       name: post.author || 'Wallify Team',
-    },
+    } as Person, // Cast to ensure it matches the defined Person type
     publisher: {
       '@type': 'Organization',
       name: 'Wallify',
       logo: {
         '@type': 'ImageObject',
         url: `${BASE_URL}opengraph-image.png`,
-      },
-    },
+      } as SchemaImageObject, // Cast to ensure it matches the defined ImageObject type
+    } as Organization, // Cast to ensure it matches the defined Organization type
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${BASE_URL}blog/${post.slug}`,
-    },
+    } as SchemaWebPage, // Cast to ensure it matches the defined WebPage type
     keywords: post.keywords?.join(', ') || post.tags?.join(', '),
   };
 

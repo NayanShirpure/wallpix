@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
-import type { WithContext, WebSite, SearchAction } from 'schema-dts';
+// Updated import for local minimal types
+import type { WebSite as SchemaWebSite, SearchAction as SchemaSearchAction, MinimalWithContext } from '@/types/schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
-// import { Header } from '@/components/layout/Header'; // Removed
 
 
 const inter = Inter({
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: `/opengraph-image.png`, // Assuming it's in public folder
+        url: `/opengraph-image.png`, 
         width: 1200,
         height: 630,
         alt: `Wallify - Stunning Wallpapers for Desktop and Smartphone`,
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-     images: [`/twitter-image.png`], // Assuming it's in public folder
+     images: [`/twitter-image.png`], 
     site: '@NayanShirpure', 
     creator: '@NayanShirpure',
   },
@@ -76,7 +76,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const webSiteSchema: WithContext<WebSite> = {
+  // Correctly typed with MinimalWithContext
+  const webSiteSchema: MinimalWithContext<SchemaWebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: SITE_NAME,
@@ -89,7 +90,7 @@ export default function RootLayout({
           urlTemplate: `${BASE_URL}search/{search_term_string}`, 
         },
         'query-input': 'required name=search_term_string',
-    } as SearchAction, 
+    } as SchemaSearchAction, 
   };
 
   return (
@@ -107,7 +108,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* <Header /> Removed */}
           <div className="flex-grow flex flex-col">
             {children}
           </div>

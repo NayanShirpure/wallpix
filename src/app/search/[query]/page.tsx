@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation'; // Use useParams for client components
-import { searchPhotos } from '@/lib/pexels';
+import { useParams } from 'next/navigation'; 
+import { searchPhotos as pexelsSearchPhotos } from '@/lib/pexels'; // Renamed to avoid conflict
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Link from 'next/link';
@@ -14,17 +14,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { useToast } from '@/hooks/use-toast';
 import { StructuredData } from '@/components/structured-data';
-import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
+// Updated import for local minimal types
+import type { SearchResultsPage as SchemaSearchResultsPage, MinimalWithContext } from '@/types/schema-dts';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-// generateMetadata remains a server-side concern, so we might need a separate file or adjust approach
-// For now, we'll focus on making the page functional as a client component.
-// Metadata generation for client components with dynamic params needs careful handling,
-// often by fetching data in a Server Component parent or using a route handler if SEO is critical for these dynamic parts.
-// Since this file is now 'use client', a separate generateMetadata in this file won't work as expected for RSC.
-// We'll omit dynamic metadata generation from this client component for now to fix the runtime error.
-// A proper solution would involve rethinking metadata for this client-rendered dynamic route.
 
 export default function SearchPage() {
   const params = useParams();
@@ -58,21 +52,21 @@ export default function SearchPage() {
         console.error("Failed to decode query parameter:", rawQueryParam, e);
         setErrorState("Invalid search query.");
         setDecodedQueryDisplay("Invalid Search");
-        decoded = ''; // Ensure query is empty on error
+        decoded = ''; 
       }
     } else {
         setErrorState("Empty search query.");
         setDecodedQueryDisplay("Search");
     }
     setCurrentSearchQuery(decoded);
-    setPhotos([]); // Reset photos on new query
-    setPage(1); // Reset page
-    setHasMore(true); // Reset hasMore
+    setPhotos([]); 
+    setPage(1); 
+    setHasMore(true); 
   }, [params.query]);
 
 
   const fetchSearchResults = useCallback(async (query: string, pageNum: number, append: boolean = false) => {
-    if (!query.trim() || errorState) { // Don't fetch if query is empty or error state exists
+    if (!query.trim() || errorState) { 
       setLoading(false);
       setHasMore(false);
       if (!errorState && !query.trim()) setErrorState("Empty search query.");
@@ -81,14 +75,26 @@ export default function SearchPage() {
 
     setLoading(true);
     try {
-      const data = await searchPhotos(query, pageNum, 30); // Fetches mixed orientation by default
+      const data = await pexelsSearchPhotos(query, pageNum, 30); 
       if (data && data.photos) {
         setPhotos(prev => append ? [...prev, ...data.photos] : data.photos);
         setHasMore(!!data.next_page && data.photos.length > 0);
       } else {
-        setPhotos(append ? photos : []); // Keep existing if appending and error, else clear
+        setPhotos(append ? photos : []); 
         setHasMore(false);
-        if(!data) toast({ title: "API Error", description: "Could not fetch search results.", variant: "destructive" });
+        if(!data && process.env.NEXT_PUBLIC_PEXELS_API_KEY) { // Only toast if API key is present, implying an actual API issue
+           toast({ title: "API Error", description: "Could not fetch search results.", variant: "destructive" });
+        } else if (!process.env.NEXT_PUBLIC_PEXELS_API_KEY) {
+            // Mock data for missing API key scenario
+            const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
+                id: i + pageNum * 1000, width: 1080, height: 1920, url: `https://picsum.photos/seed/search${query}${i}/1080/1920`,
+                photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#123456',
+                src: { original: `https://picsum.photos/seed/search${query}${i}/1080/1920`, large2x: `https://picsum.photos/seed/search${query}${i}/1080/1920`, large: `https://picsum.photos/seed/search${query}${i}/800/1200`, medium: `https://picsum.photos/seed/search${query}${i}/400/600`, small: `https://picsum.photos/seed/search${query}${i}/200/300`, portrait: `https://picsum.photos/seed/search${query}${i}/800/1200`, landscape: `https://picsum.photos/seed/search${query}${i}/1200/800`, tiny: `https://picsum.photos/seed/search${query}${i}/20/30` },
+                liked: false, alt: `Mock search result for ${query} ${i}`,
+            }));
+            setPhotos(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
+            setHasMore(false); // No real pagination for mock
+        }
       }
     } catch (error) {
       console.error("Error fetching search results:", error);
@@ -98,18 +104,18 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [toast, photos, errorState]); // Added photos and errorState to dependencies
+  }, [toast, photos, errorState]); 
 
   useEffect(() => {
     if (currentSearchQuery && !errorState) {
       fetchSearchResults(currentSearchQuery, 1, false);
     } else {
-      setLoading(false); // Ensure loading is false if there's an error or no query
+      setLoading(false); 
       setPhotos([]);
       setHasMore(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSearchQuery, errorState]); // fetchSearchResults is memoized
+  }, [currentSearchQuery, errorState]); 
 
   const handleLoadMore = () => {
     if (!loading && hasMore && currentSearchQuery && !errorState) {
@@ -129,11 +135,11 @@ export default function SearchPage() {
     setTimeout(() => setSelectedWallpaper(null), 300);
   };
 
-  const gridAspectRatio = 'aspect-[9/16]'; // Default for search page items display
-  const displayOrientation: DeviceOrientationCategory = 'smartphone'; // For WallpaperGrid card rendering style
+  const gridAspectRatio = 'aspect-[9/16]'; 
+  const displayOrientation: DeviceOrientationCategory = 'smartphone'; 
 
-  // Schema.org data
-    const searchPageSchema: MinimalWithContext<MinimalThing> = {
+  // Correctly typed with MinimalWithContext<SchemaSearchResultsPage>
+  const searchPageSchema: MinimalWithContext<SchemaSearchResultsPage> = {
     '@context': 'https://schema.org',
     '@type': 'SearchResultsPage',
     name: `Search results for "${decodedQueryDisplay}" on Wallify`,
@@ -210,7 +216,7 @@ export default function SearchPage() {
             <p className="text-sm text-muted-foreground mt-2">
               Try a different search term or explore our curated collections.
             </p>
-            <Button variant="outline" asChild className="mt-6">
+             <Button variant="outline" asChild className="mt-6">
               <Link href="/explorer"><SearchIcon className="mr-2 h-4 w-4" /> Explore Wallpapers</Link>
             </Button>
           </div>

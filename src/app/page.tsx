@@ -3,18 +3,14 @@
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
-// Image component is used within WallpaperGrid and PreviewDialog
 import Link from 'next/link'; 
-// useRouter is not directly used here anymore for search, SearchBar handles it
 import { Button } from '@/components/ui/button';
 import { Menu, Camera } from 'lucide-react'; 
-// Dialog related imports are for the main PreviewDialog
-import { Dialog } from '@/components/ui/dialog'; // Only Dialog root, content is PreviewDialog
-import { PreviewDialog } from '@/components/wallpaper/PreviewDialog'; // Import the enhanced PreviewDialog
+import { Dialog } from '@/components/ui/dialog'; 
+import { PreviewDialog } from '@/components/wallpaper/PreviewDialog'; 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-// downloadFile utility is now primarily used within PreviewDialog
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
-import type { MinimalThing, MinimalWithContext } from '@/types/schema-dts';
+// Updated import for local minimal types
+import type { ImageObject as SchemaImageObject, MinimalWithContext } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle'; 
 import { SearchBar } from '@/components/wallpaper/SearchBar'; 
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
@@ -44,26 +41,45 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
-  // const router = useRouter(); // Not used directly
 
    const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
+      // Display mock data or a specific message if API key is missing
+      const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
+        id: i,
+        width: 1080,
+        height: 1920,
+        url: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`,
+        photographer: 'Mock Photographer',
+        photographer_url: 'https://example.com',
+        photographer_id: i,
+        avg_color: '#000000',
+        src: {
+          original: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`,
+          large2x: `https://picsum.photos/seed/${query}${category}${i}/1080/1920`,
+          large: `https://picsum.photos/seed/${query}${category}${i}/800/1200`,
+          medium: `https://picsum.photos/seed/${query}${category}${i}/400/600`,
+          small: `https://picsum.photos/seed/${query}${category}${i}/200/300`,
+          portrait: `https://picsum.photos/seed/${query}${category}${i}/800/1200`,
+          landscape: `https://picsum.photos/seed/${query}${category}${i}/1200/800`,
+          tiny: `https://picsum.photos/seed/${query}${category}${i}/20/30`,
+        },
+        liked: false,
+        alt: `Mock wallpaper for ${query} ${i}`,
+      }));
+      
+      setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
+      setLoading(false);
+      setHasMore(false); // No pagination for mock data in this simple setup
+
       if (process.env.NODE_ENV === 'development') {
           toast({
-            title: "API Key Error",
-            description: "Pexels API key is not configured. Please add NEXT_PUBLIC_PEXELS_API_KEY to your environment variables.",
-            variant: "destructive",
+            title: "API Key Missing",
+            description: "Pexels API key not found. Displaying mock data. Set NEXT_PUBLIC_PEXELS_API_KEY.",
+            variant: "default", // Use default or a warning variant
           });
-      } else {
-         toast({
-            title: "Configuration Error",
-            description: "Could not fetch wallpapers due to a configuration issue.",
-            variant: "destructive",
-         });
       }
-      setLoading(false);
-      setHasMore(false);
       return;
     }
 
@@ -95,22 +111,21 @@ export default function Home() {
                     variant: "destructive",
                 });
              }
-             setHasMore(false);
          } else {
              console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}`);
              toast({ title: "API Error", description: `Failed to fetch: ${response.statusText}`, variant: "destructive" });
-             setHasMore(false); // set hasMore to false on API error
          }
+         setHasMore(false);
       } else {
             const data: PexelsResponse = await response.json();
             const newPhotos = data.photos || [];
 
             setWallpapers(prev => {
               const combined = append ? [...prev, ...newPhotos] : newPhotos;
-              const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item])); // Key includes category for uniqueness
+              const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item])); 
               return Array.from(uniqueMap.values());
             });
-            setHasMore(!!data.next_page && newPhotos.length > 0 && newPhotos.length === 30); // Check if next_page exists and if we got a full page
+            setHasMore(!!data.next_page && newPhotos.length > 0 && newPhotos.length === 30);
       }
 
     } catch (error) {
@@ -124,7 +139,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-   }, [toast]); // Removed PEXELS_API_KEY from dependency array as it's a const at module level
+   }, [toast]); 
 
 
   useEffect(() => {
@@ -161,16 +176,14 @@ export default function Home() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    // Delay clearing selectedWallpaper to allow for exit animation of dialog
     setTimeout(() => setSelectedWallpaper(null), 300); 
   };
 
-  // handleDownload function specific to this page's direct download (if any) is removed.
-  // PreviewDialog now handles its own download logic.
 
    const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
 
-  const imageSchema: MinimalWithContext<MinimalThing> | null = selectedWallpaper ? {
+  // Correctly typed with MinimalWithContext<SchemaImageObject>
+  const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
     name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
@@ -290,7 +303,6 @@ export default function Home() {
           )}
       </main>
 
-      {/* Use the enhanced PreviewDialog component */}
       <PreviewDialog
         photo={selectedWallpaper}
         isOpen={isModalOpen}
