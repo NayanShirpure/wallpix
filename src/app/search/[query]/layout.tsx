@@ -1,24 +1,16 @@
 import { ReactNode } from 'react';
-
 import type { Metadata, ResolvingMetadata } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
+// This interface is only for the component
 interface SearchLayoutProps {
   children: ReactNode;
-  params: { query: string };
 }
 
-// interface SearchLayoutProps {
-//   params: { query: string };
-// } 
-
-// This metadata function will run on the server.
-// For client components, dynamic title/description updates based on fetched data
-// would need to happen client-side (e.g. useEffect with document.title)
-// or by having this layout wrap a Server Component that can fetch and pass down metadata.
+// ✅ This is the correct type for generateMetadata parameters
 export async function generateMetadata(
-  { params }: SearchLayoutProps,
+  { params }: { params: { query: string } },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const rawQueryParam = params.query || '';
@@ -33,43 +25,33 @@ export async function generateMetadata(
     console.warn("Failed to decode query for metadata in layout:", rawQueryParam, e);
     queryDisplay = "Invalid Search";
   }
-  
-  const title = queryDisplay === "Search" || queryDisplay === "Invalid Search"
-    ? `Search Results | Wallify`
-    : `Search: "${queryDisplay}" | Wallify`;
+
+  const title =
+    queryDisplay === "Search" || queryDisplay === "Invalid Search"
+      ? `Search Results | Wallify`
+      : `Search: "${queryDisplay}" | Wallify`;
+
   const description = `Find high-quality wallpapers matching "${queryDisplay}" on Wallify, your source for stunning backgrounds.`;
 
   return {
-    title: title,
-    description: description,
-    keywords: queryDisplay === "Search" || queryDisplay === "Invalid Search"
-      ? ['Wallify search', 'wallpapers', 'backgrounds']
-      : [queryDisplay, 'wallpapers', 'backgrounds', `${queryDisplay} backgrounds`, 'Wallify search'],
+    title,
+    description,
+    keywords:
+      queryDisplay === "Search" || queryDisplay === "Invalid Search"
+        ? ['Wallify search', 'wallpapers', 'backgrounds']
+        : [queryDisplay, 'wallpapers', 'backgrounds', `${queryDisplay} backgrounds`, 'Wallify search'],
     alternates: {
       canonical: `${BASE_URL}search/${rawQueryParam || 'query'}`,
     },
     openGraph: {
-        title: title,
-        description: description,
-        url: `${BASE_URL}search/${rawQueryParam || 'query'}`,
-    }
+      title,
+      description,
+      url: `${BASE_URL}search/${rawQueryParam || 'query'}`,
+    },
   };
 }
 
-
+// ✅ layout does NOT need params unless you explicitly want to use them inside the component
 export default function SearchLayout({ children }: SearchLayoutProps) {
-  return (
-    <div>
-      {/* Layout can access params.query if needed */}
-      {children}
-    </div>
-  );
+  return <div>{children}</div>;
 }
-
-// export default function SearchPageLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   return <>{children}</>;
-// }
