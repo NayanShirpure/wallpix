@@ -8,8 +8,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.gith
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     { url: '/', changeFrequency: 'daily', priority: 1.0 },
-    // { url: '/explorer', changeFrequency: 'weekly', priority: 0.8 }, // Removed explorer
-    { url: '/blog', changeFrequency: 'weekly', priority: 0.9 }, // Blog index
+    { url: '/discover', changeFrequency: 'weekly', priority: 0.8 },
+    { url: '/blog', changeFrequency: 'weekly', priority: 0.9 },
     { url: '/about', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/contact', changeFrequency: 'monthly', priority: 0.5 },
     { url: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
@@ -31,4 +31,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [...staticPages, ...blogPostPages]; 
 }
-
