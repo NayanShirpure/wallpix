@@ -5,15 +5,17 @@ import { blogPosts } from '@/config/blog';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-interface BlogPostLayoutProps {
-  params: { slug: string };
-}
+// The interface BlogPostLayoutProps was causing a type conflict.
+// It's removed as the generateMetadata function now uses an inline type for its props.
+// interface BlogPostLayoutProps {
+//   params: { slug: string };
+// }
 
 export async function generateMetadata(
-  { params }: BlogPostLayoutProps,
+  { params }: { params: { slug: string } }, // Changed to inline type definition
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const slug = params.slug; // Directly access slug from params
+  const slug = params.slug;
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) {
