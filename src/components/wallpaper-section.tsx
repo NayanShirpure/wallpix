@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
@@ -20,38 +21,35 @@ export function WallpaperSection({
   loading,
   orientation,
   onWallpaperClick,
-  itemCount = 8, // Default to 8 items for sections
+  itemCount = 8,
 }: WallpaperSectionProps) {
   const aspectRatio = orientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
-  // Adjusted widths for a responsive horizontal scroll, Tailwind classes define max-width basically
   const imageContainerClass = orientation === 'desktop' 
-    ? 'w-60 md:w-72 lg:w-80' // Wider for desktop landscape
-    : 'w-32 md:w-36 lg:w-40'; // Narrower for mobile portrait
+    ? 'w-60 md:w-72 lg:w-80'
+    : 'w-32 md:w-36 lg:w-40';
 
   const displayedWallpapers = wallpapers.slice(0, itemCount);
 
   const getSrc = (photo: PexelsPhoto) => {
-    // Prioritize orientation-specific crops, then fall back
     if (orientation === 'desktop') {
       return photo.src.landscape || photo.src.large || photo.src.original;
     }
-    // Smartphone (portrait)
     return photo.src.portrait || photo.src.medium || photo.src.original;
   };
 
   return (
-    <section className="mb-6 sm:mb-10">
+    <section> {/* Removed mb-6 sm:mb-10, will be handled by space-y in parent */}
       <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">{title}</h2>
       {loading ? (
         <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 px-1">
-          {[...Array(Math.min(itemCount, 4))].map((_, i) => ( // Show a few skeletons
+          {[...Array(Math.min(itemCount, 4))].map((_, i) => (
             <div key={`skeleton-${title}-${i}`} className={`flex-shrink-0 ${imageContainerClass}`}>
               <Skeleton className={`${aspectRatio} w-full rounded-lg`} />
             </div>
           ))}
         </div>
       ) : wallpapers.length > 0 ? (
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 px-1"> {/* Added pb-3 for scrollbar space */}
+        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 px-1">
           {displayedWallpapers.map((wallpaper) => (
             <div
               key={`${wallpaper.id}-${orientation}-${title}`}
@@ -66,7 +64,7 @@ export function WallpaperSection({
                 src={getSrc(wallpaper)}
                 alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
                 fill
-                sizes={`(max-width: 768px) 40vw, ${imageContainerClass.split(' ').find(c => c.startsWith('lg:w-'))?.replace('lg:w-','') || '200'}px`} // Approximate sizes
+                sizes={`(max-width: 768px) 40vw, ${imageContainerClass.split(' ').find(c => c.startsWith('lg:w-'))?.replace('lg:w-','') || '200'}px`}
                 className="object-cover transition-opacity duration-300 group-hover:opacity-80"
                 placeholder="blur"
                 blurDataURL={wallpaper.src.tiny}

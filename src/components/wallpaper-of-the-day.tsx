@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
@@ -21,19 +22,19 @@ export function WallpaperOfTheDay({
   onViewClick,
   onDownloadClick,
 }: WallpaperOfTheDayProps) {
-  const aspectRatio = orientation === 'desktop' ? 'aspect-video sm:aspect-[18/9] md:aspect-[21/9]' : 'aspect-[9/16] sm:aspect-[9/14]'; // More cinematic for desktop WOTD
+  const aspectRatio = orientation === 'desktop' ? 'aspect-video sm:aspect-[18/9] md:aspect-[21/9]' : 'aspect-[9/16] sm:aspect-[9/14]';
   const containerHeight = orientation === 'desktop' ? 'max-h-[300px] sm:max-h-[400px] md:max-h-[450px]' : 'max-h-[450px] sm:max-h-[550px]';
 
 
   const getSrc = (photo: PexelsPhoto) => {
-    if (orientation === 'desktop') return photo.src.original; // Highest quality for desktop WOTD
-    return photo.src.large2x || photo.src.original; // High quality for mobile WOTD
+    if (orientation === 'desktop') return photo.src.original;
+    return photo.src.large2x || photo.src.original;
   };
 
   if (loading) {
     return (
-      <section className="mb-6 sm:mb-10">
-        <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">Wallpaper of the Day</h2>
+      <section>
+        <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Wallpaper of the Day</h2>
         <Skeleton className={`w-full ${aspectRatio} ${containerHeight} rounded-xl`} />
       </section>
     );
@@ -41,8 +42,8 @@ export function WallpaperOfTheDay({
 
   if (!wallpaper) {
     return (
-      <section className="mb-6 sm:mb-10">
-        <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">Wallpaper of the Day</h2>
+      <section>
+        <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Wallpaper of the Day</h2>
         <div className={`flex items-center justify-center w-full ${aspectRatio} ${containerHeight} rounded-xl bg-muted/50 border border-dashed`}>
             <p className="text-muted-foreground">Wallpaper of the Day is currently unavailable.</p>
         </div>
@@ -51,8 +52,8 @@ export function WallpaperOfTheDay({
   }
 
   return (
-    <section className="mb-6 sm:mb-10">
-      <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">Wallpaper of the Day</h2>
+    <section>
+      <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Wallpaper of the Day</h2>
       <div
         className={`relative w-full ${aspectRatio} ${containerHeight} rounded-xl overflow-hidden group shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out`}
       >
@@ -60,9 +61,9 @@ export function WallpaperOfTheDay({
           src={getSrc(wallpaper)}
           alt={wallpaper.alt || `Wallpaper of the day by ${wallpaper.photographer}`}
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1000px" // General sizes
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1000px"
           className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-          priority // This is likely an LCP candidate
+          priority
           placeholder="blur"
           blurDataURL={wallpaper.src.tiny}
           data-ai-hint={`daily featured ${orientation === 'desktop' ? 'desktop background' : 'phone wallpaper'}`}

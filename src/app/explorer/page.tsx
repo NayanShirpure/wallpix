@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
@@ -59,23 +60,17 @@ export default function ExplorerPage() {
   const genericFetchWallpapers = useCallback(async (
     endpoint: string,
     params: Record<string, string | number>,
-    isSingleItem: boolean = false 
+    isSingleItem: boolean = false
   ): Promise<PexelsPhoto[]> => {
     const effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
-    const isApiKeyMissingOrPlaceholder = !process.env.NEXT_PUBLIC_PEXELS_API_KEY || /your_actual_pexels_api_key/i.test(process.env.NEXT_PUBLIC_PEXELS_API_KEY);
+    const isApiKeyMissingOrPlaceholder = !process.env.NEXT_PUBLIC_PEXELS_API_KEY || /your_actual_pexels_api_key/i.test(process.env.NEXT_PUBLIC_PEXELS_API_KEY || "");
 
 
     if (isApiKeyMissingOrPlaceholder && effectiveApiKey === "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw") {
-      // This block executes if the env var is missing/placeholder AND we are using the hardcoded fallback.
-      // We still want to proceed with the fallback key but log a notice for developers if in dev mode.
       if (process.env.NODE_ENV === 'development') {
         console.warn(`[Explorer Page] Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured or is a placeholder. Using default fallback key for ${endpoint}.`);
-        // The toast for mock data below will be skipped if the fallback key works.
       }
     } else if (isApiKeyMissingOrPlaceholder && effectiveApiKey !== "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw") {
-      // This case should ideally not happen if the fallback logic is sound, but as a safety:
-      // If NEXT_PUBLIC_PEXELS_API_KEY is missing/placeholder and effectiveApiKey is NOT the fallback, it means something is overriding.
-      // For safety, treat as if key is missing and show mock data.
       console.warn(`[Explorer Page] Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is missing or placeholder for ${endpoint}. Displaying mock data.`);
       const mockPhoto: PexelsPhoto = {
         id: Date.now() + Math.random(),
@@ -128,18 +123,17 @@ export default function ExplorerPage() {
         }
         return [];
       }
-      const data = await response.json(); // PexelsResponse or PexelsPhoto based on isSingleItem
+      const data = await response.json();
       const photos = endpoint === 'photos' && data && 'id' in data ? [data as PexelsPhoto] : (data as PexelsResponse)?.photos || [];
-      
+
       return photos;
     } catch (error: any) {
       console.error(`Error fetching from ${endpoint}:`, error.message);
       if (!error.message.includes("API Key Invalid")) {
         toast({ title: "Fetch Error", description: `Failed to fetch ${endpoint} content. Displaying mock data if applicable or check console.`, variant: "destructive" });
       }
-       // Fallback to mock data on any fetch error if API key was missing initially
       if (isApiKeyMissingOrPlaceholder) {
-        const mockPhoto: PexelsPhoto = { /* ... same mockPhoto structure as above ... */ 
+        const mockPhoto: PexelsPhoto = {
             id: Date.now() + Math.random(), width: 1080, height: 1920, url: `https://picsum.photos/seed/error${endpoint}/1080/1920`, photographer: 'Mock Error Photographer', photographer_url: 'https://example.com', photographer_id: 1, avg_color: '#111111', src: { original: `https://picsum.photos/seed/error${endpoint}/1080/1920`, large2x: `https://picsum.photos/seed/error${endpoint}/1080/1920`, large: `https://picsum.photos/seed/error${endpoint}/800/1200`, medium: `https://picsum.photos/seed/error${endpoint}/400/600`, small: `https://picsum.photos/seed/error${endpoint}/200/300`, portrait: `https://picsum.photos/seed/error${endpoint}/800/1200`, landscape: `https://picsum.photos/seed/error${endpoint}/1200/800`, tiny: `https://picsum.photos/seed/error${endpoint}/20/30` }, liked: false, alt: `Mock error wallpaper for ${endpoint}`
         };
         return isSingleItem ? [mockPhoto] : Array(10).fill(null).map((_,i)=>({...mockPhoto, id: mockPhoto.id+i, url: `https://picsum.photos/seed/error${endpoint}${i}/1080/1920`, alt: `${mockPhoto.alt} ${i}`}));
@@ -151,7 +145,7 @@ export default function ExplorerPage() {
 
    const fetchBrowseAllWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     const effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
-    const isApiKeyMissingOrPlaceholder = !process.env.NEXT_PUBLIC_PEXELS_API_KEY || /your_actual_pexels_api_key/i.test(process.env.NEXT_PUBLIC_PEXELS_API_KEY);
+    const isApiKeyMissingOrPlaceholder = !process.env.NEXT_PUBLIC_PEXELS_API_KEY || /your_actual_pexels_api_key/i.test(process.env.NEXT_PUBLIC_PEXELS_API_KEY || "");
 
 
     if (isApiKeyMissingOrPlaceholder && effectiveApiKey === "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw") {
@@ -164,7 +158,6 @@ export default function ExplorerPage() {
              });
         }
     } else if (isApiKeyMissingOrPlaceholder) {
-        // This implies the fallback key also failed or wasn't used, show mock data for main grid.
       setLoading(false);
       setHasMore(pageNum < 3);
       const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
@@ -255,11 +248,11 @@ export default function ExplorerPage() {
         .finally(() => setRecentlyAddedLoading(false));
 
       setWallpaperOfTheDayLoading(true);
-      genericFetchWallpapers('search', { query: "Daily Inspiration Wallpaper", orientation: orientationParam, per_page: 5 }) // Fetch 5
+      genericFetchWallpapers('search', { query: "Daily Inspiration Wallpaper", orientation: orientationParam, per_page: 5 })
         .then(photos => {
           if (photos.length > 0) {
             const randomIndex = Math.floor(Math.random() * photos.length);
-            setWallpaperOfTheDay(photos[randomIndex]); // Pick one randomly
+            setWallpaperOfTheDay(photos[randomIndex]);
           } else {
             setWallpaperOfTheDay(null);
           }
@@ -274,7 +267,7 @@ export default function ExplorerPage() {
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentDeviceOrientation) {
            setCurrentDeviceOrientation(newCategory);
-           setSearchTerm('Explore'); // Reset search term when changing orientation on explorer page
+           setSearchTerm('Explore');
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
@@ -282,7 +275,7 @@ export default function ExplorerPage() {
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue); // Set search term to the selected category
+    setSearchTerm(categoryValue);
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
@@ -348,25 +341,25 @@ export default function ExplorerPage() {
     description: selectedWallpaper.alt || `High-resolution wallpaper by ${selectedWallpaper.photographer}. Dimensions: ${selectedWallpaper.width}x${selectedWallpaper.height}.`,
     contentUrl: selectedWallpaper.src.original,
     thumbnailUrl: selectedWallpaper.src.medium,
-    width: { '@type': 'Distance', value: selectedWallpaper.width.toString(), unitCode: 'E37' }, // Using pixel unit
-    height: { '@type': 'Distance', value: selectedWallpaper.height.toString(), unitCode: 'E37' }, // Using pixel unit
+    width: { '@type': 'Distance', value: selectedWallpaper.width.toString(), unitCode: 'E37' },
+    height: { '@type': 'Distance', value: selectedWallpaper.height.toString(), unitCode: 'E37' },
     author: {
       '@type': 'Person',
       name: selectedWallpaper.photographer,
       url: selectedWallpaper.photographer_url,
-    } as SchemaPerson, // Cast to defined type
+    } as SchemaPerson,
     copyrightHolder: {
       '@type': 'Person',
       name: selectedWallpaper.photographer,
       url: selectedWallpaper.photographer_url,
-    } as SchemaPerson, // Cast to defined type
+    } as SchemaPerson,
     license: 'https://www.pexels.com/license/',
     acquireLicensePage: selectedWallpaper.url,
     provider: {
       '@type': 'Organization',
       name: 'Pexels',
       url: 'https://www.pexels.com',
-    } as SchemaOrganization, // Cast to defined type
+    } as SchemaOrganization,
   } : null;
 
   const explorerPageSchema: MinimalWithContext<SchemaWebPage> = {
@@ -389,92 +382,98 @@ export default function ExplorerPage() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={searchTerm}
-        showExplorerLink={false} // Explorer link is not needed on the explorer page itself
+        showExplorerLink={false}
       />
 
-      <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
-        <div className="my-4 sm:my-6 text-center">
+      <main className="flex-grow container mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8">
+        <div className="my-6 sm:my-8 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-primary">Explore Wallpapers</h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">Discover trending, popular, and new wallpapers. Use the filters in the header or search to find your perfect wallpaper.</p>
         </div>
 
-        <WallpaperOfTheDay
-          wallpaper={wallpaperOfTheDay}
-          loading={wallpaperOfTheDayLoading}
-          orientation={currentDeviceOrientation}
-          onViewClick={openModal}
-          onDownloadClick={handleWotdDownload}
-        />
+        {/* Featured Content Section */}
+        <section className="space-y-8 md:space-y-10 lg:space-y-12 mb-10 md:mb-12 lg:mb-16">
+            <WallpaperOfTheDay
+            wallpaper={wallpaperOfTheDay}
+            loading={wallpaperOfTheDayLoading}
+            orientation={currentDeviceOrientation}
+            onViewClick={openModal}
+            onDownloadClick={handleWotdDownload}
+            />
 
-        <WallpaperSection
-          title="Trending Wallpapers"
-          wallpapers={trendingWallpapers}
-          loading={trendingLoading}
-          orientation={currentDeviceOrientation}
-          onWallpaperClick={openModal}
-          itemCount={8}
-        />
+            <WallpaperSection
+            title="Trending Wallpapers"
+            wallpapers={trendingWallpapers}
+            loading={trendingLoading}
+            orientation={currentDeviceOrientation}
+            onWallpaperClick={openModal}
+            itemCount={8}
+            />
 
-        <WallpaperSection
-          title="Editor's Picks"
-          wallpapers={editorsPicks}
-          loading={editorsPicksLoading}
-          orientation={currentDeviceOrientation}
-          onWallpaperClick={openModal}
-          itemCount={8}
-        />
+            <WallpaperSection
+            title="Editor's Picks"
+            wallpapers={editorsPicks}
+            loading={editorsPicksLoading}
+            orientation={currentDeviceOrientation}
+            onWallpaperClick={openModal}
+            itemCount={8}
+            />
 
-        <WallpaperSection
-          title="Popular Choices"
-          wallpapers={mostDownloaded}
-          loading={mostDownloadedLoading}
-          orientation={currentDeviceOrientation}
-          onWallpaperClick={openModal}
-          itemCount={8}
-        />
+            <WallpaperSection
+            title="Popular Choices"
+            wallpapers={mostDownloaded}
+            loading={mostDownloadedLoading}
+            orientation={currentDeviceOrientation}
+            onWallpaperClick={openModal}
+            itemCount={8}
+            />
 
-        <WallpaperSection
-          title="Fresh Finds"
-          wallpapers={recentlyAdded}
-          loading={recentlyAddedLoading}
-          orientation={currentDeviceOrientation}
-          onWallpaperClick={openModal}
-          itemCount={8}
-        />
+            <WallpaperSection
+            title="Fresh Finds"
+            wallpapers={recentlyAdded}
+            loading={recentlyAddedLoading}
+            orientation={currentDeviceOrientation}
+            onWallpaperClick={openModal}
+            itemCount={8}
+            />
+        </section>
 
-        <h2 className="text-xl sm:text-2xl font-semibold text-primary mt-8 mb-3 sm:mb-4 px-1">
-          {searchTerm === "Explore" ? `Browse All ${currentDeviceOrientation === 'desktop' ? 'Desktop' : 'Phone'} Wallpapers` : `Browsing: "${searchTerm}"`}
-        </h2>
+        {/* Browse All Section */}
+        <section>
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">
+            {searchTerm === "Explore" ? `Browse All ${currentDeviceOrientation === 'desktop' ? 'Desktop' : 'Phone'} Wallpapers` : `Browsing: "${searchTerm}"`}
+            </h2>
 
-        {loading && wallpapers.length === 0 ? (
-             <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
-                {[...Array(15)].map((_, i) => (
-                 <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
-                ))}
-            </div>
-        ) : (
-             <WallpaperGrid
-                photos={wallpapers}
-                orientation={currentDeviceOrientation}
-                onPhotoClick={openModal}
-             />
-        )}
+            {loading && wallpapers.length === 0 ? (
+                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
+                    {[...Array(15)].map((_, i) => (
+                    <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                    ))}
+                </div>
+            ) : (
+                <WallpaperGrid
+                    photos={wallpapers}
+                    orientation={currentDeviceOrientation}
+                    onPhotoClick={openModal}
+                />
+            )}
 
-         {hasMore && !loading && wallpapers.length > 0 && (
-            <div className="flex justify-center mt-6 sm:mt-8 mb-4">
-                <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
-                Load More
-                </Button>
-            </div>
-          )}
+            {hasMore && !loading && wallpapers.length > 0 && (
+                <div className="flex justify-center mt-6 sm:mt-8 mb-4">
+                    <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
+                    Load More
+                    </Button>
+                </div>
+            )}
 
-          {loading && wallpapers.length > 0 && (
-              <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
-                ))}
-            </div>
-          )}
+            {loading && wallpapers.length > 0 && (
+                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
+                    {[...Array(5)].map((_, i) => (
+                    <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                    ))}
+                </div>
+            )}
+        </section>
       </main>
 
       <PreviewDialog
