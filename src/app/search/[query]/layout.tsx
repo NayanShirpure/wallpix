@@ -1,11 +1,19 @@
+import { ReactNode } from 'react';
 
 import type { Metadata, ResolvingMetadata } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 interface SearchLayoutProps {
-  params: { query: string };
+  children: ReactNode;
+  params: {
+    query: string;
+  };
 }
+
+// interface SearchLayoutProps {
+//   params: { query: string };
+// } 
 
 // This metadata function will run on the server.
 // For client components, dynamic title/description updates based on fetched data
@@ -51,10 +59,17 @@ export async function generateMetadata(
 }
 
 
-export default function SearchPageLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function SearchLayout({ children, params }: SearchLayoutProps) {
+  // You can now safely access params.query here
+  console.log("Search Query:", params.query);
+
   return <>{children}</>;
 }
+
+// export default function SearchPageLayout({
+//   children,
+// }: {
+//   children: React.ReactNode;
+// }) {
+//   return <>{children}</>;
+// }
