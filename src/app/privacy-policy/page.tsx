@@ -110,7 +110,7 @@ export default function PrivacyPolicyPage() {
 
           <h3 className="text-xl font-semibold text-primary mt-6">Contact Us</h3>
           <p>
-            If you have any questions about this Privacy Policy, please <Link href="/contact">contact us</Link> via the Contact Us page.
+            If you have any questions about this Privacy Policy, please <Link href="/contact">contact us</Link>.
           </p>
         </article>
       </main>

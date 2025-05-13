@@ -112,7 +112,7 @@ export default function TermsConditionsPage() {
 
           <h3 className="text-xl font-semibold text-primary mt-6">Contact Us</h3>
            <p>
-            If you have any questions about these Terms, please <Link href="/contact">contact us</Link> via the Contact Us page.
+            If you have any questions about these Terms, please <Link href="/contact">contact us</Link>.
           </p>
 
         </article>
