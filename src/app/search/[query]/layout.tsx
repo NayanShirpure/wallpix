@@ -1,20 +1,16 @@
 import { ReactNode } from 'react';
 import type { Metadata, ResolvingMetadata } from 'next';
 
-// const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-// interface SearchLayoutProps {
-//   children: ReactNode;
-// }
+interface SearchLayoutProps {
+  children: ReactNode;
+}
 
 // ✅ Only used inside generateMetadata
 type GenerateMetadataProps = {
   params: { query: string };
 };
-
-// interface GenerateMetadataProps {
-//   params: { query: string };
-// }
 
 export async function generateMetadata(
   { params }: { params: GenerateMetadataProps['params'] }, // 👈 This is the crucial type correction
@@ -48,16 +44,16 @@ export async function generateMetadata(
         ? ['Wallify search', 'wallpapers', 'backgrounds']
         : [queryDisplay, 'wallpapers', 'backgrounds', `${queryDisplay} backgrounds`, 'Wallify search'],
     alternates: {
-      canonical: `https://nayanshirpure.github.io/Wallify/search/${rawQueryParam || 'query'}`,
+      canonical: `${BASE_URL}search/${rawQueryParam || 'query'}`, // 👈 Correct usage of BASE_URL
     },
     openGraph: {
       title,
       description,
-      url: `https://nayanshirpure.github.io/Wallify/search/${rawQueryParam || 'query'}`,
+      url: `${BASE_URL}search/${rawQueryParam || 'query'}`, // 👈 Correct usage of BASE_URL
     },
   };
 }
 
-export default function SearchLayout({ children }: { children: ReactNode }) { // 👈 But the component's props are directly typed here
+export default function SearchLayout({ children }: SearchLayoutProps) { // 👈 Use the interface here
   return <div>{children}</div>;
 }
