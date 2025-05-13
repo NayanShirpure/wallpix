@@ -19,8 +19,15 @@ const ArticleContent = (): ReactNode => (
       <li><strong>Nature-Inspired:</strong> Connect with the outdoors through serene landscapes, detailed close-ups of flora and fauna, or wallpapers featuring earthy, natural tones.</li>
       <li><strong>Dark & Moody:</strong> Create a sophisticated or introspective atmosphere with deep, rich colors, atmospheric night scenes, or abstract dark patterns.</li>
     </ul>
-    <div className="my-6">
-      <Image src="https://picsum.photos/seed/style-moodboard/800/450" alt="A moodboard showcasing different aesthetic styles for wallpaper selection like minimalist, bohemian, and modern." width={800} height={450} className="rounded-lg shadow-md" data-ai-hint="diverse styles"/>
+    <div className="my-6 flex justify-center">
+      <Image 
+        src="https://picsum.photos/seed/style-moodboard-selection/800/450" 
+        alt="A moodboard showcasing different aesthetic styles for wallpaper selection like minimalist, bohemian, and modern." 
+        width={800} 
+        height={450} 
+        className="rounded-lg shadow-md" 
+        data-ai-hint="diverse styles"
+      />
     </div>
 
     <h2>2. Leverage Color Psychology</h2>
@@ -48,6 +55,16 @@ const ArticleContent = (): ReactNode => (
       <li><strong>Desktop/Laptop:</strong> Landscape orientation is standard. With more screen real estate, you can opt for more detailed or expansive scenes. However, always consider icon placement if you keep many shortcuts on your desktop.</li>
       <li><strong>Work vs. Personal:</strong> You might prefer a more subdued, professional, and less distracting wallpaper for a work device, reserving more expressive and vibrant choices for your personal phone or computer.</li>
     </ul>
+    <div className="my-6 flex justify-center">
+      <Image 
+        src="https://picsum.photos/seed/device-context-wallpaper/800/450" 
+        alt="Side-by-side comparison of a smartphone and a laptop showing appropriately chosen wallpapers." 
+        width={800} 
+        height={450} 
+        className="rounded-lg shadow-md" 
+        data-ai-hint="phone desktop"
+      />
+    </div>
 
     <h2>4. Prioritize Resolution and Quality</h2>
     <p>
@@ -58,8 +75,15 @@ const ArticleContent = (): ReactNode => (
     <p>
       Don't be afraid to experiment! What looks appealing in a thumbnail might feel different once set as your full-screen background. Download several options that catch your eye and try them out. Live with each one for a day or two to see how it feels. Wallify's easy preview and download functionality encourages this process of discovery, so iterate until you find that wallpaper that just clicks.
     </p>
-    <div className="my-6">
-      <Image src="https://picsum.photos/seed/wallpaper-selection/800/450" alt="A person browsing and selecting a wallpaper on a tablet device." width={800} height={450} className="rounded-lg shadow-md" data-ai-hint="choosing background"/>
+    <div className="my-6 flex justify-center">
+      <Image 
+        src="https://picsum.photos/seed/wallpaper-selection-process/800/450" 
+        alt="A person browsing and selecting a wallpaper on a tablet device, trying different options." 
+        width={800} 
+        height={450} 
+        className="rounded-lg shadow-md" 
+        data-ai-hint="choosing background"
+      />
     </div>
     <p>
       Finding the perfect wallpaper is a delightful journey of self-expression. Use Wallify’s intuitive search, device filters (Phone/Desktop), and category selections to explore a universe of possibilities and discover the background that truly reflects you.

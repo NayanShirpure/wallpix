@@ -1,3 +1,4 @@
+
 import { blogPosts } from '@/config/blog';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -104,6 +105,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 768px, 1000px"
               className="object-cover"
               priority
+              data-ai-hint="blog cover"
             />
           </div>
         )}
