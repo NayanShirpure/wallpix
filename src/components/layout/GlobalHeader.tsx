@@ -26,6 +26,7 @@ interface GlobalHeaderProps {
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
   initialSearchTerm?: string; 
+  navigateToSearchPage?: boolean; // Added prop
 }
 
 export function GlobalHeader({
@@ -34,6 +35,7 @@ export function GlobalHeader({
   onWallpaperCategorySelect,
   onSearchSubmit,
   initialSearchTerm,
+  navigateToSearchPage, // Destructure prop
 }: GlobalHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-card/90 backdrop-blur-md supports-[backdrop-filter]:bg-card/75 print:hidden">
@@ -97,7 +99,11 @@ export function GlobalHeader({
         </div>
         
         <div className="w-full max-w-[150px] xs:max-w-[180px] sm:max-w-xs mx-auto sm:mx-0 sm:ml-auto">
-          <SearchBar onSubmitSearch={onSearchSubmit} initialValue={initialSearchTerm} />
+          <SearchBar 
+            onSubmitSearch={onSearchSubmit} 
+            initialValue={initialSearchTerm}
+            navigateToSearchPage={navigateToSearchPage} // Pass prop to SearchBar
+          />
         </div>
 
         {/* Mobile Combined Menu */}

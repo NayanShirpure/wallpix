@@ -2,7 +2,7 @@
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
-import React, { useState, useEffect, useCallback, use } from 'react'; // Added 'use'
+import React, { useState, useEffect, useCallback, use } from 'react'; 
 import { useRouter } from 'next/navigation';
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,16 +17,16 @@ import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWeb
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 interface SearchPageProps {
-  params: Promise<{ query: string }>; // Changed to Promise
+  params: Promise<{ query: string }>; 
 }
 
-export default function SearchPage({ params: paramsPromise }: SearchPageProps) { // Renamed prop
-  const params = use(paramsPromise); // Unwrap params using React.use()
+export default function SearchPage({ params: paramsPromise }: SearchPageProps) { 
+  const params = use(paramsPromise); 
   const router = useRouter();
   const { toast } = useToast();
 
   let initialDecodedQuery = 'Wallpaper';
-  if (params && params.query) { // params is now resolved
+  if (params && params.query) { 
     try {
       initialDecodedQuery = decodeURIComponent(params.query);
     } catch (e) {
@@ -55,7 +55,7 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
         const newPhotos = data.photos;
         setWallpapers(prev => {
           const combined = append ? [...prev, ...newPhotos] : newPhotos;
-          const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
+          const uniqueMap = new Map(combined.map((item: PexelsPhoto) => [`${item.id}-${category}`, item]));
           return Array.from(uniqueMap.values());
         });
         setHasMore(!!data.next_page && newPhotos.length > 0 && newPhotos.length === 30);
@@ -77,7 +77,6 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
   }, [toast]);
 
   useEffect(() => {
-    // params is the resolved object here due to React.use()
     let queryFromParams = 'Wallpaper';
     if (params && params.query) {
       try {
@@ -95,7 +94,7 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(queryFromParams, currentDeviceOrientation, 1, false);
-  }, [params, currentDeviceOrientation, fetchWallpapers, currentSearchTerm]); // Added currentSearchTerm to dependencies as it's compared
+  }, [params, currentDeviceOrientation, fetchWallpapers, currentSearchTerm]); 
 
 
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
@@ -137,7 +136,6 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
 
   const gridAspectRatio = currentDeviceOrientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
   
-  // params used for schema should be the resolved one
   const searchResultsSchema: MinimalWithContext<SchemaSearchResultsPage> | null = params?.query ? {
     '@context': 'https://schema.org',
     '@type': 'SearchResultsPage',
