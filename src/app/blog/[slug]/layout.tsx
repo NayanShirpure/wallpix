@@ -70,10 +70,8 @@ export async function generateMetadata(
 // Synchronous layout component with typed props
 export default function BlogPostLayout({
   children,
-  // params,
 }: {
-  children: ReactNode; // Use imported ReactNode
-  params: { slug: string };
+  children: React.ReactNode;
 }) {
-  return <div className="blog-post-layout">{children}</div>;
+  return <>{children}</>;
 }
