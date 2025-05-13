@@ -1,5 +1,7 @@
+
 'use client';
 
+import React, { useState, useEffect } from 'react'; // Added useState, useEffect import
 import type { PexelsPhoto } from '@/types/pexels';
 import {
   Dialog,
@@ -27,6 +29,19 @@ interface PreviewDialogProps {
 }
 
 export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
+  // Initialize selectedDownloadUrl safely, considering photo might be null
+  const [selectedDownloadUrl, setSelectedDownloadUrl] = useState<string>(photo?.src.original || '');
+
+  // useEffect to update selectedDownloadUrl when the photo prop changes
+  useEffect(() => {
+    if (photo) {
+      setSelectedDownloadUrl(photo.src.original);
+    } else {
+      // Reset if photo becomes null after being set
+      setSelectedDownloadUrl('');
+    }
+  }, [photo]);
+
   if (!photo) return null;
 
   const downloadOptions = [
@@ -36,20 +51,12 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     { label: 'Small (640px wide)', url: photo.src.medium, resolution: '640x...' },
   ];
 
-  const [selectedDownloadUrl, setSelectedDownloadUrl] = useState(photo.src.original);
-
   const handleDownload = () => {
-    window.open(selectedDownloadUrl, '_blank');
+    if (selectedDownloadUrl) { // Ensure URL is not empty
+      window.open(selectedDownloadUrl, '_blank');
+    }
   };
   
-  // Use useEffect to reset selectedDownloadUrl when photo changes
-  const { useState, useEffect } = React;
-  useEffect(() => {
-    if (photo) {
-      setSelectedDownloadUrl(photo.src.original);
-    }
-  }, [photo]);
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -69,6 +76,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
             style={{ objectFit: 'contain' }}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1000px"
             data-ai-hint={photo.alt ? photo.alt.split(' ').slice(0,2).join(' ') : "wallpaper image"}
+            priority // Consider adding priority if this dialog opens frequently with new images
           />
         </div>
         <DialogFooter className="p-6 pt-2 border-t bg-background/80 flex-col sm:flex-row items-center">
@@ -84,13 +92,13 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
               </SelectTrigger>
               <SelectContent>
                 {downloadOptions.map(opt => (
-                  <SelectItem key={opt.label} value={opt.url}>
+                  <SelectItem key={opt.label} value={opt.url} disabled={!opt.url}>
                     {opt.label} ({opt.resolution})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={handleDownload} className="w-full sm:w-auto">
+            <Button onClick={handleDownload} className="w-full sm:w-auto" disabled={!selectedDownloadUrl}>
               <Download className="mr-2 h-4 w-4" /> Download
             </Button>
           </div>

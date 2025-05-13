@@ -1,26 +1,25 @@
 
-'use client'; // Required for useState and useEffect for 'Last updated' text
+'use client'; 
 
-import React, { useState, useEffect } from 'react'; // Import React features
+import React, { useState, useEffect } from 'react'; 
 import Link from 'next/link';
 import { ArrowLeft, Twitter, Instagram, Github } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
 import type { WebPage, WithContext } from 'schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle';
 
-// Metadata is now handled by src/app/privacy-policy/layout.tsx
-
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function PrivacyPolicyPage() {
-  const [today, setToday] = useState(new Date().toISOString().split('T')[0]);
+  const [lastUpdatedDate, setLastUpdatedDate] = useState<string | null>(null);
 
   useEffect(() => {
-    // This ensures 'today' is set on the client-side after hydration,
-    // preventing mismatch with server-rendered HTML if the build time is different.
-    setToday(new Date().toISOString().split('T')[0]);
+    setLastUpdatedDate(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
   }, []);
   
+  // Use a fixed date for schema.org dateModified, representing the last actual content update.
+  const actualPolicyModificationDate = "2024-05-20"; // Update this when policy content actually changes.
+
   const webPageSchema: WithContext<WebPage> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage', 
@@ -32,7 +31,7 @@ export default function PrivacyPolicyPage() {
       '@id': `${BASE_URL}privacy-policy`,
     },
     datePublished: "2024-01-01", 
-    dateModified: today,
+    dateModified: actualPolicyModificationDate, // Using fixed actual modification date
   };
 
   return (
@@ -60,7 +59,7 @@ export default function PrivacyPolicyPage() {
         <main className="container mx-auto max-w-4xl p-4 py-8 md:p-6 md:py-12">
           <article className="prose prose-invert max-w-none dark:prose-invert prose-headings:text-primary prose-a:text-accent prose-a:no-underline hover:prose-a:underline">
             <h2 className="text-2xl font-semibold text-primary">Privacy Policy for Wallify</h2>
-            <p>Last updated: {new Date(today).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p>Last updated: {lastUpdatedDate || 'Loading date...'}</p>
 
             <p>
               Welcome to Wallify! We are committed to protecting your privacy. This Privacy Policy explains how we
