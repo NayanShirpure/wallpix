@@ -16,7 +16,7 @@ type GenerateMetadataProps = {
 };
 
 export async function generateMetadata(
-  { params }: GenerateMetadataProps,
+  { params }: { params: { query: string } },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const rawQueryParam = params.query || '';
