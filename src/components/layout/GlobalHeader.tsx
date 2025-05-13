@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -24,7 +23,7 @@ interface GlobalHeaderProps {
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
   initialSearchTerm?: string; 
-  showExplorerLink?: boolean; 
+  showExplorerLink?: boolean; // New prop to control Explorer link visibility
 }
 
 export function GlobalHeader({
@@ -33,7 +32,7 @@ export function GlobalHeader({
   onWallpaperCategorySelect,
   onSearchSubmit,
   initialSearchTerm,
-  showExplorerLink = true,
+  showExplorerLink = true, // Default to true
 }: GlobalHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-card/90 backdrop-blur-md supports-[backdrop-filter]:bg-card/75 print:hidden">

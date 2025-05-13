@@ -13,9 +13,8 @@ import { Button } from '@/components/ui/button';
 
 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
-// This constant is used internally by lib/pexels.ts if NEXT_PUBLIC_PEXELS_API_KEY is missing/placeholder.
-// The page logic should not directly depend on this for showing mock data if a key is provided.
-// const FALLBACK_API_KEY_CONSTANT = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+const FALLBACK_PEXELS_API_KEY = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('Wallpaper');
@@ -29,83 +28,70 @@ export default function Home() {
   const { toast } = useToast();
 
    const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
-    const effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-    // Check if the API key is effectively missing or just a placeholder text.
-    const isApiKeyMissingOrPlaceholder = !effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey);
+    let effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+    const isEnvKeyMissingOrPlaceholder = !effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey);
 
-    if (isApiKeyMissingOrPlaceholder) {
-      console.warn("[Home Page] Pexels API key is missing or placeholder. Displaying mock data.");
+    if (isEnvKeyMissingOrPlaceholder) {
+        effectiveApiKey = FALLBACK_PEXELS_API_KEY;
+        if (process.env.NODE_ENV === 'development') {
+             console.warn("[Home Page] Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured or is a placeholder. Using default fallback key.");
+        }
+    }
+
+    if (!effectiveApiKey || /your_actual_pexels_api_key/i.test(effectiveApiKey)) {
+      console.warn("[Home Page] No valid Pexels API key available (checked env & fallback). Displaying mock data.");
       const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
-        id: i + pageNum * 1000 + Date.now(), // ensure unique mock IDs
-        width: 1080,
-        height: 1920,
+        id: i + pageNum * 1000 + Date.now(),
+        width: 1080, height: 1920,
         url: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`,
-        photographer: 'Mock Photographer',
-        photographer_url: 'https://example.com',
-        photographer_id: i,
-        avg_color: '#000000',
-        src: {
-          original: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`,
-          large2x: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`,
-          large: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/800/1200`,
-          medium: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/400/600`,
-          small: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/200/300`,
-          portrait: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/800/1200`,
-          landscape: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1200/800`,
-          tiny: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/20/30`,
-        },
-        liked: false,
-        alt: `Mock wallpaper for ${query} ${i} page ${pageNum}`,
+        photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#000000',
+        src: { original: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/20/30` },
+        liked: false, alt: `Mock wallpaper for ${query} ${i} page ${pageNum}`,
       }));
-
       setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
       setLoading(false);
-      setHasMore(pageNum < 3); // Allow some mock pagination
-
+      setHasMore(pageNum < 3);
       if (process.env.NODE_ENV === 'development') {
           toast({
             title: "PEXELS API Key Notice",
-            description: "The Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured or is a placeholder. Displaying mock data. To fetch real wallpapers, please set this environment variable in your .env.local file and restart your development server. Example: PEXELS_API_KEY=YOUR_ACTUAL_PEXELS_API_KEY",
+            description: "Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) and fallback are not configured or valid. Displaying mock data. Set NEXT_PUBLIC_PEXELS_API_KEY in .env.local.",
             variant: "default",
-            duration: 10000, // Keep message longer
+            duration: 10000,
           });
       }
       return;
     }
-
+    
     setLoading(true);
     const orientation = category === 'desktop' ? 'landscape' : 'portrait';
     let finalQuery = query.trim() || 'Wallpaper';
 
     try {
       const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
-      const response = await fetch(apiUrl, {
-        headers: {
-          // effectiveApiKey here will be the one from .env or undefined (handled by isApiKeyMissingOrPlaceholder)
-          // lib/pexels.ts internally handles using its own fallback if this key is problematic and logs details.
-          Authorization: effectiveApiKey!,
-        },
-      });
+      const response = await fetch(apiUrl, { headers: { Authorization: effectiveApiKey! } });
 
       if (!response.ok) {
          if (response.status === 401) {
             console.error("Pexels API key is invalid or unauthorized.");
-             toast({
-                title: "API Key Invalid",
-                description: "The configured Pexels API key is invalid or unauthorized. Please check your .env.local file.",
-                variant: "destructive",
-             });
+             toast({ title: "API Key Invalid", description: "The Pexels API key is invalid or unauthorized.", variant: "destructive" });
          } else {
              console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}`);
              toast({ title: "API Error", description: `Failed to fetch: ${response.statusText}`, variant: "destructive" });
          }
          setHasMore(false);
-         // Potentially show mock data on error too, or an error message
-         setWallpapers(prev => append ? prev : []); // Clear or keep existing
+         // If API call fails and it was due to bad primary env key (so fallback was used and also failed) -> show mock.
+         if (isEnvKeyMissingOrPlaceholder && effectiveApiKey === FALLBACK_PEXELS_API_KEY) {
+            console.warn("[Home Page] Fallback API key also failed. Displaying mock data.");
+            // Re-invoke mock data logic from above
+            const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({ id: i + pageNum * 1000 + Date.now() + 100, width: 1080, height: 1920, url: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#000000', src: { original: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/fail${query}${category}${i}${pageNum}${Math.random()}/20/30` }, liked: false, alt: `Mock fail wallpaper ${query} ${i} pg ${pageNum}` }));
+            setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
+            setHasMore(pageNum < 2); // Limit mock pagination
+         } else {
+            setWallpapers(prev => append ? prev : []);
+         }
       } else {
             const data: PexelsResponse = await response.json();
             const newPhotos = data.photos || [];
-
             setWallpapers(prev => {
               const combined = append ? [...prev, ...newPhotos] : newPhotos;
               const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
@@ -116,13 +102,16 @@ export default function Home() {
 
     } catch (error) {
       console.error("Error fetching wallpapers:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch wallpapers. Please check your connection and try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to fetch wallpapers. Check connection.", variant: "destructive" });
        setHasMore(false);
-       setWallpapers(prev => append ? prev : []);
+       if (isEnvKeyMissingOrPlaceholder) { // If error and primary key was bad, consider mock
+            console.warn("[Home Page] Fetch error occurred (likely with fallback key). Displaying mock data.");
+             const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({ id: i + pageNum * 1000 + Date.now() + 200, width: 1080, height: 1920, url: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#000000', src: { original: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/err${query}${category}${i}${pageNum}${Math.random()}/20/30` }, liked: false, alt: `Mock err wallpaper ${query} ${i} pg ${pageNum}` }));
+            setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
+            setHasMore(pageNum < 2);
+       } else {
+         setWallpapers(prev => append ? prev : []);
+       }
     } finally {
       setLoading(false);
     }
@@ -139,7 +128,7 @@ export default function Home() {
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentDeviceOrientation) {
            setCurrentDeviceOrientation(newCategory);
-           setSearchTerm('Wallpaper');
+           setSearchTerm('Wallpaper'); // Reset search term to default on orientation change for home
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
@@ -147,7 +136,7 @@ export default function Home() {
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue);
+    setSearchTerm(categoryValue); // Update search term to the selected category
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
@@ -177,7 +166,7 @@ export default function Home() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setTimeout(() => setSelectedWallpaper(null), 300);
+    setTimeout(() => setSelectedWallpaper(null), 300); // Delay for modal close animation
   };
 
 
@@ -221,6 +210,7 @@ export default function Home() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={searchTerm}
+        showExplorerLink={true} // Show Explorer link on Home page
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
@@ -253,6 +243,7 @@ export default function Home() {
             </div>
           )}
 
+          {/* Skeleton for loading more items */}
           {loading && wallpapers.length > 0 && (
               <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
                 {[...Array(5)].map((_, i) => (
