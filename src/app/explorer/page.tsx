@@ -16,9 +16,10 @@ import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 
 
-const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+// Constant for the fallback/placeholder API key, used for comparison
+const FALLBACK_API_KEY_CONSTANT = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
 
 
 export default function ExplorerPage() {
@@ -56,37 +57,38 @@ export default function ExplorerPage() {
     isSingleItem: boolean = false
   ): Promise<PexelsPhoto[]> => {
     const effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-    const placeholderKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
-    const isApiKeyMissing = !effectiveApiKey || effectiveApiKey === placeholderKey;
+    // Check if the effectiveApiKey is missing or is the hardcoded fallback/placeholder
+    const isApiKeyMissingOrFallback = !effectiveApiKey || effectiveApiKey === FALLBACK_API_KEY_CONSTANT || /your_actual_pexels_api_key/i.test(effectiveApiKey);
 
-    if (isApiKeyMissing) {
-      console.warn(`Pexels API key is missing or placeholder for ${endpoint}. Displaying mock data.`);
+
+    if (isApiKeyMissingOrFallback) {
+      console.warn(`Pexels API key is missing or placeholder/fallback for ${endpoint}. Displaying mock data.`);
       const mockPhoto: PexelsPhoto = {
-        id: Date.now(),
+        id: Date.now() + Math.random(), // Ensure unique ID for mocks
         width: 1080,
         height: 1920,
-        url: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1080/1920`,
+        url: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/1080/1920`,
         photographer: 'Mock Photographer',
         photographer_url: 'https://example.com',
         photographer_id: 1,
         avg_color: '#000000',
         src: {
-          original: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1080/1920`,
-          large2x: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1080/1920`,
-          large: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/800/1200`,
-          medium: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/400/600`,
-          small: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/200/300`,
-          portrait: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/800/1200`,
-          landscape: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/1200/800`,
-          tiny: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}/20/30`,
+          original: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/1080/1920`,
+          large2x: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/1080/1920`,
+          large: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/800/1200`,
+          medium: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/400/600`,
+          small: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/200/300`,
+          portrait: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/800/1200`,
+          landscape: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/1200/800`,
+          tiny: `https://picsum.photos/seed/${endpoint}${Object.values(params).join('')}${Math.random()}/20/30`,
         },
         liked: false,
         alt: `Mock wallpaper for ${endpoint}`,
       };
       if (process.env.NODE_ENV === 'development') {
           toast({
-            title: "API Key Missing",
-            description: `Pexels API key not found for ${endpoint}. Displaying mock data.`,
+            title: "API Key Notice",
+            description: `Pexels API key not configured or is fallback for ${endpoint}. Displaying mock data.`,
             variant: "default",
           });
       }
@@ -127,23 +129,22 @@ export default function ExplorerPage() {
 
    const fetchBrowseAllWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     const effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-    const placeholderKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
-    const isApiKeyMissing = !effectiveApiKey || effectiveApiKey === placeholderKey;
+    const isApiKeyMissingOrFallback = !effectiveApiKey || effectiveApiKey === FALLBACK_API_KEY_CONSTANT || /your_actual_pexels_api_key/i.test(effectiveApiKey);
     
-    if (isApiKeyMissing) {
+    if (isApiKeyMissingOrFallback) {
       setLoading(false);
       setHasMore(pageNum < 3); 
       const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
-        id: i + pageNum * 100, 
-        width: 1080, height: 1920, url: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1080/1920`,
+        id: i + pageNum * 100 + Date.now() + Math.random(), // ensure unique mock IDs
+        width: 1080, height: 1920, url: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`,
         photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i,
         avg_color: '#000000',
-        src: { original: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1080/1920`, large2x: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1080/1920`, large: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/800/1200`, medium: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/400/600`, small: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/200/300`, portrait: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/800/1200`, landscape: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/1200/800`, tiny: `https://picsum.photos/seed/${query}${category}${i}${pageNum}/20/30` },
+        src: { original: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/${query}${category}${i}${pageNum}${Math.random()}/20/30` },
         liked: false, alt: `Mock wallpaper for ${query} ${i} page ${pageNum}`,
       }));
       setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
       if (process.env.NODE_ENV === 'development') {
-        toast({ title: "API Key Missing", description: "Displaying mock data for main grid.", variant: "default" });
+        toast({ title: "API Key Notice", description: "Pexels API key not configured or is fallback. Displaying mock data for main grid.", variant: "default" });
       }
       return;
     }

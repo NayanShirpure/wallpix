@@ -25,7 +25,9 @@ const nextConfig: NextConfig = {
     ],
   },
   env: {
-    NEXT_PUBLIC_PEXELS_API_KEY: process.env.PEXELS_API_KEY, // Expose to client for conditional rendering/messaging
+    // This makes PEXELS_API_KEY available to the client-side code as process.env.NEXT_PUBLIC_PEXELS_API_KEY
+    // The server-side code can still access it as process.env.PEXELS_API_KEY
+    NEXT_PUBLIC_PEXELS_API_KEY: process.env.PEXELS_API_KEY,
   }
 };
 

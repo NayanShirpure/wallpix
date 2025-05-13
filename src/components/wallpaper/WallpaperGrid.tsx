@@ -3,41 +3,52 @@
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import { WallpaperCard } from './WallpaperCard';
-// PreviewDialog and related state are now managed by the parent page (e.g., page.tsx or explorer/page.tsx)
-// import { PreviewDialog } from './PreviewDialog'; 
-// import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
 interface WallpaperGridProps {
   photos: PexelsPhoto[];
-  orientation: DeviceOrientationCategory; // Added orientation prop
-  onPhotoClick: (photo: PexelsPhoto) => void; // Callback for when a photo is clicked
-  // initialSelectedPhotoId?: string; // This logic will be handled by parent
+  orientation: DeviceOrientationCategory; 
+  onPhotoClick: (photo: PexelsPhoto) => void; 
 }
 
 export function WallpaperGrid({ photos, orientation, onPhotoClick }: WallpaperGridProps) {
-  // State for selectedPhoto and isPreviewOpen is removed. Parent will manage this.
   
-  // Updated condition: check photos.length > 0 before photos.every
-  if (!process.env.NEXT_PUBLIC_PEXELS_API_KEY && photos && photos.length > 0 && photos.every(p => p.photographer === 'Mock Photographer')) {
+  // Check if NEXT_PUBLIC_PEXELS_API_KEY is missing or is a known placeholder value.
+  // This check assumes that if the key is problematic, mock data with 'Mock Photographer' will be passed.
+  const isUsingMockDataDueToApiKeyIssue = 
+    photos && 
+    photos.length > 0 && 
+    photos.every(p => p.photographer === 'Mock Photographer') &&
+    (!process.env.NEXT_PUBLIC_PEXELS_API_KEY || 
+     /your_actual_pexels_api_key/i.test(process.env.NEXT_PUBLIC_PEXELS_API_KEY || "") ||
+     process.env.NEXT_PUBLIC_PEXELS_API_KEY === "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw");
+
+
+  if (isUsingMockDataDueToApiKeyIssue && process.env.NODE_ENV === 'development') {
      return (
-        <Alert variant="default" className="bg-primary/10 border-primary/30 text-primary-foreground">
+        <Alert variant="default" className="bg-primary/10 border-primary/30 text-primary-foreground my-4">
           <Info className="h-5 w-5 text-primary" />
-          <AlertTitle className="text-primary">Pexels API Key Missing</AlertTitle>
+          <AlertTitle className="text-primary">PEXELS API Key Notice</AlertTitle>
           <AlertDescription className="text-primary/80">
-            The Pexels API key is not configured. Displaying mock data. Please set the PEXELS_API_KEY environment variable in a .env.local file to fetch real wallpapers.
+            The Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured correctly or is using the default fallback. 
+            Displaying mock data. To fetch real wallpapers, please set this environment variable in your 
+            <code className="bg-primary/20 px-1 rounded mx-1">.env.local</code> file and restart your development server.
             <br />
-            Example: <code className="bg-primary/20 px-1 rounded">PEXELS_API_KEY=YOUR_ACTUAL_PEXELS_API_KEY</code>
+            Example: <code className="bg-primary/20 px-1 rounded">NEXT_PUBLIC_PEXELS_API_KEY=YOUR_ACTUAL_PEXELS_API_KEY</code>
           </AlertDescription>
         </Alert>
      );
   }
 
   if (!photos || photos.length === 0) {
+    // This message will show if there are genuinely no photos, or if mock data generation failed for some reason.
     return (
       <div className="text-center py-10">
         <p className="text-xl text-muted-foreground">No wallpapers found.</p>
+        {process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_PEXELS_API_KEY && (
+            <p className="text-sm text-muted-foreground mt-2">Is your PEXELS_API_KEY set in .env.local?</p>
+        )}
       </div>
     );
   }
@@ -47,14 +58,13 @@ export function WallpaperGrid({ photos, orientation, onPhotoClick }: WallpaperGr
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {photos.map((photo) => (
           <WallpaperCard
-            key={`${photo.id}-${orientation}`} // Ensure key is unique if orientation changes content significantly
+            key={`${photo.id}-${orientation}`} 
             photo={photo}
-            onClick={() => onPhotoClick(photo)} // Call the passed-in handler
-            orientation={orientation} // Pass orientation to WallpaperCard
+            onClick={() => onPhotoClick(photo)} 
+            orientation={orientation} 
           />
         ))}
       </div>
-      {/* PreviewDialog is no longer rendered here. Parent component (page.tsx / explorer.tsx) will render it. */}
     </>
   );
 }

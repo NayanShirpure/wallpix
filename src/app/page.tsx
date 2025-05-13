@@ -13,8 +13,9 @@ import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { Button } from '@/components/ui/button';
 
 
-const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
+// Constant for the fallback/placeholder API key, used for comparison
+const FALLBACK_API_KEY_CONSTANT = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('Wallpaper'); 
@@ -28,12 +29,13 @@ export default function Home() {
   const { toast } = useToast();
 
    const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
+    // Use NEXT_PUBLIC_PEXELS_API_KEY as it's set in next.config.js for client-side access
     const effectiveApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-    const placeholderKey = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
-    const isApiKeyMissing = !effectiveApiKey || effectiveApiKey === placeholderKey;
+    // Check if the effectiveApiKey is missing or is the hardcoded fallback/placeholder
+    const isApiKeyMissingOrFallback = !effectiveApiKey || effectiveApiKey === FALLBACK_API_KEY_CONSTANT || /your_actual_pexels_api_key/i.test(effectiveApiKey);
 
-    if (isApiKeyMissing) {
-      console.warn("Pexels API key is missing or is the placeholder. Displaying mock data.");
+    if (isApiKeyMissingOrFallback) {
+      console.warn("Pexels API key is missing or is the placeholder/fallback. Displaying mock data for main grid.");
       const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
         id: i + pageNum * 1000, 
         width: 1080,
@@ -63,8 +65,8 @@ export default function Home() {
 
       if (process.env.NODE_ENV === 'development') {
           toast({
-            title: "API Key Missing",
-            description: "Pexels API key not found. Displaying mock data. Set NEXT_PUBLIC_PEXELS_API_KEY.",
+            title: "API Key Notice",
+            description: "Pexels API key not configured or is fallback. Displaying mock data. Set NEXT_PUBLIC_PEXELS_API_KEY in .env.local.",
             variant: "default", 
           });
       }
@@ -79,7 +81,7 @@ export default function Home() {
       const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
       const response = await fetch(apiUrl, {
         headers: {
-          Authorization: effectiveApiKey,
+          Authorization: effectiveApiKey, // Use the validated effectiveApiKey
         },
       });
 
