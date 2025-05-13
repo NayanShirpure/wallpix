@@ -16,8 +16,17 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
+  env: {
+    NEXT_PUBLIC_PEXELS_API_KEY: process.env.PEXELS_API_KEY, // Expose to client for conditional rendering/messaging
+  }
 };
 
 export default nextConfig;
