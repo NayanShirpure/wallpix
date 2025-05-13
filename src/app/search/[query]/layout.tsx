@@ -1,14 +1,16 @@
+
 import type { Metadata, ResolvingMetadata } from 'next';
 import type { ReactNode } from 'react';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export async function generateMetadata(
-  { params }: { params: { query: string } },
+  { params: paramsPromise }: { params: Promise<{ query: string }> }, // Changed to expect a Promise
   parent: ResolvingMetadata
 ): Promise<Metadata> {
+  const params = await paramsPromise; // Await the promise to get the resolved params
   let decodedQuery = "Wallpapers";
-  let rawQuery = params?.query || "";
+  let rawQuery = params?.query || ""; // Use resolved params
 
   if (params?.query) {
     try {

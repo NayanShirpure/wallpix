@@ -1,7 +1,8 @@
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react'; // Added 'use'
 import { useRouter } from 'next/navigation';
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,25 +12,26 @@ import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { Button } from '@/components/ui/button';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { StructuredData } from '@/components/structured-data';
-import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWebPage, MinimalWithContext, ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization } from '@/types/schema-dts'; // Added missing types
+import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWebPage, MinimalWithContext, ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization } from '@/types/schema-dts';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 interface SearchPageProps {
-  params: { query: string };
+  params: Promise<{ query: string }>; // Changed to Promise
 }
 
-export default function SearchPage({ params }: SearchPageProps) {
+export default function SearchPage({ params: paramsPromise }: SearchPageProps) { // Renamed prop
+  const params = use(paramsPromise); // Unwrap params using React.use()
   const router = useRouter();
   const { toast } = useToast();
 
   let initialDecodedQuery = 'Wallpaper';
-  if (params && params.query) {
+  if (params && params.query) { // params is now resolved
     try {
       initialDecodedQuery = decodeURIComponent(params.query);
     } catch (e) {
       console.warn(`[SearchPage] Failed to decode query parameter from URL: "${params.query}". Using raw value.`, e);
-      initialDecodedQuery = params.query; // Use raw query if decoding fails
+      initialDecodedQuery = params.query;
     }
   }
   
@@ -75,6 +77,7 @@ export default function SearchPage({ params }: SearchPageProps) {
   }, [toast]);
 
   useEffect(() => {
+    // params is the resolved object here due to React.use()
     let queryFromParams = 'Wallpaper';
     if (params && params.query) {
       try {
@@ -92,13 +95,12 @@ export default function SearchPage({ params }: SearchPageProps) {
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(queryFromParams, currentDeviceOrientation, 1, false);
-  }, [params, currentDeviceOrientation, fetchWallpapers]);
+  }, [params, currentDeviceOrientation, fetchWallpapers, currentSearchTerm]); // Added currentSearchTerm to dependencies as it's compared
 
 
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
     if (newCategory !== currentDeviceOrientation) {
       setCurrentDeviceOrientation(newCategory);
-      // Search term remains, re-fetch for new orientation
       setPage(1);
       setWallpapers([]);
       setHasMore(true);
@@ -106,17 +108,10 @@ export default function SearchPage({ params }: SearchPageProps) {
   };
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
-    // This should trigger a new search navigation via GlobalHeader's SearchBar logic
     router.push(`/search/${encodeURIComponent(categoryValue)}`);
   };
 
   const handleSearchSubmit = (newSearchTerm: string) => {
-    // This is called when search is submitted from GlobalHeader's SearchBar
-    // The SearchBar itself will navigate if navigateToSearchPage is true (default)
-    // If we are already on the search page, this updates the current search.
-    // The useEffect on `params` will handle the actual data fetching on navigation.
-    // If SearchBar's navigateToSearchPage is false, then we would update state here.
-    // For simplicity, we let SearchBar navigate.
     if (newSearchTerm.trim() && newSearchTerm.trim() !== currentSearchTerm) {
         router.push(`/search/${encodeURIComponent(newSearchTerm.trim())}`);
     }
@@ -142,11 +137,12 @@ export default function SearchPage({ params }: SearchPageProps) {
 
   const gridAspectRatio = currentDeviceOrientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
   
+  // params used for schema should be the resolved one
   const searchResultsSchema: MinimalWithContext<SchemaSearchResultsPage> | null = params?.query ? {
     '@context': 'https://schema.org',
     '@type': 'SearchResultsPage',
     name: `Search results for "${currentSearchTerm}"`,
-    url: `${BASE_URL}search/${params.query}`, // Use raw params.query for canonical URL
+    url: `${BASE_URL}search/${params.query}`, 
     description: `Find stunning ${currentSearchTerm} wallpapers on Wallify.`,
     mainEntityOfPage: {
       '@type': 'WebPage',
@@ -194,7 +190,7 @@ export default function SearchPage({ params }: SearchPageProps) {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={currentSearchTerm}
-        navigateToSearchPage={true} // Let search bar handle navigation
+        navigateToSearchPage={true} 
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
