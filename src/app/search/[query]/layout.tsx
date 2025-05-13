@@ -1,22 +1,18 @@
-// src/app/search/[query]/layout.tsx
-
 import { ReactNode } from 'react';
 import type { Metadata, ResolvingMetadata } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-// ✅ This is ONLY for the layout component
 interface SearchLayoutProps {
   children: ReactNode;
 }
 
-// ✅ Only used inside generateMetadata
-type GenerateMetadataProps = {
+interface GenerateMetadataProps {
   params: { query: string };
-};
+}
 
 export async function generateMetadata(
-  { params }: { params: { query: string } },
+  { params }: { params: GenerateMetadataProps['params'] }, // 👈 Updated type here
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const rawQueryParam = params.query || '';
@@ -57,7 +53,6 @@ export async function generateMetadata(
   };
 }
 
-// ✅ Keep this function synchronous unless you truly need `async`
 export default function SearchLayout({ children }: { children: ReactNode }) {
   return <div>{children}</div>;
 }
