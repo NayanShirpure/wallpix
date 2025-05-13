@@ -7,11 +7,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
 import type { WithContext, WebSite, SearchAction } from 'schema-dts';
+import { GlobalFooter } from '@/components/layout/GlobalFooter';
 
 
 const inter = Inter({
   subsets: ['latin'],
-  display: 'swap', // Added display: 'swap'
+  display: 'swap',
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
   manifest: '/manifest.json',
-  themeColor: '#1F2937',
+  themeColor: '#1F2937', // Corresponds to dark mode background
   alternates: {
     canonical: '/',
   },
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: `/opengraph-image.png`,
+        url: `/opengraph-image.png`, // Assuming it's in public folder
         width: 1200,
         height: 630,
         alt: `Wallify - Stunning Wallpapers for Desktop and Smartphone`,
@@ -51,8 +52,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-     images: [`/twitter-image.png`],
-    site: '@NayanShirpure',
+     images: [`/twitter-image.png`], // Assuming it's in public folder
+    site: '@NayanShirpure', 
     creator: '@NayanShirpure',
   },
   robots: {
@@ -84,10 +85,10 @@ export default function RootLayout({
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${BASE_URL}explorer?query={search_term_string}`,
+          urlTemplate: `${BASE_URL}explorer?query={search_term_string}`, // Assuming explorer is the main search page
         },
         'query-input': 'required name=search_term_string',
-    } as SearchAction,
+    } as SearchAction, // Type assertion for potentialAction
   };
 
   return (
@@ -97,7 +98,7 @@ export default function RootLayout({
       </head>
       <body className={cn(
         inter.className,
-        'antialiased'
+        'antialiased flex flex-col min-h-screen bg-background text-foreground' 
        )}>
         <ThemeProvider
           attribute="class"
@@ -105,7 +106,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="flex-grow flex flex-col"> {/* This div will allow content to grow and push footer down */}
+            {children}
+          </div>
+          <GlobalFooter />
           <Toaster />
         </ThemeProvider>
       </body>
