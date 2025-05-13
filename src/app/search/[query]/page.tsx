@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -17,7 +16,7 @@ import { StructuredData } from '@/components/structured-data';
 import type { SearchResultsPage as SchemaSearchResultsPage, MinimalWithContext } from '@/types/schema-dts';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
-const FALLBACK_API_KEY_CONSTANT = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
+// const FALLBACK_API_KEY_CONSTANT = "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
 
 
 export default function SearchPage() {
@@ -75,13 +74,15 @@ export default function SearchPage() {
 
     setLoading(true);
     try {
-      // pexelsSearchPhotos internally uses getApiKey which checks NEXT_PUBLIC_PEXELS_API_KEY
-      const data = await pexelsSearchPhotos(query, pageNum, 30); 
-      const clientApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-      const isApiKeyMissingOrFallback = !clientApiKey || clientApiKey === FALLBACK_API_KEY_CONSTANT || /your_actual_pexels_api_key/i.test(clientApiKey);
+      // pexelsSearchPhotos (from lib/pexels.ts) will attempt to use NEXT_PUBLIC_PEXELS_API_KEY.
+      // If that key is missing or a placeholder, getApiKey() inside lib/pexels.ts will log and use its internal fallback or return null.
+      const data = await pexelsSearchPhotos(query, pageNum, 30);
+      const clientApiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY; // Get key for client-side check
+      // This check is to determine if we should show a *specific* toast about missing/placeholder key,
+      // even if pexelsSearchPhotos managed to return mock data using its internal fallback.
+      const isClientApiKeyMissingOrPlaceholder = !clientApiKey || /your_actual_pexels_api_key/i.test(clientApiKey);
 
-
-      if (data && data.photos) {
+      if (data && data.photos) { // Successfully fetched real or mock data (if pexels.ts has its own mock for null response)
         setPhotos(prevPhotos => {
           const newPhotos = data.photos || [];
           const combined = append ? [...prevPhotos, ...newPhotos] : newPhotos;
@@ -89,28 +90,33 @@ export default function SearchPage() {
           return Array.from(uniqueMap.values());
         });
         setHasMore(!!data.next_page && data.photos.length > 0 && data.photos.length === 30);
-      } else { // This block handles cases where data is null (API key issue or other fetch error)
+      } else { // data is null (API call failed in lib/pexels.ts, or key was invalid)
         setPhotos(prevPhotos => append ? prevPhotos : []);
         setHasMore(false);
-        
-        if (isApiKeyMissingOrFallback) {
+
+        if (isClientApiKeyMissingOrPlaceholder) { // If client key is the issue
              if (process.env.NODE_ENV === 'development') {
-                toast({ title: "API Key Notice", description: "Pexels API key not configured or is fallback. Displaying mock data for search.", variant: "default" });
+                toast({
+                    title: "PEXELS API Key Notice",
+                    description: "Pexels API key (NEXT_PUBLIC_PEXELS_API_KEY) is not configured or is a placeholder. Displaying mock data for search. Please set PEXELS_API_KEY in .env.local.",
+                    variant: "default",
+                    duration: 10000,
+                });
             }
-            // Generate mock data if API key is missing/fallback
-            const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
+            // Generate mock data if API key is missing/placeholder (client-side perspective)
+            const mockPhotosData: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => ({
                 id: i + pageNum * 1000 + Date.now() + Math.random(), width: 1080, height: 1920, url: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/1080/1920`,
                 photographer: 'Mock Photographer', photographer_url: 'https://example.com', photographer_id: i, avg_color: '#123456',
                 src: { original: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/1080/1920`, large2x: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/1080/1920`, large: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/800/1200`, medium: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/400/600`, small: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/200/300`, portrait: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/800/1200`, landscape: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/1200/800`, tiny: `https://picsum.photos/seed/search${query.replace(/\s+/g, '')}${i}${pageNum}${Math.random()}/20/30` },
                 liked: false, alt: `Mock search result for ${query} ${i} page ${pageNum}`,
             }));
-            setPhotos(prevPhotos => append ? [...prevPhotos, ...mockPhotos] : mockPhotos);
-            setHasMore(pageNum < 2); // Allow one "load more" for mock data
-        } else if (!data) { // Data is null, but API key was present (implies other fetch error)
-             toast({ title: "API Error", description: "Could not fetch search results from Pexels.", variant: "destructive" });
+            setPhotos(prevPhotos => append ? [...prevPhotos, ...mockPhotosData] : mockPhotosData);
+            setHasMore(pageNum < 2);
+        } else if (!data && !isClientApiKeyMissingOrPlaceholder) { // API key was present but API call failed for other reasons
+             toast({ title: "API Error", description: "Could not fetch search results from Pexels. The API key might be invalid or there was a network issue.", variant: "destructive" });
         }
       }
-    } catch (error) {
+    } catch (error) { // Should ideally be caught within pexelsSearchPhotos or by its null return
       console.error("Error fetching search results:", error);
       toast({ title: "Error", description: "Failed to fetch search results.", variant: "destructive" });
       setPhotos(prevPhotos => append ? prevPhotos : []);
@@ -122,9 +128,9 @@ export default function SearchPage() {
 
   useEffect(() => {
     if (currentSearchQuery && !errorState) {
-      setPage(1); 
-      setPhotos([]); 
-      setHasMore(true); 
+      setPage(1);
+      setPhotos([]);
+      setHasMore(true);
       fetchSearchResults(currentSearchQuery, 1, false);
     } else if (errorState) {
       setLoading(false);
@@ -151,8 +157,8 @@ export default function SearchPage() {
     setTimeout(() => setSelectedWallpaper(null), 300);
   };
 
-  const gridAspectRatio = 'aspect-[9/16]'; // Search results primarily target phone-like aspect ratio for consistency
-  const displayOrientation: DeviceOrientationCategory = 'smartphone'; // Defaulting search to smartphone-like display
+  const gridAspectRatio = 'aspect-[9/16]';
+  const displayOrientation: DeviceOrientationCategory = 'smartphone';
 
   const searchPageSchema: MinimalWithContext<SchemaSearchResultsPage> = {
     '@context': 'https://schema.org',
@@ -222,7 +228,7 @@ export default function SearchPage() {
           </div>
         ) : photos.length > 0 ? (
           <WallpaperGrid photos={photos} onPhotoClick={openModal} orientation={displayOrientation} />
-        ) : !loading && photos.length === 0 ? ( 
+        ) : !loading && photos.length === 0 ? (
           <div className="text-center py-10 mt-8">
             <SearchIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
             <p className="text-xl text-muted-foreground">
@@ -245,7 +251,7 @@ export default function SearchPage() {
           </div>
         )}
 
-        {loading && photos.length > 0 && ( 
+        {loading && photos.length > 0 && (
           <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
             {[...Array(5)].map((_, i) => (
               <Skeleton key={`search-loading-more-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
