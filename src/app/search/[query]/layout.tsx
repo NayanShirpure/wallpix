@@ -6,9 +6,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.gith
 
 interface SearchLayoutProps {
   children: ReactNode;
-  params: {
-    query: string;
-  };
+  params: { query: string };
 }
 
 // interface SearchLayoutProps {
@@ -59,11 +57,13 @@ export async function generateMetadata(
 }
 
 
-export default function SearchLayout({ children, params }: SearchLayoutProps) {
-  // You can now safely access params.query here
-  console.log("Search Query:", params.query);
-
-  return <>{children}</>;
+export default function SearchLayout({ children }: SearchLayoutProps) {
+  return (
+    <div>
+      {/* Layout can access params.query if needed */}
+      {children}
+    </div>
+  );
 }
 
 // export default function SearchPageLayout({
