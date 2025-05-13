@@ -3,11 +3,11 @@
 
 import React, { useState, useEffect } from 'react'; 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react'; 
 import { StructuredData } from '@/components/structured-data';
 // Updated import for local minimal types
 import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle'; 
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
@@ -38,24 +38,14 @@ export default function TermsConditionsPage() {
   return (
     <>
       <StructuredData data={webPageSchema} />
-       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm print:hidden">
-        <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-          <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors" aria-label="Back to Wallify homepage">
-            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-            <span className="hidden sm:inline">
-              Back
-              <span className="hidden md:inline"> to Wallify</span>
-            </span>
-             <span className="sm:hidden">Home</span>
-          </Link>
-          <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-120px)] sm:max-w-[calc(100%-160px)] md:max-w-[calc(100%-200px)]">
-            Terms &amp; Conditions
-          </h1>
-          <div className="flex items-center">
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        title="Terms & Conditions"
+        backHref="/"
+        backTextDesktop="Back to Wallify"
+        backTextMobile="Home"
+      >
+        <ThemeToggle />
+      </PageHeader>
       <main className="flex-grow container mx-auto max-w-4xl p-4 py-8 md:p-6 md:py-12">
         <article className="prose prose-invert max-w-none dark:prose-invert prose-headings:text-primary prose-a:text-accent prose-a:no-underline hover:prose-a:underline">
           <h2 className="text-2xl font-semibold text-primary">Terms and Conditions for Wallify</h2>
