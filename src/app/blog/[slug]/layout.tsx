@@ -3,8 +3,10 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 import { blogPosts } from '@/config/blog';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
+// Async metadata generator — this is allowed
 export async function generateMetadata(
   { params }: { params: { slug: string } },
   parent: ResolvingMetadata
@@ -58,6 +60,7 @@ export async function generateMetadata(
   };
 }
 
+// ✅ Synchronous layout component with required `params`
 export default function BlogPostLayout({
   children,
   params,
@@ -65,5 +68,5 @@ export default function BlogPostLayout({
   children: React.ReactNode;
   params: { slug: string };
 }) {
-  return <>{children}</>;
+  return <div className="blog-post-layout">{children}</div>;
 }
