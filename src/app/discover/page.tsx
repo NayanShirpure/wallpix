@@ -1,11 +1,14 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
+import { GlobalHeader } from '@/components/layout/GlobalHeader';
+import type { DeviceOrientationCategory } from '@/types/pexels';
 
 interface DiscoverCategory {
   id: string;
@@ -33,49 +36,78 @@ const discoverPageCategories: DiscoverCategory[] = [
 ];
 
 export default function DiscoverPage() {
-  return (
-    <div className="space-y-8">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-primary">Explore Wallpaper Categories</h1>
-        <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-          Dive into diverse themes and find the perfect backdrop for your device.
-        </p>
-      </div>
+  const router = useRouter();
+  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {discoverPageCategories.map((category) => (
-          <Link key={category.id} href={`/search/${encodeURIComponent(category.query)}`} passHref legacyBehavior>
-            <a className="block group">
-              <Card className="overflow-hidden h-full flex flex-col bg-card border-border shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 focus-within:shadow-xl rounded-xl">
-                <div className="relative w-full aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={category.imageUrl}
-                    alt={`Preview for ${category.title} category`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-                    data-ai-hint={category.dataAiHint}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                </div>
-                <CardHeader className="p-4 flex-grow">
-                  <CardTitle className="text-lg sm:text-xl font-semibold text-card-foreground group-hover:text-accent transition-colors">
-                    {category.title}
-                  </CardTitle>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
-                    {category.description}
-                  </p>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <div className="text-sm font-medium text-accent group-hover:underline flex items-center">
-                    Explore <ArrowRight className="ml-1.5 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  </div>
-                </CardContent>
-              </Card>
-            </a>
-          </Link>
-        ))}
-      </div>
-    </div>
+  const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
+    setCurrentDeviceOrientation(newCategory);
+    // Future searches/navigations from header will use this orientation context
+  };
+
+  const handleWallpaperCategorySelect = (categoryValue: string) => {
+    router.push(`/search/${encodeURIComponent(categoryValue)}`);
+  };
+
+  const handleSearchSubmit = (searchTerm: string) => {
+    if (searchTerm.trim()) {
+      router.push(`/search/${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  return (
+    <>
+      <GlobalHeader
+        currentDeviceOrientation={currentDeviceOrientation}
+        onDeviceOrientationChange={handleDeviceOrientationChange}
+        onWallpaperCategorySelect={handleWallpaperCategorySelect}
+        onSearchSubmit={handleSearchSubmit}
+        initialSearchTerm="" // Keep search bar in header fresh for discovery context
+      />
+      <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12">
+        <div className="space-y-8">
+          <div className="text-center mb-10">
+            <h1 className="text-3xl sm:text-4xl font-bold text-primary">Explore Wallpaper Categories</h1>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+              Dive into diverse themes and find the perfect backdrop for your device.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {discoverPageCategories.map((category) => (
+              <Link key={category.id} href={`/search/${encodeURIComponent(category.query)}`} passHref legacyBehavior>
+                <a className="block group">
+                  <Card className="overflow-hidden h-full flex flex-col bg-card border-border shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 focus-within:shadow-xl rounded-xl">
+                    <div className="relative w-full aspect-[16/10] overflow-hidden">
+                      <Image
+                        src={category.imageUrl}
+                        alt={`Preview for ${category.title} category`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                        data-ai-hint={category.dataAiHint}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                    </div>
+                    <CardHeader className="p-4 flex-grow">
+                      <CardTitle className="text-lg sm:text-xl font-semibold text-card-foreground group-hover:text-accent transition-colors">
+                        {category.title}
+                      </CardTitle>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {category.description}
+                      </p>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="text-sm font-medium text-accent group-hover:underline flex items-center">
+                        Explore <ArrowRight className="ml-1.5 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </a>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </main>
+    </>
   );
 }

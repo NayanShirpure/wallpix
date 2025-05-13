@@ -1,7 +1,5 @@
 
 import type { Metadata } from 'next';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { PageHeader } from '@/components/layout/PageHeader';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
@@ -39,19 +37,8 @@ export default function DiscoverLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      <PageHeader
-        title="Discover Wallpapers"
-        backHref="/"
-        backTextDesktop="Back to Wallify"
-        backTextMobile="Home"
-      >
-        <ThemeToggle />
-      </PageHeader>
-      <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12">
-        {children}
-      </main>
-    </>
-  );
+  // The page (discover/page.tsx) will now include GlobalHeader and its own <main> tag
+  // for consistency with home.tsx and search/[query]/page.tsx.
+  // This layout component is now primarily for applying metadata.
+  return <>{children}</>;
 }
