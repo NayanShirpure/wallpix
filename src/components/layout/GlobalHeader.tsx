@@ -4,16 +4,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Camera, Compass, Check } from 'lucide-react'; // Added Compass for Discover
+import { Menu, Camera, Compass, Check } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs, type DeviceOrientationCategory } from '@/config/categories';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchBar } from '@/components/wallpaper/SearchBar'; 
@@ -58,79 +60,112 @@ export function GlobalHeader({
               </Button>
             </Link>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <Sheet>
+              <SheetTrigger asChild>
                 <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
                   <Menu className="mr-1 h-3.5 w-3.5" />
                   <span className="hidden md:inline">Categories</span>
                   <span className="md:hidden">Cat.</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto">
-                <DropdownMenuLabel>Filter Wallpapers By</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
-                  <React.Fragment key={`desktop-group-${group.groupLabel}-${groupIndex}`}>
-                    <DropdownMenuLabel className="text-xs text-muted-foreground px-2 pt-2">{group.groupLabel}</DropdownMenuLabel>
-                    {group.categories.map((cat) => (
-                      <DropdownMenuItem key={`desktop-cat-${cat.value}`} onSelect={() => onWallpaperCategorySelect(cat.value)}>
-                        {cat.label}
-                      </DropdownMenuItem>
-                    ))}
-                    {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <DropdownMenuSeparator />}
-                  </React.Fragment>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>Filter by Category</SheetTitle>
+                  <SheetDescription>Select a category to refine your wallpaper search.</SheetDescription>
+                </SheetHeader>
+                <div className="py-4 px-2 h-[calc(100%-73px)] overflow-y-auto">
+                  {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
+                    <React.Fragment key={`desktop-sheet-group-${group.groupLabel}-${groupIndex}`}>
+                      <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">{group.groupLabel}</h4>
+                      {group.categories.map((cat) => (
+                        <SheetClose asChild key={`desktop-sheet-cat-${cat.value}`}>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start px-2 py-1.5 text-sm h-auto"
+                            onClick={() => onWallpaperCategorySelect(cat.value)}
+                          >
+                            {cat.label}
+                          </Button>
+                        </SheetClose>
+                      ))}
+                      {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <Separator className="my-2" />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
         </div>
         
-        {/* Search Bar - Centralized or right-aligned for all screens */}
         <div className="w-full max-w-[150px] xs:max-w-[180px] sm:max-w-xs mx-auto sm:mx-0 sm:ml-auto">
           <SearchBar onSubmitSearch={onSearchSubmit} initialValue={initialSearchTerm} />
         </div>
 
         {/* Mobile Combined Menu */}
         <div className="sm:hidden ml-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <Sheet>
+            <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                 <Menu className="h-4 w-4" />
-                  <span className="sr-only">Open navigation menu</span>
+                <span className="sr-only">Open navigation menu</span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="max-h-[80vh] overflow-y-auto w-60">
-              <DropdownMenuItem onSelect={() => { if (typeof window !== 'undefined') window.location.href = '/discover'; }}>
-                <Compass className="mr-2 h-4 w-4" />
-                <span>Discover</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Device</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {deviceOrientationTabs.map(opt => (
-                <DropdownMenuItem key={`mobile-device-${opt.value}`} onSelect={() => onDeviceOrientationChange(opt.value as DeviceOrientationCategory)}>
-                  {opt.label}
-                  {currentDeviceOrientation === opt.value && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Categories</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
-                <React.Fragment key={`mobile-group-${group.groupLabel}-${groupIndex}`}>
-                  <DropdownMenuLabel className="text-xs text-muted-foreground px-2 pt-1">{group.groupLabel}</DropdownMenuLabel>
-                  {group.categories.map((cat) => (
-                    <DropdownMenuItem key={`mobile-cat-${cat.value}-${groupIndex}`} onSelect={() => onWallpaperCategorySelect(cat.value)}>
-                      {cat.label}
-                    </DropdownMenuItem>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] p-0">
+              <SheetHeader className="p-4 border-b">
+                <SheetTitle>Navigation</SheetTitle>
+              </SheetHeader>
+              <div className="py-2 px-2 h-[calc(100%-57px)] overflow-y-auto">
+                <SheetClose asChild>
+                  <Link href="/discover" passHref legacyBehavior>
+                    <a className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
+                        <Compass className="mr-2 h-4 w-4" /> Discover
+                      </Button>
+                    </a>
+                  </Link>
+                </SheetClose>
+                <Separator />
+                <div className="py-1">
+                  <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Device</h4>
+                  {deviceOrientationTabs.map(opt => (
+                    <SheetClose asChild key={`mobile-sheet-device-${opt.value}`}>
+                      <Button
+                        variant={currentDeviceOrientation === opt.value ? "secondary" : "ghost"}
+                        className="w-full justify-between px-2 py-1.5 text-sm h-auto"
+                        onClick={() => onDeviceOrientationChange(opt.value as DeviceOrientationCategory)}
+                      >
+                        {opt.label}
+                        {currentDeviceOrientation === opt.value && <Check className="h-4 w-4" />}
+                      </Button>
+                    </SheetClose>
                   ))}
-                  {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <DropdownMenuSeparator className="my-1" />}
-                </React.Fragment>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                </div>
+                <Separator />
+                <div className="py-1">
+                  <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>
+                  {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
+                    <React.Fragment key={`mobile-sheet-group-${group.groupLabel}-${groupIndex}`}>
+                      <h5 className="text-xs font-medium text-muted-foreground px-2 pt-2 pb-1">{group.groupLabel}</h5>
+                      {group.categories.map((cat) => (
+                        <SheetClose asChild key={`mobile-sheet-cat-${cat.value}-${groupIndex}`}>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start px-2 py-1.5 text-sm h-auto"
+                            onClick={() => onWallpaperCategorySelect(cat.value)}
+                          >
+                            {cat.label}
+                          </Button>
+                        </SheetClose>
+                      ))}
+                      {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <Separator className="my-1" />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
                   
-        <div className="ml-1 sm:ml-0"> {/* Ensure ThemeToggle doesn't get pushed out on small screens */}
+        <div className="ml-1 sm:ml-0">
           <ThemeToggle />
         </div>
       </div>
