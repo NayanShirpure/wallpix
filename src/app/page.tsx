@@ -195,6 +195,7 @@ export default function Home() {
               {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">Browse our collection or use the search and filters in the header.</p>
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground/90 mt-3">Curated High-Quality Wallpapers</h2>
         </div>
 
         {loading && wallpapers.length === 0 ? (
