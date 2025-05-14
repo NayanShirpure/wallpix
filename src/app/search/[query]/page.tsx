@@ -1,4 +1,6 @@
 
+// This file is now a Server Component
+
 import { use } from 'react';
 import { SearchPageContent } from '@/components/search-page-content';
 import { StructuredData } from '@/components/structured-data';
@@ -13,15 +15,17 @@ export async function generateStaticParams() {
 }
 
 interface SearchPageServerProps {
-  params: Promise<{ query: string }>;
+  params: { query: string }; // Expect params directly, not a promise for build time
 }
 
-// This page is now a Server Component
-export default function SearchPage({ params: paramsPromise }: SearchPageServerProps) {
-  const params = use(paramsPromise); // Resolve the promise to get actual params
+// This page is a Server Component
+export default function SearchPage({ params }: SearchPageServerProps) {
+  // For Server Components, params are directly available, no need for React.use() for build-time generation
+  // React.use() would be for client components or server components in dynamic rendering contexts
+  // but for generateStaticParams compatibility, we expect direct params.
+
   let initialDecodedQuery = 'Wallpaper';
   let rawQueryForUrl = '';
-
 
   if (params && params.query) {
     rawQueryForUrl = params.query;
@@ -48,7 +52,9 @@ export default function SearchPage({ params: paramsPromise }: SearchPageServerPr
   return (
     <>
       {searchResultsSchema && <StructuredData data={searchResultsSchema} />}
+      {/* Pass the resolved initialQuery to the Client Component */}
       <SearchPageContent initialQuery={initialDecodedQuery} />
     </>
   );
 }
+
