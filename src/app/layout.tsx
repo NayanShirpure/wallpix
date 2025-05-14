@@ -1,5 +1,5 @@
 
-import type {Metadata, Viewport} from 'next'; // Added Viewport
+import type {Metadata, Viewport} from 'next'; 
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
 import type { WebSite as SchemaWebSite, SearchAction as SchemaSearchAction, MinimalWithContext } from '@/types/schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
-import ClientProgressBar from '@/components/client-progress-bar'; // Changed import
+import ClientProgressBar from '@/components/client-progress-bar'; 
 
 
 const inter = Inter({
@@ -16,7 +16,7 @@ const inter = Inter({
   display: 'swap',
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/'; // Default to localhost if not set
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/'; 
 const SITE_NAME = 'Wallify';
 const SITE_DESCRIPTION = 'Discover and download stunning, high-quality wallpapers for your desktop and smartphone. Personalize your digital space with Wallify.';
 
@@ -29,7 +29,6 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
   manifest: '/manifest.json',
-  // themeColor: '#E6E6FA', // Removed from here
   alternates: {
     canonical: '/',
   },
@@ -70,9 +69,8 @@ export const metadata: Metadata = {
   },
 };
 
-// Added viewport export for themeColor
 export const viewport: Viewport = {
-  themeColor: '#E6E6FA', // Impressionist Garden primary for theme color
+  themeColor: '#f2c5c3', // Beauty Bush - primary background for the new theme
 };
 
 
@@ -112,7 +110,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ClientProgressBar color="#EEE8AA" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} />
+          <ClientProgressBar color="#86d5d3" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} /> {/* Monte Carlo for progress bar */}
           <div className="flex-grow flex flex-col">
             {children}
           </div>
