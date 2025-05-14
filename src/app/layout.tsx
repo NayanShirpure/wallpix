@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
 import type { WebSite as SchemaWebSite, SearchAction as SchemaSearchAction, MinimalWithContext } from '@/types/schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
+import NextNProgress from 'nextjs-progressbar';
 
 
 const inter = Inter({
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
   manifest: '/manifest.json',
-  themeColor: '#1F2937',
+  themeColor: '#E6E6FA', // Updated to match Impressionist Garden primary
   alternates: {
     canonical: '/',
   },
@@ -107,6 +108,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <NextNProgress
+            color="#EEE8AA" // Muted Yellow from Impressionist Garden theme
+            startPosition={0.3}
+            stopDelayMs={200}
+            height={3}
+            showOnShallow={true}
+            options={{ showSpinner: false }}
+          />
           <div className="flex-grow flex flex-col">
             {children}
           </div>

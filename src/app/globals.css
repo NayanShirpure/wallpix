@@ -4,97 +4,99 @@
 
 @layer base {
   :root {
-    --background: 220 13% 97%; /* Very Light Gray - Off White */
-    --foreground: 220 20% 15%; /* Dark Gray - #1F2937 */
+    /* Impressionist Garden - Light Theme */
+    --background: 240 60% 96%; /* Pale Lavender - #E6E6FA */
+    --foreground: 225 15% 25%; /* Dark Desaturated Blue/Gray for text */
     
-    --card: 220 13% 97%; /* Same as background */
-    --card-foreground: 220 20% 15%; /* Same as foreground */
+    --card: 240 60% 96%; /* Same as background */
+    --card-foreground: 225 15% 25%; /* Same as foreground */
     
-    --popover: 220 13% 97%; /* Same as background */
-    --popover-foreground: 220 20% 15%; /* Same as foreground */
+    --popover: 240 50% 98%; /* Slightly lighter for popovers */
+    --popover-foreground: 225 15% 25%;
     
-    --primary: 178 66% 50%; /* Teal - #2DD4CF */
-    --primary-foreground: 220 20% 15%; /* Dark Gray for contrast on Teal */
+    --primary: 56 68% 75%; /* Muted Yellow - #EEE8AA (This is the Accent) */
+    --primary-foreground: 225 15% 20%; /* Darker for text on Muted Yellow */
     
-    --secondary: 220 10% 90%; /* Light Gray - #E5E7EB */
-    --secondary-foreground: 220 20% 25%; /* Slightly darker gray for text on light gray */
+    --secondary: 210 40% 88%; /* Pale Sky Blue - #ADD8E6 */
+    --secondary-foreground: 225 15% 25%; 
     
-    --muted: 220 10% 90%; /* Light Gray - #E5E7EB */
-    --muted-foreground: 220 15% 45%; /* Medium Gray for muted text */
+    --muted: 270 25% 90%; /* Dusty Lavender - #D8BFD8 */
+    --muted-foreground: 225 10% 50%; /* Softer gray for muted text */
     
-    --accent: 178 66% 50%; /* Teal - #2DD4CF */
-    --accent-foreground: 220 20% 15%; /* Dark Gray for contrast on Teal */
+    --accent: 56 68% 75%; /* Muted Yellow - #EEE8AA */
+    --accent-foreground: 225 15% 20%;
     
     --destructive: 0 72% 51%; /* Standard Red */
-    --destructive-foreground: 0 0% 98%; /* Light color for text on red */
+    --destructive-foreground: 0 0% 98%;
     
-    --border: 220 10% 85%; /* Slightly darker Light Gray for borders */
-    --input: 220 10% 88%; /* Lighter shade of Light Gray for input backgrounds */
-    --ring: 178 66% 50%; /* Teal for focus rings */
+    --border: 270 20% 85%; /* Lighter Dusty Lavender for borders */
+    --input: 240 30% 93%; /* Slightly off-pale-lavender for inputs */
+    --ring: 56 68% 75%; /* Muted Yellow for focus rings */
     
-    --chart-1: 178 60% 45%;
-    --chart-2: 178 70% 60%;
-    --chart-3: 210 50% 50%;
-    --chart-4: 210 60% 65%;
-    --chart-5: 200 55% 55%;
+    --chart-1: 56 60% 70%;  /* Muted Yellow variant */
+    --chart-2: 210 50% 80%; /* Pale Sky Blue variant */
+    --chart-3: 270 30% 80%; /* Dusty Lavender variant */
+    --chart-4: 120 25% 75%; /* Sage Green variant */
+    --chart-5: 30 50% 80%;  /* Soft Peach variant */
     
     --radius: 0.5rem;
 
-    /* Sidebar vars - adapt based on main theme */
-    --sidebar-background: 220 15% 20%; /* Darker Gray for sidebar */
-    --sidebar-foreground: 220 10% 90%; /* Light Gray for sidebar text */
-    --sidebar-primary: 178 66% 50%; /* Teal */
-    --sidebar-primary-foreground: 220 15% 10%; /* Very Dark Gray for text on Teal */
-    --sidebar-accent: 220 15% 30%; /* Slightly Lighter Dark Gray */
-    --sidebar-accent-foreground: 220 10% 90%; /* Light Gray */
-    --sidebar-border: 220 15% 25%; /* Darker Border for Sidebar */
-    --sidebar-ring: 178 66% 50%; /* Teal */
+    /* Sidebar vars - Impressionist Garden Light */
+    --sidebar-background: 240 30% 90%; /* Lighter Pale Lavender */
+    --sidebar-foreground: 225 15% 30%; /* Darker Desaturated Blue/Gray */
+    --sidebar-primary: 56 68% 75%; /* Muted Yellow */
+    --sidebar-primary-foreground: 225 15% 20%;
+    --sidebar-accent: 210 40% 85%; /* Lighter Pale Sky Blue */
+    --sidebar-accent-foreground: 225 15% 30%;
+    --sidebar-border: 270 25% 80%; /* Dusty Lavender for Sidebar Border */
+    --sidebar-ring: 56 68% 75%; /* Muted Yellow */
   }
 
   .dark {
-    --background: 220 20% 15%; /* Dark Gray - #1F2937 */
-    --foreground: 220 10% 90%; /* Light Gray - #E5E7EB */
-
-    --card: 220 20% 15%; /* Same as background */
-    --card-foreground: 220 10% 90%; /* Same as foreground */
-
-    --popover: 220 20% 12%; /* Slightly darker for popovers */
-    --popover-foreground: 220 10% 90%; /* Light Gray */
-
-    --primary: 178 66% 50%; /* Teal - #2DD4CF */
-    --primary-foreground: 220 20% 10%; /* Very Dark Gray for contrast on Teal */
+    /* Impressionist Garden - Dark Theme */
+    --background: 225 15% 15%; /* Dark Desaturated Blue/Gray */
+    --foreground: 240 60% 96%; /* Pale Lavender for text */
     
-    --secondary: 220 15% 25%; /* Lighter Dark Gray */
-    --secondary-foreground: 220 10% 90%; /* Light Gray */
-
-    --muted: 220 15% 25%; /* Lighter Dark Gray */
-    --muted-foreground: 220 10% 70%; /* Dimmer Light Gray */
+    --card: 225 15% 15%; /* Same as background */
+    --card-foreground: 240 60% 96%;
     
-    --accent: 178 66% 50%; /* Teal - #2DD4CF */
-    --accent-foreground: 220 20% 10%; /* Very Dark Gray for contrast on Teal */
-
+    --popover: 225 15% 12%; /* Darker for popovers */
+    --popover-foreground: 240 60% 96%;
+    
+    --primary: 56 68% 75%; /* Muted Yellow - #EEE8AA (Accent) */
+    --primary-foreground: 225 15% 10%; /* Very Dark for text on Muted Yellow */
+    
+    --secondary: 225 10% 25%; /* Darker Desaturated Blue/Gray for secondary elements */
+    --secondary-foreground: 240 50% 90%; 
+    
+    --muted: 225 10% 22%; /* Even Darker Desaturated Blue/Gray for muted backgrounds */
+    --muted-foreground: 240 20% 70%; /* Lighter muted text */
+    
+    --accent: 56 68% 75%; /* Muted Yellow - #EEE8AA */
+    --accent-foreground: 225 15% 10%;
+    
     --destructive: 0 63% 40%; /* Darker Red for dark mode */
-    --destructive-foreground: 0 0% 98%; /* Light color for text on red */
+    --destructive-foreground: 0 0% 98%;
     
-    --border: 220 15% 25%; /* Lighter Dark Gray for borders */
-    --input: 220 15% 22%; /* Darker shade for input backgrounds */
-    --ring: 178 66% 50%; /* Teal for focus rings */
+    --border: 225 10% 30%; /* Muted Border */
+    --input: 225 10% 20%; /* Dark Input */
+    --ring: 56 68% 75%; /* Muted Yellow for focus rings */
 
-    --chart-1: 178 60% 55%;
-    --chart-2: 178 70% 70%;
-    --chart-3: 210 50% 60%;
-    --chart-4: 210 60% 75%;
-    --chart-5: 200 55% 65%;
+    --chart-1: 56 60% 65%;
+    --chart-2: 210 50% 70%;
+    --chart-3: 270 30% 70%;
+    --chart-4: 120 25% 65%;
+    --chart-5: 30 50% 70%;
 
-    /* Sidebar vars - dark mode */
-    --sidebar-background: 220 20% 12%; /* Even Darker Gray for sidebar */
-    --sidebar-foreground: 220 10% 90%; /* Light Gray for sidebar text */
-    --sidebar-primary: 178 66% 50%; /* Teal */
-    --sidebar-primary-foreground: 220 20% 10%; /* Very Dark Gray */
-    --sidebar-accent: 220 15% 25%; /* Lighter Dark Gray */
-    --sidebar-accent-foreground: 220 10% 90%; /* Light Gray */
-    --sidebar-border: 220 15% 20%; /* Darker Border for Sidebar */
-    --sidebar-ring: 178 66% 50%; /* Teal */
+    /* Sidebar vars - Impressionist Garden Dark */
+    --sidebar-background: 225 15% 12%; /* Darker Desaturated Blue/Gray */
+    --sidebar-foreground: 240 60% 90%; /* Lighter Pale Lavender */
+    --sidebar-primary: 56 68% 75%; /* Muted Yellow */
+    --sidebar-primary-foreground: 225 15% 10%;
+    --sidebar-accent: 225 10% 20%; /* Darker Muted Blue/Gray for Sidebar Accent */
+    --sidebar-accent-foreground: 240 50% 85%;
+    --sidebar-border: 225 10% 25%; /* Darker Border for Sidebar */
+    --sidebar-ring: 56 68% 75%; /* Muted Yellow */
   }
 }
 
@@ -138,7 +140,6 @@
   }
 
   /* Firefox scrollbar styling (fallback if @supports is not read by older processors, body level is preferred)*/
-  /* This is duplicated from body but might be useful if body-level is stripped by some tools */
   html {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--accent)) hsl(var(--secondary) / 0.5);
