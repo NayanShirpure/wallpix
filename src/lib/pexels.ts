@@ -1,5 +1,5 @@
 
-import type { PexelsCuratedResponse, PexelsSearchResponse, PexelsPhoto } from '@/types/pexels';
+import type { PexelsResponse, PexelsSearchResponse, PexelsPhoto } from '@/types/pexels';
 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 // This is a fallback key and should ideally not be used in production if a proper key is set via .env.local
@@ -84,9 +84,9 @@ async function fetchPexelsAPI<T>(endpoint: string, cacheOption: RequestCache = '
   }
 }
 
-export async function getCuratedPhotos(page: number = 1, perPage: number = 20): Promise<PexelsCuratedResponse | null> {
+export async function getCuratedPhotos(page: number = 1, perPage: number = 20): Promise<PexelsResponse | null> {
   // Curated photos can be cached more aggressively if desired, e.g. 'default' or 'force-cache'
-  return fetchPexelsAPI<PexelsCuratedResponse>(`/curated?page=${page}&per_page=${perPage}`, 'default');
+  return fetchPexelsAPI<PexelsResponse>(`/curated?page=${page}&per_page=${perPage}`, 'default');
 }
 
 export async function searchPhotos(
@@ -107,3 +107,4 @@ export async function getPhotoById(id: string): Promise<PexelsPhoto | null> {
   // Specific photo data might not change often, consider 'default'
   return fetchPexelsAPI<PexelsPhoto>(`/photos/${id}`, 'default');
 }
+
