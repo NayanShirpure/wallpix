@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Camera, Compass, Check } from 'lucide-react';
+import { Menu, Camera, Compass, Check, ListFilter } from 'lucide-react'; // Added ListFilter
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Sheet,
@@ -15,6 +15,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // Added DropdownMenu
 import { Separator } from "@/components/ui/separator";
 import { wallpaperFilterCategoryGroups, deviceOrientationTabs, type DeviceOrientationCategory } from '@/config/categories';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -41,13 +48,13 @@ export function GlobalHeader({
     <header className="sticky top-0 z-40 w-full border-b bg-card/90 backdrop-blur-md supports-[backdrop-filter]:bg-card/75 print:hidden">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-3 px-3 sm:px-4">
         {/* Left: Logo */}
-        <Link href="/" className="flex items-center space-x-2 shrink-0" aria-label="Wallify Home"> {/* Added shrink-0 */}
+        <Link href="/" className="flex items-center space-x-2 shrink-0" aria-label="Wallify Home">
           <Camera className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           <span className="font-bold text-lg sm:text-xl text-primary hidden xxs:inline">Wallify</span>
         </Link>
 
         {/* Middle: Desktop Navigation (visible on sm+) */}
-        <nav className="hidden sm:flex flex-1 items-center justify-center lg:justify-start gap-1.5 sm:gap-2 mx-2"> {/* flex-1 to take space, justify-center or start, added mx-2 for spacing */}
+        <nav className="hidden sm:flex flex-1 items-center justify-center lg:justify-start gap-1.5 sm:gap-2 mx-2">
             <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="w-auto">
               <TabsList className="h-9 text-xs sm:text-sm">
                 {deviceOrientationTabs.map(opt => (
@@ -56,22 +63,33 @@ export function GlobalHeader({
               </TabsList>
             </Tabs>
           
-            <Link href="/discover" passHref legacyBehavior>
-              <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
-                  <Compass className="mr-1 h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Discover</span>
-                  <span className="md:hidden">Discover</span>
-              </Button>
-            </Link>
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
-                  <Menu className="mr-1 h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Categories</span>
-                  <span className="md:hidden">Cat.</span>
-                </Button>
-              </SheetTrigger>
+            {/* Combined "Browse" Dropdown for Discover & Categories on Desktop */}
+            <Sheet> 
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
+                    <Menu className="mr-1 h-3.5 w-3.5" />
+                    Browse
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem asChild>
+                    <Link href="/discover" className="flex items-center">
+                      <Compass className="mr-2 h-4 w-4" />
+                      Discover
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {/* Categories Sheet Trigger within Dropdown */}
+                  <SheetTrigger asChild>
+                    <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
+                      <ListFilter className="mr-2 h-4 w-4" />
+                      <span>Filter Categories</span>
+                    </DropdownMenuItem>
+                  </SheetTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* SheetContent remains the same, triggered from DropdownMenuItem */}
               <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
                 <SheetHeader className="p-4 border-b">
                   <SheetTitle>Filter by Category</SheetTitle>
@@ -101,8 +119,8 @@ export function GlobalHeader({
         </nav>
 
         {/* Right: Actions (Search, Mobile Menu, Theme Toggle) */}
-        <div className="flex items-center shrink-0 gap-1.5 sm:gap-2"> {/* shrink-0 to prevent this group from shrinking */}
-          <div className="w-full max-w-[150px] xs:max-w-[180px] sm:w-auto sm:max-w-xs"> {/* Allow search to take natural width on sm+ */}
+        <div className="flex items-center shrink-0 gap-1.5 sm:gap-2">
+          <div className="w-full max-w-[150px] xs:max-w-[180px] sm:w-auto sm:max-w-xs">
             <SearchBar 
               onSubmitSearch={onSearchSubmit} 
               initialValue={initialSearchTerm}
