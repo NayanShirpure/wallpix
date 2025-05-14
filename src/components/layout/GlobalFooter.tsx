@@ -17,15 +17,16 @@ export function GlobalFooter() {
           </p>
         </div>
         
-        <div className="flex items-center gap-x-4 sm:gap-x-5 order-first md:order-none mb-3 md:mb-0"> {/* Social Icons */}
+        {/* Social Icons: Removed order-first md:order-none, added justify-center */}
+        <div className="flex items-center justify-center gap-x-4 sm:gap-x-5 mb-3 md:mb-0"> 
           <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
-            <Twitter className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> {/* Corrected class h-4.5 to h-[1.125rem] if using JIT, or stick to h-4/h-5 */}
+            <Twitter className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
           </a>
           <a href="https://instagram.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Instagram" className="text-muted-foreground hover:text-accent transition-colors">
-            <Instagram className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+            <Instagram className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
           </a>
           <a href="https://github.com/NayanShirpure/Wallify" target="_blank" rel="noopener noreferrer" aria-label="Wallify on GitHub" className="text-muted-foreground hover:text-accent transition-colors">
-            <Github className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+            <Github className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
           </a>
         </div>
 
