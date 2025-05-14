@@ -4,100 +4,100 @@
 
 @layer base {
   :root {
-    /* New Theme: Coastal Calm - Light */
-    --background: 197 28% 74%; /* Casper #a7c6d0 */
-    --foreground: 201 61% 13%; /* Elephant #0e2c39 */
+    /* New Theme: Vibrant Professional - Light */
+    --background: 210 17% 98%; /* Lighter Gray #F8F9FA */
+    --foreground: 210 10% 15%; /* Dark Gray #212529 */
     
-    --card: 197 30% 88%; /* Lighter Casper variant #d5e5ea */
-    --card-foreground: 201 61% 13%; /* Elephant */
+    --card: 0 0% 100%; /* White #FFFFFF */
+    --card-foreground: 210 10% 15%; /* Dark Gray #212529 */
     
-    --popover: 197 30% 92%; /* Even lighter Casper #e3eff2 */
-    --popover-foreground: 201 61% 13%; /* Elephant */
+    --popover: 0 0% 100%; /* White #FFFFFF */
+    --popover-foreground: 210 10% 15%; /* Dark Gray #212529 */
     
-    --primary: 210 20% 47%; /* Lynch #607691 */
-    --primary-foreground: 0 0% 100%; /* White */
+    --primary: 190 88% 50%; /* Vibrant Cyan #0DCAF0 */
+    --primary-foreground: 210 10% 15%; /* Dark Gray #212529 for contrast */
     
-    --secondary: 4 20% 72%; /* Clam Shell #c8a7a5 */
-    --secondary-foreground: 4 20% 30%; /* Darker Clam Shell #654a49 */
+    --secondary: 210 16% 93%; /* Light Gray #E9ECEF */
+    --secondary-foreground: 210 10% 30%; /* Medium Dark Gray #495057 */
     
-    --muted: 4 20% 85%; /* Lighter Clam Shell #dacdc9 */
-    --muted-foreground: 210 15% 45%; /* Adjusted Elephant variant for better contrast #627080 */
+    --muted: 210 16% 90%; /* Lighter Gray #DEE2E6 */
+    --muted-foreground: 210 8% 45%; /* Medium Gray #6C757D */
     
-    --accent: 210 20% 47%; /* Lynch #607691 */
-    --accent-foreground: 0 0% 100%; /* White */
+    --accent: 190 88% 50%; /* Vibrant Cyan #0DCAF0 */
+    --accent-foreground: 210 10% 15%; /* Dark Gray #212529 */
     
-    --destructive: 0 72% 51%; /* Standard Red */
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 354 70% 54%; /* Standard Red #DC3545 */
+    --destructive-foreground: 0 0% 100%; /* White */
     
-    --border: 210 20% 65%; /* Lighter Lynch #94a2b3 */
-    --input: 197 30% 85%; /* Light Casper #cde0e6 */
-    --ring: 210 20% 47%; /* Lynch */
+    --border: 210 14% 82%; /* Gray #CED4DA */
+    --input: 0 0% 100%; /* White #FFFFFF for input background */
+    --ring: 190 88% 50%; /* Vibrant Cyan #0DCAF0 */
     
-    --chart-1: 210 20% 47%;  /* Lynch */
-    --chart-2: 197 28% 74%;  /* Casper */
-    --chart-3: 4 20% 72%;    /* Clam Shell */
-    --chart-4: 120 25% 65%;  /* A soft green #8cba8c */
-    --chart-5: 30 50% 70%;   /* A soft orange/peach #f2ae7e */
+    --chart-1: 190 88% 50%;  /* Vibrant Cyan */
+    --chart-2: 210 8% 60%;   /* Medium Gray */
+    --chart-3: 190 70% 70%;  /* Lighter Cyan */
+    --chart-4: 210 10% 40%;  /* Darker Gray */
+    --chart-5: 40 80% 60%;   /* A soft complementary orange/yellow */
     
     --radius: 0.5rem;
 
-    /* Sidebar vars - Coastal Calm Light */
-    --sidebar-background: 197 30% 90%; /* Very Light Casper #dce9ed */
-    --sidebar-foreground: 201 61% 13%; /* Elephant */
-    --sidebar-primary: 210 20% 47%; /* Lynch */
-    --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 4 20% 80%; /* Light Clam Shell #d3bcba */
-    --sidebar-accent-foreground: 4 20% 30%; /* Darker Clam Shell */
-    --sidebar-border: 210 20% 70%; /* Mid Lynch #a3b0c0 */
-    --sidebar-ring: 210 20% 47%; /* Lynch */
+    /* Sidebar vars - Vibrant Professional Light */
+    --sidebar-background: 210 16% 95%; /* Very Light Gray #F0F2F5 */
+    --sidebar-foreground: 210 10% 15%; /* Dark Gray */
+    --sidebar-primary: 190 88% 50%; /* Vibrant Cyan */
+    --sidebar-primary-foreground: 210 10% 15%; /* Dark Gray */
+    --sidebar-accent: 210 16% 88%; /* Light Gray Accent #DDE1E5 */
+    --sidebar-accent-foreground: 210 10% 25%; /* Darker Gray */
+    --sidebar-border: 210 14% 80%; /* Slightly Darker Border #C8CDD2 */
+    --sidebar-ring: 190 88% 50%; /* Vibrant Cyan */
   }
 
   .dark {
-    /* New Theme: Deep Harbor - Dark */
-    --background: 201 61% 13%; /* Elephant #0e2c39 */
-    --foreground: 197 28% 80%; /* Lighter Casper for text #b8d1d9 */
+    /* New Theme: Vibrant Professional - Dark */
+    --background: 220 13% 10%; /* Very Dark Desaturated Blue #121821 */
+    --foreground: 210 17% 95%; /* Very Light Gray #EFF2F5 */
     
-    --card: 201 55% 18%; /* Lighter Elephant variant #14384a */
-    --card-foreground: 197 28% 80%; /* Lighter Casper for text */
+    --card: 220 13% 15%; /* Darker Desaturated Blue #1B232E */
+    --card-foreground: 210 17% 95%; /* Very Light Gray #EFF2F5 */
     
-    --popover: 201 60% 10%; /* Darker Elephant #0a212b */
-    --popover-foreground: 197 28% 80%; /* Lighter Casper for text */
+    --popover: 220 13% 10%; /* Very Dark Desaturated Blue #121821 */
+    --popover-foreground: 210 17% 95%; /* Very Light Gray #EFF2F5 */
     
-    --primary: 197 28% 74%; /* Casper for buttons #a7c6d0 */
-    --primary-foreground: 201 61% 13%; /* Elephant for text on primary buttons */
+    --primary: 190 88% 55%; /* Slightly Lighter Vibrant Cyan #27D2F5 */
+    --primary-foreground: 220 13% 10%; /* Very Dark Desaturated Blue #121821 */
     
-    --secondary: 210 20% 35%; /* Darker Lynch for secondary buttons #4d5a6a */
-    --secondary-foreground: 197 28% 85%; /* Even Lighter Casper for text on secondary #c5dbe2 */
+    --secondary: 220 13% 20%; /* Dark Gray-Blue #28313E */
+    --secondary-foreground: 210 14% 80%; /* Light Gray #C4CBD1 */
     
-    --muted: 201 50% 22%; /* Darker card color for muted backgrounds #1a4257 */
-    --muted-foreground: 197 20% 65%; /* Medium Casper for muted text #95b3bd */
+    --muted: 220 13% 18%; /* Slightly lighter than card #222A35 */
+    --muted-foreground: 210 8% 55%; /* Medium Gray #7E8A95 */
     
-    --accent: 197 28% 74%; /* Casper for links/highlights #a7c6d0 */
-    --accent-foreground: 201 61% 13%; /* Elephant for text on accent */
+    --accent: 190 88% 55%; /* Slightly Lighter Vibrant Cyan #27D2F5 */
+    --accent-foreground: 220 13% 10%; /* Very Dark Desaturated Blue #121821 */
     
-    --destructive: 0 63% 40%; /* Darker Red for dark mode */
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 70% 60%; /* Brighter Red #F26B6B for dark mode */
+    --destructive-foreground: 0 0% 100%; /* White */
     
-    --border: 201 50% 25%; /* Border for dark theme #1d4a5f */
-    --input: 201 58% 15%; /* Input for dark theme #113040 */
-    --ring: 197 28% 74%; /* Casper for rings */
+    --border: 220 13% 25%; /* Medium Dark Gray-Blue #313A48 */
+    --input: 220 13% 18%; /* Slightly lighter than card #222A35 */
+    --ring: 190 88% 55%; /* Slightly Lighter Vibrant Cyan #27D2F5 */
 
-    /* Chart Colors - Dark Theme (can be same or adjusted) */
-    --chart-1: 197 28% 74%;  /* Casper (Primary for dark) */
-    --chart-2: 210 20% 55%;  /* Lighter Lynch */
-    --chart-3: 4 20% 65%;    /* Mid Clam Shell */
-    --chart-4: 120 25% 55%;  /* Darker soft green */
-    --chart-5: 30 50% 60%;   /* Darker soft orange/peach */
+    /* Chart Colors - Dark Theme */
+    --chart-1: 190 88% 55%;  /* Lighter Vibrant Cyan */
+    --chart-2: 210 8% 70%;   /* Lighter Medium Gray */
+    --chart-3: 190 70% 75%;  /* Even Lighter Cyan */
+    --chart-4: 210 10% 50%;  /* Medium Gray */
+    --chart-5: 40 80% 65%;   /* Slightly Lighter soft orange/yellow */
 
-    /* Sidebar vars - Deep Harbor Dark */
-    --sidebar-background: 201 60% 10%; /* Darker Elephant #0a212b */
-    --sidebar-foreground: 197 28% 80%; /* Lighter Casper */
-    --sidebar-primary: 197 28% 74%; /* Casper */
-    --sidebar-primary-foreground: 201 61% 13%; /* Elephant */
-    --sidebar-accent: 210 20% 25%; /* Very Dark Lynch #323d4a */
-    --sidebar-accent-foreground: 197 28% 70%; /* Medium Casper #a0bac3 */
-    --sidebar-border: 201 50% 20%; /* Dark border #173e50 */
-    --sidebar-ring: 197 28% 74%; /* Casper */
+    /* Sidebar vars - Vibrant Professional Dark */
+    --sidebar-background: 220 13% 8%; /* Even Darker Blue #0E131A */
+    --sidebar-foreground: 210 17% 95%; /* Very Light Gray */
+    --sidebar-primary: 190 88% 55%; /* Lighter Vibrant Cyan */
+    --sidebar-primary-foreground: 220 13% 10%; /* Very Dark Blue */
+    --sidebar-accent: 220 13% 22%; /* Darker Accent #2C3643 */
+    --sidebar-accent-foreground: 210 17% 85%; /* Lighter Gray */
+    --sidebar-border: 220 13% 20%; /* Dark Gray-Blue Border #28313E */
+    --sidebar-ring: 190 88% 55%; /* Lighter Vibrant Cyan */
   }
 }
 

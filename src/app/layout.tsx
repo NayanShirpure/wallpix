@@ -70,7 +70,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#a7c6d0', // Casper - new light theme background
+  themeColor: '#F8F9FA', // Vibrant Professional Light: Background
 };
 
 
@@ -110,7 +110,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ClientProgressBar color="#607691" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} /> {/* Lynch for progress bar */}
+          <ClientProgressBar color="#0DCAF0" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} /> {/* Vibrant Cyan for progress bar */}
           <div className="flex-grow flex flex-col">
             {children}
           </div>
