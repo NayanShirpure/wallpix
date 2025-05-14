@@ -1,5 +1,5 @@
 
-import type { PexelsResponse, PexelsSearchResponse, PexelsPhoto } from '@/types/pexels';
+import type { PexelsResponse, PexelsPhoto } from '@/types/pexels';
 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 // This is a fallback key and should ideally not be used in production if a proper key is set via .env.local
@@ -94,13 +94,13 @@ export async function searchPhotos(
   page: number = 1,
   perPage: number = 20,
   orientation?: 'landscape' | 'portrait' | 'square'
-): Promise<PexelsSearchResponse | null> {
+): Promise<PexelsResponse | null> {
   let endpoint = `/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}`;
   if (orientation) {
     endpoint += `&orientation=${orientation}`;
   }
   // Searches are typically dynamic, so 'no-store' is often appropriate
-  return fetchPexelsAPI<PexelsSearchResponse>(endpoint, 'no-store');
+  return fetchPexelsAPI<PexelsResponse>(endpoint, 'no-store');
 }
 
 export async function getPhotoById(id: string): Promise<PexelsPhoto | null> {
