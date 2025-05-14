@@ -1,27 +1,28 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Keep for direct navigation if needed, or remove if only onSubmitSearch is used
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 
 interface SearchBarProps {
-  onSubmitSearch?: (searchTerm: string) => void; // Callback for parent to handle search
-  initialValue?: string; // Optional initial value for the input
-  navigateToSearchPage?: boolean; // If true, will navigate to /search/[query]
+  onSubmitSearch?: (searchTerm: string) => void;
+  initialValue?: string;
+  navigateToSearchPage?: boolean;
 }
 
 export function SearchBar({ 
   onSubmitSearch, 
-  initialValue, // Removed default empty string here to handle undefined explicitly
+  initialValue,
   navigateToSearchPage = true 
 }: SearchBarProps) {
-  const [query, setQuery] = useState(initialValue || ''); // Use fallback here
+  const [query, setQuery] = useState(initialValue || '');
   const router = useRouter();
 
   useEffect(() => {
-    setQuery(initialValue || ''); // Update query if initialValue prop changes, with fallback
+    setQuery(initialValue || '');
   }, [initialValue]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -32,7 +33,8 @@ export function SearchBar({
         onSubmitSearch(trimmedQuery);
       }
       if (navigateToSearchPage) {
-        router.push(`/search/${encodeURIComponent(trimmedQuery)}`);
+        // Navigate using query parameters
+        router.push(`/search?query=${encodeURIComponent(trimmedQuery)}`);
       }
     }
   };
@@ -41,10 +43,10 @@ export function SearchBar({
     <form onSubmit={handleSearch} className="flex w-full items-center space-x-1 sm:space-x-2">
       <Input
         type="text"
-        placeholder="Search..." // Shortened placeholder
+        placeholder="Search..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="h-9 flex-grow text-xs sm:text-sm" // Adjusted height and text size
+        className="h-9 flex-grow text-xs sm:text-sm"
         aria-label="Search wallpapers"
       />
       <Button type="submit" size="icon" className="h-9 w-9 shrink-0" aria-label="Search">

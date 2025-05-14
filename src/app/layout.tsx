@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
-// Updated import for local minimal types
 import type { WebSite as SchemaWebSite, SearchAction as SchemaSearchAction, MinimalWithContext } from '@/types/schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
 
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
   manifest: '/manifest.json',
-  themeColor: '#1F2937', // Corresponds to dark mode background
+  themeColor: '#1F2937',
   alternates: {
     canonical: '/',
   },
@@ -76,7 +75,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Correctly typed with MinimalWithContext
   const webSiteSchema: MinimalWithContext<SchemaWebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
@@ -87,7 +85,8 @@ export default function RootLayout({
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${BASE_URL}search/{search_term_string}`, 
+          // Updated to use query parameter format
+          urlTemplate: `${BASE_URL}search?query={search_term_string}`, 
         },
         'query-input': 'required name=search_term_string',
     } as SchemaSearchAction, 

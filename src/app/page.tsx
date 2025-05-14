@@ -1,8 +1,9 @@
 
 'use client';
 
-import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
+import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation'; // Added useRouter
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -11,10 +12,11 @@ import type { ImageObject as SchemaImageObject, MinimalWithContext, Person as Sc
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { Button } from '@/components/ui/button';
-import { searchPhotos as searchPhotosLib } from '@/lib/pexels'; // Import the library function
+import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 
 
 export default function Home() {
+  const router = useRouter(); // Initialize useRouter
   const [searchTerm, setSearchTerm] = useState('Wallpaper');
   const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
@@ -41,8 +43,7 @@ export default function Home() {
       });
       setHasMore(!!response.next_page && newPhotos.length > 0 && newPhotos.length === 30);
     } else {
-      // Response is null (API key issue or fetch error from lib) or photos array is empty/missing
-      if (!append) { // Only clear if not appending
+      if (!append) {
         setWallpapers([]);
       }
       setHasMore(false);
@@ -73,7 +74,7 @@ export default function Home() {
             avg_color: '#7F7F7F',
             src: { 
               original: placeholderUrl(mockWidth, mockHeight),
-              large2x: placeholderUrl(mockWidth, mockHeight), // Often same as original for placeholders
+              large2x: placeholderUrl(mockWidth, mockHeight),
               large: placeholderUrl(Math.round(mockWidth * 0.75), Math.round(mockHeight * 0.75)),
               medium: placeholderUrl(Math.round(mockWidth * 0.5), Math.round(mockHeight * 0.5)),
               small: placeholderUrl(Math.round(mockWidth * 0.25), Math.round(mockHeight * 0.25)),
@@ -86,8 +87,8 @@ export default function Home() {
           };
         });
         setWallpapers(prev => append ? [...prev, ...mockPhotos] : mockPhotos);
-        setHasMore(pageNum < 3); // Limit mock pagination
-      } else if (!append) { // In production and not appending, ensure it's empty
+        setHasMore(pageNum < 3); 
+      } else if (!append) {
          setWallpapers([]);
       }
     }
@@ -97,7 +98,7 @@ export default function Home() {
 
   useEffect(() => {
     setPage(1);
-    setWallpapers([]); // Clear wallpapers for new search/orientation
+    setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(searchTerm, currentDeviceOrientation, 1, false);
   }, [searchTerm, currentDeviceOrientation, fetchWallpapers]);
@@ -113,17 +114,15 @@ export default function Home() {
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue); 
-    setPage(1);
-    setWallpapers([]);
-    setHasMore(true);
+    // Navigate to search page with query parameter
+    router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
   };
 
   const handleSearchSubmit = (newSearchTerm: string) => {
-    setSearchTerm(newSearchTerm);
-    setPage(1);
-    setWallpapers([]);
-    setHasMore(true);
+    // Navigate to search page with query parameter
+    if (newSearchTerm.trim()) {
+      router.push(`/search?query=${encodeURIComponent(newSearchTerm.trim())}`);
+    }
   };
 
 
@@ -187,6 +186,7 @@ export default function Home() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={searchTerm}
+        navigateToSearchPage={true} // SearchBar in GlobalHeader should navigate
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
@@ -219,7 +219,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Skeleton for loading more items */}
           {loading && wallpapers.length > 0 && (
               <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
                 {[...Array(5)].map((_, i) => (

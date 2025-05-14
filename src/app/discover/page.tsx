@@ -14,7 +14,7 @@ import { WallpaperSection } from '@/components/wallpaper-section';
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
-import { getCuratedPhotos, searchPhotos as pexelsSearchPhotosLib } from '@/lib/pexels'; // Use the lib
+import { getCuratedPhotos, searchPhotos as pexelsSearchPhotosLib } from '@/lib/pexels';
 
 interface DiscoverCategory {
   id: string;
@@ -74,7 +74,7 @@ export default function DiscoverPage() {
     if (response && response.photos) {
       setter(response.photos);
     } else {
-      setter([]); // Set to empty array on failure to avoid type errors
+      setter([]);
       console.warn(`Failed to fetch photos for query: ${query}`);
     }
     loader(false);
@@ -83,7 +83,6 @@ export default function DiscoverPage() {
   useEffect(() => {
     const orientationParam = currentDeviceOrientation === 'desktop' ? 'landscape' : 'portrait';
 
-    // Fetch Wallpaper of the Day
     setLoadingWOTD(true);
     getCuratedPhotos(1, 1).then(data => {
       if (data && data.photos && data.photos.length > 0) {
@@ -95,10 +94,9 @@ export default function DiscoverPage() {
       setLoadingWOTD(false);
     });
 
-    // Fetch other sections
     fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending, orientationParam);
     fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks, orientationParam);
-    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal, orientationParam); // Example seasonal
+    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal, orientationParam);
     fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk, orientationParam);
     fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage, orientationParam);
 
@@ -109,12 +107,12 @@ export default function DiscoverPage() {
   };
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
-    router.push(`/search/${encodeURIComponent(categoryValue)}`);
+    router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
   };
 
   const handleSearchSubmit = (searchTerm: string) => {
     if (searchTerm.trim()) {
-      router.push(`/search/${encodeURIComponent(searchTerm.trim())}`);
+      router.push(`/search?query=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
@@ -161,6 +159,7 @@ export default function DiscoverPage() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm="Discover" 
+        navigateToSearchPage={true} // SearchBar should navigate
       />
       <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12 space-y-10 sm:space-y-12">
         
@@ -191,7 +190,7 @@ export default function DiscoverPage() {
         />
         
         <WallpaperSection
-          title="Autumn Vibes" // Example Seasonal Collection
+          title="Autumn Vibes"
           wallpapers={seasonalWallpapers}
           loading={loadingSeasonal}
           orientation={currentDeviceOrientation}
@@ -223,7 +222,7 @@ export default function DiscoverPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Explore Popular Categories</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {discoverPageCategories.map((category) => (
-              <Link key={category.id} href={`/search/${encodeURIComponent(category.query)}`} passHref legacyBehavior>
+              <Link key={category.id} href={`/search?query=${encodeURIComponent(category.query)}`} passHref legacyBehavior>
                 <a className="block group">
                   <Card className="overflow-hidden h-full flex flex-col bg-card border-border shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 focus-within:shadow-xl rounded-xl">
                     <div className="relative w-full aspect-[16/10] overflow-hidden">
