@@ -1,3 +1,4 @@
+
 // src/types/schema-dts.ts
 
 // Basic Thing type
@@ -18,19 +19,11 @@ export interface MinimalWithContext<T extends MinimalThing> {
 }
 
 // Specific schema types can extend MinimalThing
-export interface BlogPosting extends MinimalThing {
-  "@type": "BlogPosting";
-  headline?: string;
-  datePublished?: string;
-  dateModified?: string;
-  author?: MinimalThing | MinimalThing[]; // Could be Person or Organization
-  publisher?: MinimalThing; // Typically Organization
-  mainEntityOfPage?: MinimalThing; // Typically WebPage
-  keywords?: string;
-}
 
-export interface WebPage extends MinimalThing {
-    "@type": "WebPage";
+// WebPage is made generic to allow subtypes to correctly define their @type
+export interface WebPage<T_Type extends string = "WebPage"> extends MinimalThing {
+    "@type": T_Type;
+    // Potential WebPage specific properties can be added here if needed later
 }
 
 export interface Organization extends MinimalThing {
@@ -59,17 +52,33 @@ export interface ImageObject extends MinimalThing {
   uploadDate?: string;
 }
 
-export interface SearchResultsPage extends WebPage {
-  "@type": "SearchResultsPage";
+// SearchResultsPage extends the generic WebPage, specifying its type
+export interface SearchResultsPage extends WebPage<"SearchResultsPage"> {
+  // @type is "SearchResultsPage" via WebPage<"SearchResultsPage">
 }
 
-export interface Blog extends MinimalThing {
-  "@type": "Blog";
+// BlogPosting is an article/creative work, not necessarily a WebPage itself.
+// It usually appears *on* a WebPage.
+export interface BlogPosting extends MinimalThing {
+  "@type": "BlogPosting";
+  headline?: string;
+  datePublished?: string;
+  dateModified?: string;
+  author?: MinimalThing | MinimalThing[];
+  publisher?: MinimalThing;
+  mainEntityOfPage?: WebPage<string>; // Can be any type of WebPage
+  keywords?: string;
+}
+
+// Blog (the collection of posts, typically the blog index page) is a WebPage
+export interface Blog extends WebPage<"Blog"> {
+  // @type is "Blog" via WebPage<"Blog">
   blogPost?: BlogPosting[];
 }
 
-export interface ContactPage extends WebPage {
-  "@type": "ContactPage";
+// ContactPage extends the generic WebPage, specifying its type
+export interface ContactPage extends WebPage<"ContactPage"> {
+  // @type is "ContactPage" via WebPage<"ContactPage">
 }
 
 export interface Person extends MinimalThing {
