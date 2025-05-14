@@ -1,5 +1,5 @@
 
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next'; // Added Viewport
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
 import type { WebSite as SchemaWebSite, SearchAction as SchemaSearchAction, MinimalWithContext } from '@/types/schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
-// Removed: import NextNProgress from 'nextjs-progressbar';
+import ClientProgressBar from '@/components/client-progress-bar'; // Changed import
 
 
 const inter = Inter({
@@ -16,7 +16,7 @@ const inter = Inter({
   display: 'swap',
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/'; // Default to localhost if not set
 const SITE_NAME = 'Wallify';
 const SITE_DESCRIPTION = 'Discover and download stunning, high-quality wallpapers for your desktop and smartphone. Personalize your digital space with Wallify.';
 
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
   manifest: '/manifest.json',
-  themeColor: '#E6E6FA', // Updated to match Impressionist Garden primary
+  // themeColor: '#E6E6FA', // Removed from here
   alternates: {
     canonical: '/',
   },
@@ -70,6 +70,11 @@ export const metadata: Metadata = {
   },
 };
 
+// Added viewport export for themeColor
+export const viewport: Viewport = {
+  themeColor: '#E6E6FA', // Impressionist Garden primary for theme color
+};
+
 
 export default function RootLayout({
   children,
@@ -86,7 +91,6 @@ export default function RootLayout({
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          // Updated to use query parameter format
           urlTemplate: `${BASE_URL}search?query={search_term_string}`, 
         },
         'query-input': 'required name=search_term_string',
@@ -108,7 +112,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Removed NextNProgress component */}
+          <ClientProgressBar color="#EEE8AA" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} />
           <div className="flex-grow flex flex-col">
             {children}
           </div>
