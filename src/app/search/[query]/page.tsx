@@ -4,6 +4,7 @@
 import { SearchPageContent } from '@/components/search-page-content';
 import { StructuredData } from '@/components/structured-data';
 import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
+import type { DeviceOrientationCategory } from '@/types/pexels'; // Import DeviceOrientationCategory
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
@@ -48,11 +49,18 @@ export default async function SearchPage({ params: paramsPromise }: SearchPageSe
     } as SchemaWebPage,
   } : null;
 
+  // Default device orientation for server-side rendering of this page
+  const defaultDeviceOrientation: DeviceOrientationCategory = 'smartphone';
+
   return (
     <>
       {searchResultsSchema && <StructuredData data={searchResultsSchema} />}
-      {/* Pass the resolved initialQuery to the Client Component */}
-      <SearchPageContent initialQuery={initialDecodedQuery} />
+      {/* Pass the resolved initialQuery and a default deviceOrientation to the Client Component */}
+      <SearchPageContent 
+        initialQuery={initialDecodedQuery} 
+        deviceOrientation={defaultDeviceOrientation} 
+      />
     </>
   );
 }
+
