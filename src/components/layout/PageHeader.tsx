@@ -30,7 +30,8 @@ export function PageHeader({
           <span className="hidden sm:inline">{backTextDesktop}</span>
           <span className="sm:hidden">{backTextMobile}</span>
         </Link>
-        <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap text-center flex-1 min-w-0 overflow-hidden text-ellipsis px-2">
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 overflow-hidden text-ellipsis max-w-[70%] text-center">
+        {/* <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap text-center flex-1 min-w-0 overflow-hidden text-ellipsis px-2"> */}
           {title}
         </h1>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
