@@ -41,7 +41,7 @@ export function WallpaperSection({
 
   return (
     <section className="py-2">
-      <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">{title}</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">{title}</h2>
       {loading ? (
         <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
           {[...Array(Math.min(itemCount, 5))].map((_, i) => ( // Show up to 5 skeletons for sections
@@ -74,3 +74,4 @@ export function WallpaperSection({
     </section>
   );
 }
+
