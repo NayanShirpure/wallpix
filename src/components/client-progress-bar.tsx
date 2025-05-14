@@ -4,9 +4,29 @@
 import NextNProgress from 'nextjs-progressbar';
 import type React from 'react';
 
-// Define props based on the component if NextNProgressProps is not exported directly
-type ProgressBarProps = React.ComponentProps<typeof NextNProgress>;
+// Define props explicitly based on nextjs-progressbar's typical API
+interface ClientProgressBarProps {
+  color?: string;
+  startPosition?: number;
+  stopDelayMs?: number;
+  height?: number;
+  showOnShallow?: boolean;
+  options?: {
+    showSpinner?: boolean;
+    trickle?: boolean;
+    trickleSpeed?: number;
+    minimum?: number;
+    easing?: string;
+    speed?: number;
+    template?: string;
+    [key: string]: any; // Allow any other nprogress options passed via the options prop
+  };
+  nonce?: string;
+  transformCSS?: (css: string) => string;
+  // Ensure any other top-level props from nextjs-progressbar are also allowed
+  [key: string]: any;
+}
 
-export default function ClientProgressBar(props: ProgressBarProps) {
+export default function ClientProgressBar(props: ClientProgressBarProps) {
   return <NextNProgress {...props} />;
 }
