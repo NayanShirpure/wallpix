@@ -21,7 +21,7 @@
     --secondary-foreground: 225 15% 25%; 
     
     --muted: 270 25% 90%; /* Dusty Lavender - #D8BFD8 */
-    --muted-foreground: 225 10% 50%; /* Softer gray for muted text */
+    --muted-foreground: 225 10% 40%; /* Softer gray for muted text - Increased contrast */
     
     --accent: 56 68% 75%; /* Muted Yellow - #EEE8AA */
     --accent-foreground: 225 15% 20%;
@@ -70,7 +70,7 @@
     --secondary-foreground: 240 50% 90%; 
     
     --muted: 225 10% 22%; /* Even Darker Desaturated Blue/Gray for muted backgrounds */
-    --muted-foreground: 240 20% 70%; /* Lighter muted text */
+    --muted-foreground: 240 20% 65%; /* Lighter muted text - Increased contrast */
     
     --accent: 56 68% 75%; /* Muted Yellow - #EEE8AA */
     --accent-foreground: 225 15% 10%;
