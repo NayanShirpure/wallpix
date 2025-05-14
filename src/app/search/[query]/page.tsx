@@ -4,15 +4,14 @@
 import { SearchPageContent } from '@/components/search-page-content';
 import { StructuredData } from '@/components/structured-data';
 import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
-import type { DeviceOrientationCategory } from '@/types/pexels'; // Import DeviceOrientationCategory
+import type { DeviceOrientationCategory } from '@/types/pexels';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-// Explicitly type the return for generateStaticParams, simplest synchronous form
-export async function generateStaticParams(): Promise<{ query: string }[]> {
-  // For a search page, it's often not feasible to pre-render all possible search queries.
-  // Returning an empty array means no specific search paths will be pre-rendered at build time.
-  // This satisfies the requirement for `output: 'export'`.
+// Added for static export compatibility if this dynamic route is still active.
+// For a search page, it's often not feasible to pre-render all possible search queries.
+// Returning an empty array means no specific search paths will be pre-rendered at build time.
+export function generateStaticParams(): { query: string }[] {
   return [];
 }
 
@@ -56,11 +55,10 @@ export default async function SearchPage({ params: paramsPromise }: SearchPageSe
     <>
       {searchResultsSchema && <StructuredData data={searchResultsSchema} />}
       {/* Pass the resolved initialQuery and a default deviceOrientation to the Client Component */}
-      <SearchPageContent 
-        initialQuery={initialDecodedQuery} 
-        deviceOrientation={defaultDeviceOrientation} 
+      <SearchPageContent
+        initialQuery={initialDecodedQuery}
+        deviceOrientation={defaultDeviceOrientation}
       />
     </>
   );
 }
-
