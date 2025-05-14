@@ -56,7 +56,7 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
         setWallpapers((prev: PexelsPhoto[]): PexelsPhoto[] => {
           const combined = append ? [...prev, ...newPhotos] : newPhotos;
           const uniqueMap = new Map(combined.map((item: PexelsPhoto) => [`${item.id}-${category}`, item]));
-          return Array.from(uniqueMap.values());
+          return Array.from(uniqueMap.values()) as PexelsPhoto[];
         });
         setHasMore(!!data.next_page && newPhotos.length > 0 && newPhotos.length === 30);
       } else {
