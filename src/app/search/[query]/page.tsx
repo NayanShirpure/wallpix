@@ -1,3 +1,4 @@
+
 // This file is now a Server Component
 
 import { SearchPageContent } from '@/components/search-page-content';
@@ -7,7 +8,7 @@ import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWeb
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 // Explicitly type the return for generateStaticParams, simplest synchronous form
-export function generateStaticParams(): { query: string }[] {
+export async function generateStaticParams(): Promise<{ query: string }[]> {
   // For a search page, it's often not feasible to pre-render all possible search queries.
   // Returning an empty array means no specific search paths will be pre-rendered at build time.
   // This satisfies the requirement for `output: 'export'`.
@@ -15,7 +16,7 @@ export function generateStaticParams(): { query: string }[] {
 }
 
 interface SearchPageServerProps {
-  params: Promise<{ query: string }>; 
+  params: Promise<{ query: string }>;
 }
 
 // This page is a Server Component
@@ -34,7 +35,7 @@ export default async function SearchPage({ params: paramsPromise }: SearchPageSe
       initialDecodedQuery = params.query; // Use raw query if decoding fails
     }
   }
-  
+
   const searchResultsSchema: MinimalWithContext<SchemaSearchResultsPage> | null = rawQueryForUrl ? {
     '@context': 'https://schema.org',
     '@type': 'SearchResultsPage',
