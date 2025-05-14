@@ -18,9 +18,9 @@ export function GlobalFooter() {
         </div>
         
         {/* Wrapper for social icons and nav links to group them on the right */}
-        {/* <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-6"> */}
+        <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-6">
           {/* Social Icons */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center gap-x-4 sm:gap-x-5"> 
+          <div className="flex items-center justify-center gap-x-4 sm:gap-x-5"> 
             <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
               <Twitter className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
             </a>
@@ -42,7 +42,7 @@ export function GlobalFooter() {
             <Link href="/terms-conditions" className="hover:text-accent hover:underline">Terms</Link>
             <Link href="/contact" className="hover:text-accent hover:underline">Contact</Link>
           </nav>
-        {/* </div> */}
+        </div>
       </div>
     </footer>
   );
