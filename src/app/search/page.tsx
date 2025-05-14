@@ -8,7 +8,7 @@ import { StructuredData } from '@/components/structured-data';
 import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
 import { GlobalHeader } from '@/components/layout/GlobalHeader'; // Import GlobalHeader
 import type { DeviceOrientationCategory } from '@/types/pexels';
-import { useRouter }_next/static/chunks/node_modules_next_dist_client_components_not-found-boundary_a93f70.js from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
@@ -101,7 +101,7 @@ function SearchLoadingFallback() {
           <Skeleton className="h-10 w-3/4 mx-auto sm:w-1/2" /> {/* Title */}
           <Skeleton className="h-5 w-1/2 mx-auto mt-2 sm:w-1/3" /> {/* Subtitle */}
         </div>
-        <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4`}>
+        <div className={'grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4'}>
             {[...Array(12)].map((_, i) => (
               <Skeleton key={`search-fallback-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
             ))}
@@ -119,3 +119,4 @@ export default function SearchPage() {
     </Suspense>
   );
 }
+
