@@ -7,7 +7,8 @@ import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWeb
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
-export async function generateStaticParams() {
+// Explicitly type the return for generateStaticParams
+export async function generateStaticParams(): Promise<{ query: string }[]> {
   // For a search page, it's often not feasible to pre-render all possible search queries.
   // Returning an empty array means no specific search paths will be pre-rendered at build time.
   return [];
