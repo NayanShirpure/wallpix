@@ -26,7 +26,7 @@ interface GlobalHeaderProps {
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
   initialSearchTerm?: string; 
-  navigateToSearchPage?: boolean; // Added prop
+  navigateToSearchPage?: boolean;
 }
 
 export function GlobalHeader({
@@ -35,17 +35,19 @@ export function GlobalHeader({
   onWallpaperCategorySelect,
   onSearchSubmit,
   initialSearchTerm,
-  navigateToSearchPage, // Destructure prop
+  navigateToSearchPage,
 }: GlobalHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-card/90 backdrop-blur-md supports-[backdrop-filter]:bg-card/75 print:hidden">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4">
-        <Link href="/" className="mr-1 flex items-center space-x-2 sm:mr-2" aria-label="Wallify Home">
+      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-3 px-3 sm:px-4">
+        {/* Left: Logo */}
+        <Link href="/" className="flex items-center space-x-2 shrink-0" aria-label="Wallify Home"> {/* Added shrink-0 */}
           <Camera className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           <span className="font-bold text-lg sm:text-xl text-primary hidden xxs:inline">Wallify</span>
         </Link>
 
-        <div className="flex-1 items-center justify-end hidden sm:flex gap-1.5 sm:gap-2">
+        {/* Middle: Desktop Navigation (visible on sm+) */}
+        <nav className="hidden sm:flex flex-1 items-center justify-center lg:justify-start gap-1.5 sm:gap-2 mx-2"> {/* flex-1 to take space, justify-center or start, added mx-2 for spacing */}
             <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="w-auto">
               <TabsList className="h-9 text-xs sm:text-sm">
                 {deviceOrientationTabs.map(opt => (
@@ -96,83 +98,86 @@ export function GlobalHeader({
                 </div>
               </SheetContent>
             </Sheet>
-        </div>
-        
-        <div className="w-full max-w-[150px] xs:max-w-[180px] sm:max-w-xs mx-auto sm:mx-0 sm:ml-auto">
-          <SearchBar 
-            onSubmitSearch={onSearchSubmit} 
-            initialValue={initialSearchTerm}
-            navigateToSearchPage={navigateToSearchPage} // Pass prop to SearchBar
-          />
-        </div>
+        </nav>
 
-        {/* Mobile Combined Menu */}
-        <div className="sm:hidden ml-1.5">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-                <Menu className="h-4 w-4" />
-                <span className="sr-only">Open navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] p-0">
-              <SheetHeader className="p-4 border-b">
-                <SheetTitle>Navigation</SheetTitle>
-              </SheetHeader>
-              <div className="py-2 px-2 h-[calc(100%-57px)] overflow-y-auto">
-                <SheetClose asChild>
-                  <Link href="/discover" passHref legacyBehavior>
-                    <a className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
-                        <Compass className="mr-2 h-4 w-4" /> Discover
-                      </Button>
-                    </a>
-                  </Link>
-                </SheetClose>
-                <Separator />
-                <div className="py-1">
-                  <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Device</h4>
-                  {deviceOrientationTabs.map(opt => (
-                    <SheetClose asChild key={`mobile-sheet-device-${opt.value}`}>
-                      <Button
-                        variant={currentDeviceOrientation === opt.value ? "secondary" : "ghost"}
-                        className="w-full justify-between px-2 py-1.5 text-sm h-auto"
-                        onClick={() => onDeviceOrientationChange(opt.value as DeviceOrientationCategory)}
-                      >
-                        {opt.label}
-                        {currentDeviceOrientation === opt.value && <Check className="h-4 w-4" />}
-                      </Button>
-                    </SheetClose>
-                  ))}
+        {/* Right: Actions (Search, Mobile Menu, Theme Toggle) */}
+        <div className="flex items-center shrink-0 gap-1.5 sm:gap-2"> {/* shrink-0 to prevent this group from shrinking */}
+          <div className="w-full max-w-[150px] xs:max-w-[180px] sm:w-auto sm:max-w-xs"> {/* Allow search to take natural width on sm+ */}
+            <SearchBar 
+              onSubmitSearch={onSearchSubmit} 
+              initialValue={initialSearchTerm}
+              navigateToSearchPage={navigateToSearchPage}
+            />
+          </div>
+
+          {/* Mobile Combined Menu */}
+          <div className="sm:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                  <Menu className="h-4 w-4" />
+                  <span className="sr-only">Open navigation menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>Navigation</SheetTitle>
+                </SheetHeader>
+                <div className="py-2 px-2 h-[calc(100%-57px)] overflow-y-auto">
+                  <SheetClose asChild>
+                    <Link href="/discover" passHref legacyBehavior>
+                      <a className="block">
+                        <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
+                          <Compass className="mr-2 h-4 w-4" /> Discover
+                        </Button>
+                      </a>
+                    </Link>
+                  </SheetClose>
+                  <Separator />
+                  <div className="py-1">
+                    <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Device</h4>
+                    {deviceOrientationTabs.map(opt => (
+                      <SheetClose asChild key={`mobile-sheet-device-${opt.value}`}>
+                        <Button
+                          variant={currentDeviceOrientation === opt.value ? "secondary" : "ghost"}
+                          className="w-full justify-between px-2 py-1.5 text-sm h-auto"
+                          onClick={() => onDeviceOrientationChange(opt.value as DeviceOrientationCategory)}
+                        >
+                          {opt.label}
+                          {currentDeviceOrientation === opt.value && <Check className="h-4 w-4" />}
+                        </Button>
+                      </SheetClose>
+                    ))}
+                  </div>
+                  <Separator />
+                  <div className="py-1">
+                    <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>
+                    {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
+                      <React.Fragment key={`mobile-sheet-group-${group.groupLabel}-${groupIndex}`}>
+                        <h5 className="text-xs font-medium text-muted-foreground px-2 pt-2 pb-1">{group.groupLabel}</h5>
+                        {group.categories.map((cat) => (
+                          <SheetClose asChild key={`mobile-sheet-cat-${cat.value}-${groupIndex}`}>
+                            <Button
+                              variant="ghost"
+                              className="w-full justify-start px-2 py-1.5 text-sm h-auto"
+                              onClick={() => onWallpaperCategorySelect(cat.value)}
+                            >
+                              {cat.label}
+                            </Button>
+                          </SheetClose>
+                        ))}
+                        {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <Separator className="my-1" />}
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
-                <Separator />
-                <div className="py-1">
-                  <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>
-                  {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
-                    <React.Fragment key={`mobile-sheet-group-${group.groupLabel}-${groupIndex}`}>
-                      <h5 className="text-xs font-medium text-muted-foreground px-2 pt-2 pb-1">{group.groupLabel}</h5>
-                      {group.categories.map((cat) => (
-                        <SheetClose asChild key={`mobile-sheet-cat-${cat.value}-${groupIndex}`}>
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start px-2 py-1.5 text-sm h-auto"
-                            onClick={() => onWallpaperCategorySelect(cat.value)}
-                          >
-                            {cat.label}
-                          </Button>
-                        </SheetClose>
-                      ))}
-                      {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <Separator className="my-1" />}
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-                  
-        <div className="ml-1 sm:ml-0">
-          <ThemeToggle />
+              </SheetContent>
+            </Sheet>
+          </div>
+                    
+          <div>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>

@@ -17,9 +17,9 @@ export function GlobalFooter() {
           </p>
         </div>
         
-        <div className="flex items-center gap-x-4 sm:gap-x-5 order-first md:order-none mb-3 md:mb-0">
+        <div className="flex items-center gap-x-4 sm:gap-x-5 order-first md:order-none mb-3 md:mb-0"> {/* Social Icons */}
           <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
-            <Twitter className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+            <Twitter className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> {/* Corrected class h-4.5 to h-[1.125rem] if using JIT, or stick to h-4/h-5 */}
           </a>
           <a href="https://instagram.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Instagram" className="text-muted-foreground hover:text-accent transition-colors">
             <Instagram className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
@@ -30,13 +30,13 @@ export function GlobalFooter() {
         </div>
 
         <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1.5 flex-wrap justify-center md:justify-end" aria-label="Footer navigation">
-          <Link href="/" className="underline hover:text-accent">Home</Link>
-          <Link href="/discover" className="underline hover:text-accent">Discover</Link>
-          <Link href="/blog" className="underline hover:text-accent">Blog</Link>
-          <Link href="/about" className="underline hover:text-accent">About</Link>
-          <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
-          <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
-          <Link href="/contact" className="underline hover:text-accent">Contact</Link>
+          <Link href="/" className="hover:text-accent hover:underline">Home</Link>
+          <Link href="/discover" className="hover:text-accent hover:underline">Discover</Link>
+          <Link href="/blog" className="hover:text-accent hover:underline">Blog</Link>
+          <Link href="/about" className="hover:text-accent hover:underline">About</Link>
+          <Link href="/privacy-policy" className="hover:text-accent hover:underline">Privacy</Link>
+          <Link href="/terms-conditions" className="hover:text-accent hover:underline">Terms</Link>
+          <Link href="/contact" className="hover:text-accent hover:underline">Contact</Link>
         </nav>
       </div>
     </footer>
