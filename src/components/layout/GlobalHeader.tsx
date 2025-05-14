@@ -193,9 +193,7 @@ export function GlobalHeader({
             </Sheet>
           </div>
                     
-          <div>
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
         </div>
       </div>
     </header>
