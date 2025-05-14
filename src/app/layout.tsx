@@ -70,7 +70,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#f2c5c3', // Beauty Bush - primary background for the new theme
+  themeColor: '#a7c6d0', // Casper - new light theme background
 };
 
 
@@ -110,7 +110,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ClientProgressBar color="#86d5d3" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} /> {/* Monte Carlo for progress bar */}
+          <ClientProgressBar color="#607691" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} /> {/* Lynch for progress bar */}
           <div className="flex-grow flex flex-col">
             {children}
           </div>
