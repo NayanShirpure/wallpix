@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Camera, Compass, Check, ListFilter } from 'lucide-react';
+import { Menu, Palette, Compass, Check, ListFilter } from 'lucide-react'; // Changed Camera to Palette
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Sheet,
@@ -46,17 +46,17 @@ export function GlobalHeader({
 }: GlobalHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-card/90 backdrop-blur-md supports-[backdrop-filter]:bg-card/75 print:hidden">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-2 px-3 sm:px-4"> {/* Main flex container */}
+      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-2 px-3 sm:px-4">
         
         {/* Left: Logo */}
         <Link href="/" className="flex items-center space-x-2 shrink-0" aria-label="Wallify Home">
-          <Camera className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+          <Palette className="h-6 w-6 sm:h-7 sm:w-7 text-primary" /> {/* Changed Camera to Palette */}
           <span className="font-bold text-lg sm:text-xl text-primary hidden xxs:inline">Wallify</span>
         </Link>
 
         {/* Center: SearchBar */}
-        <div className="flex-1 flex justify-center px-2 sm:px-4"> {/* flex-1 makes it take remaining space, justify-center centers its content */}
-          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md"> {/* Max width for the search bar itself */}
+        <div className="flex-1 flex justify-center px-2 sm:px-4">
+          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
             <SearchBar 
               onSubmitSearch={onSearchSubmit} 
               initialValue={initialSearchTerm}
@@ -66,7 +66,7 @@ export function GlobalHeader({
         </div>
 
         {/* Right Group: Contains Desktop Nav, Mobile Menu, Theme Toggle */}
-        <div className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2"> {/* shrink-0 to prevent this group from shrinking */}
+        <div className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
           {/* Desktop Navigation (visible on sm+) */}
           <nav className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
               <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="w-auto">
@@ -85,7 +85,7 @@ export function GlobalHeader({
                       Browse
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end"> {/* Changed align to "end" to better suit right-aligned group */}
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link href="/discover" className="flex items-center">
                         <Compass className="mr-2 h-4 w-4" />
