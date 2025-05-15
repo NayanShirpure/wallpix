@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* New Theme: Vibrant Professional - Light */
+    /* Theme: Vibrant Professional - Light */
     --background: 210 17% 98%; /* Lighter Gray #F8F9FA */
     --foreground: 210 10% 15%; /* Dark Gray #212529 */
     
@@ -21,7 +21,7 @@
     --secondary-foreground: 210 10% 30%; /* Medium Dark Gray #495057 */
     
     --muted: 210 16% 85%; /* Lighter Gray, slightly darker for better TabsList visibility */
-    --muted-foreground: 210 10% 25%; /* Darker Medium Gray, for better text contrast on new muted and placeholders */
+    --muted-foreground: 210 10% 45%; /* Darker Medium Gray, for better text contrast on new muted and placeholders */
     
     --accent: 190 88% 50%; /* Vibrant Cyan #0DCAF0 (Kept for accents) */
     --accent-foreground: 210 10% 15%; /* Dark Gray #212529 */
@@ -29,7 +29,7 @@
     --destructive: 354 70% 54%; /* Standard Red #DC3545 */
     --destructive-foreground: 0 0% 100%; /* White */
     
-    --border: 210 14% 75%; /* Gray, slightly darker for better Input border visibility */
+    --border: 210 14% 80%; /* Gray, slightly darker for better Input border visibility */
     --input: 0 0% 100%; /* White #FFFFFF for input background */
     --ring: 190 88% 50%; /* Vibrant Cyan #0DCAF0 (Matches accent) */
     
@@ -53,7 +53,7 @@
   }
 
   .dark {
-    /* New Theme: Vibrant Professional - Dark */
+    /* Theme: Vibrant Professional - Dark */
     --background: 220 13% 10%; /* Very Dark Desaturated Blue #121821 */
     --foreground: 210 17% 95%; /* Very Light Gray #EFF2F5 */
     
@@ -70,7 +70,7 @@
     --secondary-foreground: 210 14% 80%; /* Light Gray #C4CBD1 */
     
     --muted: 220 13% 18%; /* Slightly lighter than card #222A35 */
-    --muted-foreground: 210 8% 50%; /* Medium Gray #707C88 (Increased contrast) */
+    --muted-foreground: 210 8% 65%; /* Medium Gray #707C88 (Increased contrast) */
     
     --accent: 190 88% 55%; /* Slightly Lighter Vibrant Cyan #27D2F5 */
     --accent-foreground: 220 13% 10%; /* Very Dark Desaturated Blue #121821 */
@@ -146,6 +146,32 @@
     scrollbar-color: hsl(var(--accent)) hsl(var(--secondary) / 0.5);
   }
 }
+
+/* NProgress custom styles using theme variables for the spinner */
+#nprogress .spinner {
+  display: block; /* Ensure spinner is shown if template includes it and showSpinner is true */
+  position: fixed;
+  z-index: 1031; /* Standard NProgress z-index */
+  top: 15px;
+  right: 15px;
+}
+
+#nprogress .spinner-icon {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: solid 2px transparent;
+  border-top-color: hsl(var(--accent)); /* Use theme accent color */
+  border-left-color: hsl(var(--accent)); /* Use theme accent color */
+  border-radius: 50%;
+  animation: nprogress-spinner 400ms linear infinite;
+}
+
+@keyframes nprogress-spinner {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 
 /* Prose styles for blog posts */
 @layer components {
