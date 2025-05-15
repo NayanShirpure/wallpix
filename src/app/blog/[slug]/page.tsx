@@ -1,8 +1,9 @@
 
 import { blogPosts } from '@/config/blog';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, UserCircle } from 'lucide-react';
+import { CalendarDays, UserCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
 // Updated import for local minimal types
 import type { 
@@ -14,6 +15,8 @@ import type {
   MinimalWithContext 
 } from '@/types/schema-dts';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
@@ -44,7 +47,6 @@ export default async function BlogPostPage({
   const uniqueKeywords = Array.from(new Set(allTagsAndKeywords));
   const keywordsString = uniqueKeywords.length > 0 ? uniqueKeywords.join(', ') : undefined;
 
-  // Correctly typed with MinimalWithContext<BlogPosting>
   const articleSchema: MinimalWithContext<BlogPosting> = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -58,21 +60,39 @@ export default async function BlogPostPage({
     author: {
       '@type': 'Person',
       name: post.author || 'Wallify Team',
-    } as Person, // Cast to ensure it matches the defined Person type
+    } as Person, 
     publisher: {
       '@type': 'Organization',
       name: 'Wallify',
       logo: {
         '@type': 'ImageObject',
         url: `${BASE_URL}opengraph-image.png`,
-      } as SchemaImageObject, // Cast to ensure it matches the defined ImageObject type
-    } as Organization, // Cast to ensure it matches the defined Organization type
+      } as SchemaImageObject, 
+    } as Organization, 
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${BASE_URL}blog/${post.slug}`,
-    } as SchemaWebPage, // Cast to ensure it matches the defined WebPage type
+    } as SchemaWebPage, 
     keywords: keywordsString,
   };
+
+  // For Previous/Next post navigation
+  const sortedPosts = [...blogPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const currentIndex = sortedPosts.findIndex(p => p.slug === post.slug);
+  
+  const previousPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
+  // Note: Original sort was newest first, so previous post is at current + 1, next is current - 1 for display logic.
+  // Re-evaluating, if sortedPosts is newest to oldest:
+  // Previous (older chronologically) would be sortedPosts[currentIndex + 1]
+  // Next (newer chronologically) would be sortedPosts[currentIndex - 1]
+  // Let's adjust to make "Previous Article" the one published *before* the current, and "Next Article" the one *after*.
+  // If sortedPosts is descending by date (newest first):
+  // `previousPostInTime` (older) is `sortedPosts[currentIndex + 1]`
+  // `nextPostInTime` (newer) is `sortedPosts[currentIndex - 1]`
+
+  const olderPost = currentIndex + 1 < sortedPosts.length ? sortedPosts[currentIndex + 1] : null;
+  const newerPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
+
 
   return (
     <>
@@ -132,6 +152,53 @@ export default async function BlogPostPage({
           <PostContent />
         </div>
       </article>
+
+      {(olderPost || newerPost) && (
+        <section className="mt-12 pt-8 border-t border-border">
+          <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-6 text-center">
+            Continue Reading
+          </h2>
+          <div className="flex flex-col sm:flex-row justify-between gap-6">
+            {olderPost ? (
+              <Link href={`/blog/${olderPost.slug}`} passHref legacyBehavior>
+                <a className="group flex-1 block p-4 sm:p-5 rounded-lg border bg-card hover:border-accent transition-colors duration-200 shadow-sm hover:shadow-md">
+                  <div className="flex items-center text-sm text-accent mb-1.5">
+                    <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
+                    Previous Article
+                  </div>
+                  <h3 className="text-base sm:text-lg font-medium text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
+                    {olderPost.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                    {olderPost.summary}
+                  </p>
+                </a>
+              </Link>
+            ) : (
+              <div className="flex-1"></div> // Placeholder for spacing if only one link exists
+            )}
+
+            {newerPost ? (
+              <Link href={`/blog/${newerPost.slug}`} passHref legacyBehavior>
+                <a className="group flex-1 block p-4 sm:p-5 rounded-lg border bg-card hover:border-accent transition-colors duration-200 shadow-sm hover:shadow-md text-right sm:text-right">
+                  <div className="flex items-center justify-end text-sm text-accent mb-1.5">
+                    Next Article
+                    <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-medium text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
+                    {newerPost.title}
+                  </h3>
+                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                    {newerPost.summary}
+                  </p>
+                </a>
+              </Link>
+            ) : (
+              <div className="flex-1"></div> // Placeholder for spacing
+            )}
+          </div>
+        </section>
+      )}
     </>
   );
 }
