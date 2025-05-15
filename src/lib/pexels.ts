@@ -99,8 +99,8 @@ export async function searchPhotos(
   if (orientation) {
     endpoint += `&orientation=${orientation}`;
   }
-  // Searches are typically dynamic, so 'no-store' is often appropriate
-  return fetchPexelsAPI<PexelsResponse>(endpoint, 'no-store');
+  // Changed 'no-store' to 'default' to allow caching of search results
+  return fetchPexelsAPI<PexelsResponse>(endpoint, 'default');
 }
 
 export async function getPhotoById(id: string): Promise<PexelsPhoto | null> {
