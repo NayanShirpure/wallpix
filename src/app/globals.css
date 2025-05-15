@@ -20,8 +20,8 @@
     --secondary: 210 16% 93%; /* Light Gray #E9ECEF */
     --secondary-foreground: 210 10% 30%; /* Medium Dark Gray #495057 */
     
-    --muted: 210 16% 90%; /* Lighter Gray #DEE2E6 */
-    --muted-foreground: 210 8% 35%; /* Darker Medium Gray #4A545E (Increased contrast) */
+    --muted: 210 16% 85%; /* Lighter Gray, slightly darker for better TabsList visibility */
+    --muted-foreground: 210 10% 25%; /* Darker Medium Gray, for better text contrast on new muted and placeholders */
     
     --accent: 190 88% 50%; /* Vibrant Cyan #0DCAF0 (Kept for accents) */
     --accent-foreground: 210 10% 15%; /* Dark Gray #212529 */
@@ -29,7 +29,7 @@
     --destructive: 354 70% 54%; /* Standard Red #DC3545 */
     --destructive-foreground: 0 0% 100%; /* White */
     
-    --border: 210 14% 82%; /* Gray #CED4DA */
+    --border: 210 14% 75%; /* Gray, slightly darker for better Input border visibility */
     --input: 0 0% 100%; /* White #FFFFFF for input background */
     --ring: 190 88% 50%; /* Vibrant Cyan #0DCAF0 (Matches accent) */
     
