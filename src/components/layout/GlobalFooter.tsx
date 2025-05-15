@@ -25,8 +25,8 @@ export function GlobalFooter() {
           </p>
         </div>
         
-        <div className="flex flex-col items-center md:flex-row md:items-center gap-3 md:gap-6">
-          <div className="flex items-center justify-center gap-x-4 sm:gap-x-5">
+        <div className="flex flex-col items-center md:items-end gap-3">
+          <div className="flex items-center justify-center md:justify-end gap-x-4 sm:gap-x-5">
             <a 
               href="https://x.com/NayanShirpure" 
               target="_blank" 
@@ -59,6 +59,7 @@ export function GlobalFooter() {
           <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1.5 flex-wrap justify-center md:justify-end" aria-label="Footer navigation">
             <Link href="/" className="hover:text-accent hover:underline">Home</Link>
             <Link href="/discover" className="hover:text-accent hover:underline">Discover</Link>
+            <Link href="/generate" className="hover:text-accent hover:underline">Generate</Link> {/* Added Generate link */}
             <Link href="/blog" className="hover:text-accent hover:underline">Blog</Link>
             <Link href="/about" className="hover:text-accent hover:underline">About</Link>
             <Link href="/privacy-policy" className="hover:text-accent hover:underline">Privacy</Link>

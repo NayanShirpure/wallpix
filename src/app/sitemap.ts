@@ -9,8 +9,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     { url: '/', changeFrequency: 'daily', priority: 1.0 },
     { url: '/discover', changeFrequency: 'weekly', priority: 0.8 },
+    { url: '/generate', changeFrequency: 'monthly', priority: 0.7 }, // Added generate page
     { url: '/blog', changeFrequency: 'weekly', priority: 0.9 },
-    // Add the static search page
     { url: '/search', changeFrequency: 'weekly', priority: 0.7 },
     { url: '/about', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/contact', changeFrequency: 'monthly', priority: 0.5 },
@@ -32,4 +32,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [...staticPages, ...blogPostPages];
 }
-
