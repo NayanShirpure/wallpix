@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
     ],
     sitemap: `${BASE_URL}sitemap.xml`,
     // Optionally, specify a host if your site is accessible via multiple domains
-    // host: BASE_URL, 
+    // host: BASE_URL,
   };
 }
+

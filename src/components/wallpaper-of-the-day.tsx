@@ -23,11 +23,11 @@ export function WallpaperOfTheDay({
   onDownloadClick,
 }: WallpaperOfTheDayProps) {
   // Aspect ratio adjustments for more cinematic feel on desktop and better fit on mobile
-  const aspectRatio = orientation === 'desktop' 
-    ? 'aspect-video sm:aspect-[18/9] md:aspect-[21/9] lg:aspect-[24/9]' 
+  const aspectRatio = orientation === 'desktop'
+    ? 'aspect-video sm:aspect-[18/9] md:aspect-[21/9] lg:aspect-[24/9]'
     : 'aspect-[9/16] xs:aspect-[9/15] sm:aspect-[9/14]';
-  const containerHeight = orientation === 'desktop' 
-    ? 'max-h-[280px] xs:max-h-[320px] sm:max-h-[380px] md:max-h-[420px] lg:max-h-[450px]' 
+  const containerHeight = orientation === 'desktop'
+    ? 'max-h-[280px] xs:max-h-[320px] sm:max-h-[380px] md:max-h-[420px] lg:max-h-[450px]'
     : 'max-h-[400px] xs:max-h-[480px] sm:max-h-[550px]';
 
 
@@ -83,9 +83,9 @@ export function WallpaperOfTheDay({
               {titleAlt}
             </h3>
             <p className="text-xs sm:text-sm text-gray-200 drop-shadow-md mt-0.5 sm:mt-1">
-              By <a 
-                    href={wallpaper.photographer_url} 
-                    target="_blank" rel="noopener noreferrer" 
+              By <a
+                    href={wallpaper.photographer_url}
+                    target="_blank" rel="noopener noreferrer"
                     className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded"
                     aria-label={`View profile of photographer ${wallpaper.photographer}`}
                   >

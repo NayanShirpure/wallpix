@@ -1,7 +1,8 @@
 
+
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2 } from 'lucide-react'; 
+import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
@@ -20,14 +21,14 @@ export default function AboutUsPage() {
     '@type': 'Organization',
     name: 'Wallify',
     url: BASE_URL,
-    logo: `${BASE_URL}opengraph-image.png`, 
+    logo: `${BASE_URL}opengraph-image.png`,
     description: 'Wallify is your go-to destination for stunning, high-quality wallpapers for both mobile and desktop devices.',
-    contactPoint: { 
+    contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
       url: `${BASE_URL}contact`,
-    } as ContactPoint, 
-    sameAs: [ 
+    } as ContactPoint,
+    sameAs: [
         "https://x.com/NayanShirpure",
         "https://instagram.com/NayanShirpure",
         "https://github.com/NayanShirpure/Wallify"
@@ -148,7 +149,7 @@ export default function AboutUsPage() {
             <Card className="bg-card border-border shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center text-2xl text-card-foreground">
-                  <Tv2 className="mr-3 h-7 w-7 text-accent" /> 
+                  <Tv2 className="mr-3 h-7 w-7 text-accent" />
                   Powered by Pexels
                 </CardTitle>
               </CardHeader>
