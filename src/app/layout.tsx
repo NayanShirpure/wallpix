@@ -1,5 +1,5 @@
 
-import type {Metadata, Viewport} from 'next'; 
+import type {Metadata, Viewport} from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { StructuredData } from '@/components/structured-data';
 import type { WebSite as SchemaWebSite, SearchAction as SchemaSearchAction, MinimalWithContext } from '@/types/schema-dts';
 import { GlobalFooter } from '@/components/layout/GlobalFooter';
-import ClientProgressBar from '@/components/client-progress-bar'; 
+import ClientProgressBar from '@/components/client-progress-bar';
 
 
 const inter = Inter({
@@ -16,7 +16,7 @@ const inter = Inter({
   display: 'swap',
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/'; 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/';
 const SITE_NAME = 'Wallify';
 const SITE_DESCRIPTION = 'Discover and download stunning, high-quality wallpapers for your desktop and smartphone. Personalize your digital space with Wallify.';
 
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: `/opengraph-image.png`, 
+        url: `/opengraph-image.png`,
         width: 1200,
         height: 630,
         alt: `Wallify - Stunning Wallpapers for Desktop and Smartphone`,
@@ -52,8 +52,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-     images: [`/twitter-image.png`], 
-    site: '@NayanShirpure', 
+     images: [`/twitter-image.png`],
+    site: '@NayanShirpure',
     creator: '@NayanShirpure',
   },
   robots: {
@@ -70,7 +70,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#F8F9FA', // Vibrant Professional Light: Background
+  // Vibrant Professional Light: Background
+  // Updated to use the vibrant cyan accent from the current theme
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'hsl(210 17% 98%)' }, // Original light background
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(220 13% 10%)' }, // Original dark background
+  ],
 };
 
 
@@ -89,10 +94,15 @@ export default function RootLayout({
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${BASE_URL}search?query={search_term_string}`, 
+          urlTemplate: `${BASE_URL}search?query={search_term_string}`,
         },
         'query-input': 'required name=search_term_string',
-    } as SchemaSearchAction, 
+    } as SchemaSearchAction,
+  };
+
+  const nprogressOptions = {
+    template: '<div class="bar" role="progressbar" aria-label="Loading progress"><div class="peg"></div></div><div class="spinner" aria-hidden="true"><div class="spinner-icon"></div></div>',
+    showSpinner: true, // Default is true, can be set to false if spinner is not desired
   };
 
   return (
@@ -102,7 +112,7 @@ export default function RootLayout({
       </head>
       <body className={cn(
         inter.className,
-        'antialiased flex flex-col min-h-screen bg-background text-foreground' 
+        'antialiased flex flex-col min-h-screen bg-background text-foreground'
        )}>
         <ThemeProvider
           attribute="class"
@@ -110,7 +120,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ClientProgressBar color="#0DCAF0" startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} /> {/* Vibrant Cyan for progress bar */}
+          <ClientProgressBar
+            color="hsl(var(--accent))" // Use theme's accent color
+            startPosition={0.3}
+            stopDelayMs={200}
+            height={3}
+            showOnShallow={true}
+            options={nprogressOptions}
+          />
           <div className="flex-grow flex flex-col">
             {children}
           </div>
