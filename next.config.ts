@@ -28,12 +28,6 @@ const nextConfig: NextConfig = {
         hostname: 'placehold.co',
         port: '',
         pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.remotePatterns',
-        port: '',
-        pathname: '/**',
       }
     ],
   },
