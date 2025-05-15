@@ -22,7 +22,6 @@ export function WallpaperOfTheDay({
   onViewClick,
   onDownloadClick,
 }: WallpaperOfTheDayProps) {
-  // Aspect ratio adjustments for more cinematic feel on desktop and better fit on mobile
   const aspectRatio = orientation === 'desktop'
     ? 'aspect-video sm:aspect-[18/9] md:aspect-[21/9] lg:aspect-[24/9]'
     : 'aspect-[9/16] xs:aspect-[9/15] sm:aspect-[9/14]';
@@ -32,14 +31,13 @@ export function WallpaperOfTheDay({
 
 
   const getSrc = (photo: PexelsPhoto) => {
-    // Prioritize higher quality sources for WOTD
     if (orientation === 'desktop') return photo.src.original || photo.src.large2x;
     return photo.src.large2x || photo.src.original || photo.src.portrait;
   };
 
   if (loading) {
     return (
-      <section>
+      <section aria-busy="true" aria-live="polite">
         <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Wallpaper of the Day</h2>
         <Skeleton className={`w-full ${aspectRatio} ${containerHeight} rounded-xl shadow-lg`} />
       </section>
@@ -61,7 +59,7 @@ export function WallpaperOfTheDay({
   const titleAlt = (wallpaper.alt && wallpaper.alt.trim() !== '') ? wallpaper.alt : 'Featured Wallpaper';
 
   return (
-    <section>
+    <section aria-busy="false">
       <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Wallpaper of the Day</h2>
       <div
         className={`relative w-full ${aspectRatio} ${containerHeight} rounded-xl overflow-hidden group shadow-xl hover:shadow-2xl focus-within:shadow-2xl transition-all duration-300 ease-in-out`}
@@ -70,9 +68,9 @@ export function WallpaperOfTheDay({
           src={getSrc(wallpaper)}
           alt={imageAlt}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1000px" // Adjusted sizes for better LCP
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1000px" 
           className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 group-focus-within:scale-105"
-          priority // WOTD is likely LCP candidate
+          priority 
           placeholder="blur"
           blurDataURL={wallpaper.src.tiny}
           data-ai-hint={`featured daily ${orientation === 'desktop' ? 'desktop art' : 'phone scene'}`}
@@ -87,7 +85,7 @@ export function WallpaperOfTheDay({
                     href={wallpaper.photographer_url}
                     target="_blank" rel="noopener noreferrer"
                     className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded"
-                    aria-label={`View profile of photographer ${wallpaper.photographer}`}
+                    aria-label={`View profile of photographer ${wallpaper.photographer} (opens in new tab)`}
                   >
                     {wallpaper.photographer}
                   </a>

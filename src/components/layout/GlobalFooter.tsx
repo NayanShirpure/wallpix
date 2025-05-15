@@ -15,19 +15,43 @@ export function GlobalFooter() {
             © {currentYear} Wallify. All rights reserved.
           </p>
           <p className="mt-0.5">
-             Wallpapers generously provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">Pexels</a>.
+             Wallpapers generously provided by <a 
+               href="https://www.pexels.com" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               className="underline hover:text-accent"
+               aria-label="Pexels (opens in new tab)"
+             >Pexels</a>.
           </p>
         </div>
         
-        <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-6">
+        <div className="flex flex-col items-center md:flex-row md:items-center gap-3 md:gap-6">
           <div className="flex items-center justify-center gap-x-4 sm:gap-x-5">
-            <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
+            <a 
+              href="https://x.com/NayanShirpure" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="Wallify on Twitter (opens in new tab)" 
+              className="text-muted-foreground hover:text-accent transition-colors"
+            >
               <Twitter className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
             </a>
-            <a href="https://instagram.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Instagram" className="text-muted-foreground hover:text-accent transition-colors">
+            <a 
+              href="https://instagram.com/NayanShirpure" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="Wallify on Instagram (opens in new tab)" 
+              className="text-muted-foreground hover:text-accent transition-colors"
+            >
               <Instagram className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
             </a>
-            <a href="https://github.com/NayanShirpure/Wallify" target="_blank" rel="noopener noreferrer" aria-label="Wallify on GitHub" className="text-muted-foreground hover:text-accent transition-colors">
+            <a 
+              href="https://github.com/NayanShirpure/Wallify" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="Wallify on GitHub (opens in new tab)" 
+              className="text-muted-foreground hover:text-accent transition-colors"
+            >
               <Github className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
             </a>
           </div>

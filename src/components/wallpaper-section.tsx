@@ -7,13 +7,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Download } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { WallpaperCard } from './wallpaper/WallpaperCard'; // Import WallpaperCard for consistent item rendering
+import { WallpaperCard } from './wallpaper/WallpaperCard'; 
 
 interface WallpaperSectionProps {
   title: string;
   wallpapers: PexelsPhoto[];
   loading: boolean;
-  orientation: DeviceOrientationCategory; // This orientation is for the *type* of content (desktop/phone)
+  orientation: DeviceOrientationCategory; 
   onWallpaperClick: (wallpaper: PexelsPhoto) => void;
   itemCount?: number;
 }
@@ -22,33 +22,27 @@ export function WallpaperSection({
   title,
   wallpapers,
   loading,
-  orientation, // This is the general orientation context for the content type
+  orientation, 
   onWallpaperClick,
   itemCount = 10, 
 }: WallpaperSectionProps) {
-  // For carousel display, items can maintain their natural orientation (derived from API)
-  // or be forced. WallpaperCard itself handles aspect ratio based on its `orientation` prop.
-  // Here, `orientation` prop of WallpaperSection dictates what kind of data we *expect*
-  // and what orientation WallpaperCard *should* use.
   
   const displayedWallpapers = wallpapers.slice(0, itemCount);
 
-  // Skeleton item width should match card width in carousel
-  // These widths are approximate and aim for a good carousel look.
   const skeletonItemWidth = orientation === 'desktop' 
-    ? 'w-60 xs:w-64 sm:w-72 md:w-80 lg:w-[340px]' // Wider for desktop context items
-    : 'w-32 xs:w-36 sm:w-40 md:w-44 lg:w-48'; // Narrower for phone context items
+    ? 'w-60 xs:w-64 sm:w-72 md:w-80 lg:w-[340px]' 
+    : 'w-32 xs:w-36 sm:w-40 md:w-44 lg:w-48'; 
 
   return (
-    <section className="py-2">
+    <section className="py-2" aria-busy={loading} aria-live={loading ? "polite" : "off"}>
       <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">{title}</h2>
       {loading ? (
         <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
-          {[...Array(Math.min(itemCount, 5))].map((_, i) => ( // Show up to 5 skeletons for sections
+          {[...Array(Math.min(itemCount, 5))].map((_, i) => ( 
             <div key={`skeleton-${title}-${i}`} className={cn("flex-shrink-0", skeletonItemWidth)}>
               <Skeleton className={cn(
                 "w-full rounded-md md:rounded-lg shadow-sm",
-                orientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]' // Skeleton matches the expected item orientation
+                orientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]' 
                 )} />
             </div>
           ))}
@@ -63,7 +57,7 @@ export function WallpaperSection({
               <WallpaperCard
                 photo={wallpaper}
                 onClick={() => onWallpaperClick(wallpaper)}
-                orientation={orientation} // Pass the section's orientation to the card
+                orientation={orientation} 
               />
             </div>
           ))}
@@ -74,4 +68,3 @@ export function WallpaperSection({
     </section>
   );
 }
-

@@ -1,7 +1,6 @@
 
 // 'use client'; // Removed to make it a Server Component
 
-// Removed React, useState, useEffect imports as they are not needed for Server Component
 import Link from 'next/link';
 import { StructuredData } from '@/components/structured-data';
 import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
@@ -11,7 +10,6 @@ import { PageHeader } from '@/components/layout/PageHeader';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function PrivacyPolicyPage() {
-  // This is the actual date the policy content was last substantively modified.
   const actualPolicyModificationDate = "2024-07-20"; 
   const displayModificationDate = new Date(actualPolicyModificationDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -83,7 +81,7 @@ export default function PrivacyPolicyPage() {
 
           <h3 className="text-xl font-semibold text-primary mt-6">Third-Party Services</h3>
           <p>
-            Wallify uses the Pexels API (<a href="https://www.pexels.com/api/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/api/</a>) to display wallpapers. Your interactions with Pexels content are subject to Pexels' Privacy Policy (<a href="https://www.pexels.com/privacy-policy/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/privacy-policy/</a>) and Terms of Service (<a href="https://www.pexels.com/terms-of-service/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/terms-of-service/</a>). We encourage you to review those policies.
+            Wallify uses the Pexels API (<a href="https://www.pexels.com/api/" target="_blank" rel="noopener noreferrer" aria-label="Pexels API (opens in new tab)">https://www.pexels.com/api/</a>) to display wallpapers. Your interactions with Pexels content are subject to Pexels' Privacy Policy (<a href="https://www.pexels.com/privacy-policy/" target="_blank" rel="noopener noreferrer" aria-label="Pexels Privacy Policy (opens in new tab)">https://www.pexels.com/privacy-policy/</a>) and Terms of Service (<a href="https://www.pexels.com/terms-of-service/" target="_blank" rel="noopener noreferrer" aria-label="Pexels Terms of Service (opens in new tab)">https://www.pexels.com/terms-of-service/</a>). We encourage you to review those policies.
           </p>
 
           <h3 className="text-xl font-semibold text-primary mt-6">Data Security</h3>

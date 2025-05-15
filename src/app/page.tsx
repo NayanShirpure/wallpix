@@ -114,12 +114,10 @@ export default function Home() {
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    // Navigate to search page with query parameter
     router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
   };
 
   const handleSearchSubmit = (newSearchTerm: string) => {
-    // Navigate to search page with query parameter
     if (newSearchTerm.trim()) {
       router.push(`/search?query=${encodeURIComponent(newSearchTerm.trim())}`);
     }
@@ -186,7 +184,7 @@ export default function Home() {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={searchTerm}
-        navigateToSearchPage={true} // SearchBar in GlobalHeader should navigate
+        navigateToSearchPage={true} 
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
@@ -199,7 +197,11 @@ export default function Home() {
         </div>
 
         {loading && wallpapers.length === 0 ? (
-             <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
+             <div 
+                className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}
+                aria-busy="true"
+                aria-live="polite"
+              >
                 {[...Array(15)].map((_, i) => (
                  <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
                 ))}
@@ -221,7 +223,11 @@ export default function Home() {
           )}
 
           {loading && wallpapers.length > 0 && (
-              <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
+              <div 
+                className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}
+                aria-busy="true"
+                aria-live="polite"
+              >
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
                 ))}

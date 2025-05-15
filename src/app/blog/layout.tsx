@@ -50,7 +50,7 @@ export default function BlogLayout({
           target="_blank" 
           rel="noopener noreferrer" 
           className="text-primary hover:text-accent transition-colors" 
-          aria-label="RSS Feed"
+          aria-label="RSS Feed (opens in new tab)"
         >
           <Rss className="h-5 w-5 sm:h-6 sm:w-6" />
         </a>

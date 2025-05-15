@@ -1,12 +1,10 @@
 
-
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
-// Updated import for local minimal types
 import type { Organization, MinimalWithContext, ContactPoint } from '@/types/schema-dts';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -15,7 +13,6 @@ import { PageHeader } from '@/components/layout/PageHeader';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function AboutUsPage() {
-  // Correctly typed with MinimalWithContext<Organization>
   const orgData: MinimalWithContext<Organization> = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -50,7 +47,7 @@ export default function AboutUsPage() {
         <div className="space-y-10">
           <section className="text-center">
             <Image
-              src="https://picsum.photos/seed/wallify-concept/300/150"
+              src="https://placehold.co/300x150.png"
               alt="Wallify Concept Art"
               width={300}
               height={150}
@@ -156,7 +153,13 @@ export default function AboutUsPage() {
               <CardContent>
                 <p className="text-muted-foreground leading-relaxed">
                   All wallpapers in Wallify are provided by the Pexels API, giving you access to thousands of stunning images from talented photographers around the world.
-                   Wallpapers are provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">Pexels</a>.
+                   Wallpapers are provided by <a 
+                     href="https://www.pexels.com" 
+                     target="_blank" 
+                     rel="noopener noreferrer" 
+                     className="underline hover:text-accent"
+                     aria-label="Pexels (opens in new tab)"
+                   >Pexels</a>.
                 </p>
               </CardContent>
             </Card>

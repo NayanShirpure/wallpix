@@ -1,7 +1,6 @@
 
 // 'use client'; // Removed to make it a Server Component
 
-// Removed React, useState, useEffect imports
 import Link from 'next/link';
 import { StructuredData } from '@/components/structured-data';
 import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
@@ -82,8 +81,8 @@ export default function TermsConditionsPage() {
 
           <h3 className="text-xl font-semibold text-primary mt-6">Third-Party Content</h3>
            <p>
-             Wallpapers displayed in Wallify are sourced from Pexels (<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Pexels</a>) via their API.
-             All images are subject to the Pexels License (<a href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer">Pexels License</a>). Wallify does not claim
+             Wallpapers displayed in Wallify are sourced from Pexels (<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" aria-label="Pexels (opens in new tab)">Pexels</a>) via their API.
+             All images are subject to the Pexels License (<a href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer" aria-label="Pexels License (opens in new tab)">Pexels License</a>). Wallify does not claim
              ownership of these images. Users are responsible for ensuring their use of downloaded wallpapers complies with the Pexels License.
            </p>
 

@@ -3,12 +3,12 @@
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
-import { GlobalHeader } from '@/components/layout/GlobalHeader'; // Import GlobalHeader
+import { GlobalHeader } from '@/components/layout/GlobalHeader'; 
 import { Button } from '@/components/ui/button';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { StructuredData } from '@/components/structured-data';
@@ -16,13 +16,13 @@ import type { ImageObject as SchemaImageObject, Person as SchemaPerson, Organiza
 
 interface SearchPageContentProps {
   initialQuery: string;
-  // deviceOrientation is no longer a prop, it will be managed internally
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const [currentSearchTerm, setCurrentSearchTerm] = useState<string>(initialQuery);
@@ -33,6 +33,16 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  useEffect(() => {
+    const queryFromUrl = searchParams.get('query');
+    const termToUse = queryFromUrl || initialQuery || 'Wallpaper';
+    if (termToUse !== currentSearchTerm) {
+        setCurrentSearchTerm(termToUse);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, initialQuery]);
+
 
   const fetchWallpapers = useCallback(async (query: string, deviceCategory: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -67,20 +77,15 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   }, [toast]);
 
   useEffect(() => {
-    if (initialQuery !== currentSearchTerm) {
-        setCurrentSearchTerm(initialQuery);
-    }
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
-    fetchWallpapers(initialQuery, currentDeviceOrientation, 1, false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialQuery, currentDeviceOrientation]); // currentDeviceOrientation is now internal state
+    fetchWallpapers(currentSearchTerm, currentDeviceOrientation, 1, false);
+  }, [currentSearchTerm, currentDeviceOrientation, fetchWallpapers]);
 
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
     if (newCategory !== currentDeviceOrientation) {
       setCurrentDeviceOrientation(newCategory);
-      // Fetch will be triggered by useEffect dependency change
     }
   };
 
@@ -152,8 +157,8 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         onDeviceOrientationChange={handleDeviceOrientationChange}
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm={currentSearchTerm} // Use currentSearchTerm for GlobalHeader consistency
-        navigateToSearchPage={false} // SearchBar in GlobalHeader should NOT re-navigate
+        initialSearchTerm={currentSearchTerm} 
+        navigateToSearchPage={false} 
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
@@ -167,7 +172,11 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         </div>
 
         {loading && wallpapers.length === 0 ? (
-          <div className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4`}>
+          <div 
+            className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4`}
+            aria-busy="true"
+            aria-live="polite"
+          >
             {[...Array(18)].map((_, i) => ( 
               <Skeleton key={`search-content-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
             ))}
@@ -189,7 +198,11 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         )}
 
         {loading && wallpapers.length > 0 && (
-          <div className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mt-4`}>
+          <div 
+            className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mt-4`}
+            aria-busy="true"
+            aria-live="polite"
+          >
             {[...Array(6)].map((_, i) => ( 
               <Skeleton key={`search-content-loading-more-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
             ))}
