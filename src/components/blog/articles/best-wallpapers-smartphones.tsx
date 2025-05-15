@@ -1,40 +1,41 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // Added Link import
 
 const ArticleContent = (): ReactNode => (
   <>
     <p className="lead text-lg text-muted-foreground">
-      Our smartphones are indispensable daily companions, and their screens offer prime real estate for personalization. The right wallpaper can significantly elevate your mobile experience, making your device feel distinctively yours and reflecting your personality. This guide will help you discover stunning visuals perfectly optimized for your smartphone, enhancing both its look and feel.
+      Our smartphones are indispensable daily companions, and their screens offer prime real estate for personalization. The right wallpaper can significantly elevate your mobile experience, making your device feel distinctively yours and reflecting your personality. This guide will help you discover stunning visuals perfectly optimized for your smartphone, enhancing both its look and feel, all easily found on Wallify.
     </p>
 
     <h2>1. Embrace Verticality: The Portrait Priority</h2>
     <p>
-      Smartphones are predominantly used in portrait mode. To ensure a perfect fit, seek out wallpapers specifically designed with vertical aspect ratios, such as 9:16, 9:18, or even taller for newer devices. These images will flawlessly fill your screen without awkward cropping, stretching, or loss of important details. Wallify's "Phone" category in the explorer is an excellent starting point, automatically filtering for these portrait-optimized gems.
+      Smartphones are predominantly used in portrait mode. To ensure a perfect fit, seek out wallpapers specifically designed with vertical aspect ratios, such as 9:16, 9:18, or even taller for newer devices. These images will flawlessly fill your screen without awkward cropping, stretching, or loss of important details. Wallify's "Phone" category in the explorer (accessible via the <Link href="/" className="text-accent hover:underline">Global Header</Link>) is an excellent starting point, automatically filtering for these portrait-optimized gems.
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/vertical-phone-example/300/600"
+        src="https://placehold.co/300x600.png"
         alt="Example of a vertical wallpaper on a smartphone screen showing a nature scene"
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="phone nature"
+        data-ai-hint="phone nature vertical"
       />
     </div>
 
     <h2>2. High Resolution is Key for Clarity</h2>
     <p>
-      Modern smartphone displays boast incredible pixel densities (PPI). To make your screen truly shine and avoid any blurriness, always choose high-resolution wallpapers. This ensures every detail is crisp, colors are vibrant, and the overall image is sharp and clear, preventing any unsightly pixelation that can detract from your device’s premium display.
+      Modern smartphone displays boast incredible pixel densities (PPI). To make your screen truly shine and avoid any blurriness, always choose high-resolution wallpapers. This ensures every detail is crisp, colors are vibrant, and the overall image is sharp and clear, preventing any unsightly pixelation that can detract from your device’s premium display. Wallify sources images from Pexels, known for high-quality content.
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/high-res-phone/300/600"
+        src="https://placehold.co/300x600.png"
         alt="Smartphone displaying a high-resolution, crisp wallpaper"
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="clear display"
+        data-ai-hint="clear display highres"
       />
     </div>
 
@@ -44,12 +45,12 @@ const ArticleContent = (): ReactNode => (
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/minimal-phone-ui-example/300/600"
+        src="https://placehold.co/300x600.png"
         alt="Smartphone screen with a minimalist wallpaper that complements UI elements like icons and widgets"
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="minimalist phone"
+        data-ai-hint="minimalist phone ui"
       />
     </div>
 
@@ -59,33 +60,34 @@ const ArticleContent = (): ReactNode => (
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/amoled-dark-phone/300/600"
+        src="https://placehold.co/300x600.png"
         alt="Smartphone with AMOLED screen showing a dark wallpaper with vibrant accents"
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="dark amoled"
+        data-ai-hint="dark amoled phone"
       />
     </div>
 
     <h2>5. Express Yourself: Match Your Mood or Style</h2>
     <p>
-      Ultimately, the best wallpaper is one that resonates with you and brings you joy every time you unlock your phone. Consider these styles:
+      Ultimately, the best wallpaper is one that resonates with you and brings you joy every time you unlock your phone. Consider these styles, easily searchable on Wallify:
     </p>
     <ul className="list-disc pl-5 space-y-1">
       <li><strong>Nature Lovers:</strong> Find tranquility with serene landscapes, majestic mountain peaks, vibrant floral close-ups, or calming ocean views.</li>
       <li><strong>Minimalists:</strong> Embrace simplicity with clean gradients, subtle geometric patterns, or soft, understated textures.</li>
       <li><strong>Artistic Souls:</strong> Express your creativity with abstract paintings, intricate digital art, or beautiful illustrations.</li>
       <li><strong>Tech Enthusiasts:</strong> Showcase your passion with futuristic cityscapes, cool circuit board patterns, or awe-inspiring space themes.</li>
+      <li><strong>Create Your Own:</strong> Use Wallify's <Link href="/generate" className="text-accent hover:underline">AI Wallpaper Generator</Link> to craft something completely unique based on your personal style prompts!</li>
     </ul>
 
     <h2>Finding Your Perfect Phone Wallpaper on Wallify:</h2>
     <p>
-      It's easy! Simply use the "Phone" tab on Wallify's homepage or explorer page. This instantly filters our vast collection for portrait-oriented wallpapers ideal for your smartphone. From there, you can use the intuitive search bar with keywords like "Abstract Dark Phone" or "Minimalist Nature Vertical," or browse through the category dropdown to pinpoint exactly what you're looking for (e.g., "Nature," "Abstract," "Dark").
+      It's easy! Simply use the "Phone" tab in Wallify's <Link href="/" className="text-accent hover:underline">Global Header</Link>. This instantly filters our vast collection for portrait-oriented wallpapers ideal for your smartphone. From there, you can use the intuitive search bar with keywords like "Abstract Dark Phone" or "Minimalist Nature Vertical," or browse through the category dropdown (via the "Browse" menu) to pinpoint exactly what you're looking for (e.g., "Nature," "Abstract," "Dark").
     </p>
 
     <p>
-      Happy wallpaper hunting! Transform your smartphone screen into a daily source of inspiration and personal expression.
+      Happy wallpaper hunting! Transform your smartphone screen into a daily source of inspiration and personal expression with Wallify.
     </p>
   </>
 );

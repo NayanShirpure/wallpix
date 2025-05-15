@@ -1,6 +1,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // Added Link import
 
 const ArticleContent = (): ReactNode => (
   <>
@@ -21,12 +22,12 @@ const ArticleContent = (): ReactNode => (
     </ul>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/style-moodboard-selection/800/450"
+        src="https://placehold.co/800x450.png"
         alt="A moodboard showcasing different aesthetic styles for wallpaper selection like minimalist, bohemian, and modern."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="diverse styles"
+        data-ai-hint="diverse styles moodboard"
       />
     </div>
 
@@ -44,7 +45,7 @@ const ArticleContent = (): ReactNode => (
       <li><strong>Blacks/Dark Grays:</strong> Imply sophistication, power, and modernity. Provide excellent contrast for on-screen elements.</li>
       <li><strong>Whites/Light Grays:</strong> Create a sense of cleanliness, peace, and spaciousness. Promote clarity and focus.</li>
     </ul>
-    <p>For a more in-depth exploration, check out our article: "Wallpaper Color Palettes to Refresh Your Mood"!</p>
+    <p>For a more in-depth exploration, check out our article: "<Link href="/blog/wallpaper-color-psychology" className="text-accent hover:underline">Wallpaper Color Palettes to Refresh Your Mood</Link>"!</p>
 
     <h2>3. Match Your Device & Usage Context</h2>
     <p>
@@ -57,12 +58,12 @@ const ArticleContent = (): ReactNode => (
     </ul>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/device-context-wallpaper/800/450"
+        src="https://placehold.co/800x450.png"
         alt="Side-by-side comparison of a smartphone and a laptop showing appropriately chosen wallpapers."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="phone desktop"
+        data-ai-hint="phone desktop comparison"
       />
     </div>
 
@@ -71,22 +72,38 @@ const ArticleContent = (): ReactNode => (
       Always opt for high-resolution wallpapers to ensure they look crisp, clear, and vibrant on your specific screen. A low-quality wallpaper can make even the best display look poor. Wallify, powered by Pexels, exclusively provides high-quality images suitable for a wide range of modern screen sizes and resolutions.
     </p>
 
-    <h2>5. Experiment and Iterate</h2>
+    <h2>5. Experiment and Iterate with Wallify</h2>
     <p>
-      Don't be afraid to experiment! What looks appealing in a thumbnail might feel different once set as your full-screen background. Download several options that catch your eye and try them out. Live with each one for a day or two to see how it feels. Wallify's easy preview and download functionality encourages this process of discovery, so iterate until you find that wallpaper that just clicks.
+      Don't be afraid to experiment! What looks appealing in a thumbnail might feel different once set as your full-screen background. Download several options that catch your eye and try them out. Live with each one for a day or two to see how it feels. Wallify's easy preview and download functionality encourages this process of discovery.
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/wallpaper-selection-process/800/450"
+        src="https://placehold.co/800x450.png"
         alt="A person browsing and selecting a wallpaper on a tablet device, trying different options."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="choosing background"
+        data-ai-hint="choosing background device"
       />
     </div>
+
+    <h2>6. Craft Something Unique with the AI Generator</h2>
     <p>
-      Finding the perfect wallpaper is a delightful journey of self-expression. Use Wallify’s intuitive search, device filters (Phone/Desktop), and category selections to explore a universe of possibilities and discover the background that truly reflects you.
+      For a truly one-of-a-kind aesthetic, why not create your own? Wallify's <Link href="/generate" className="text-accent hover:underline">AI Wallpaper Generator</Link> empowers you to turn your text prompts into unique images. If you can describe it, our AI can try to create it. This is the ultimate way to ensure your wallpaper is a perfect reflection of your personal style and current inspiration. For tips on getting the best results, check out our <Link href="/blog/guide-ai-wallpaper-generator" className="text-accent hover:underline">guide to the AI Generator</Link>.
+    </p>
+    <div className="my-6 flex justify-center">
+      <Image
+        src="https://placehold.co/800x400.png"
+        alt="Interface of an AI wallpaper generator with a prompt and resulting image."
+        width={800}
+        height={400}
+        className="rounded-lg shadow-md"
+        data-ai-hint="ai generator interface"
+      />
+    </div>
+    
+    <p>
+      Finding the perfect wallpaper is a delightful journey of self-expression. Use Wallify’s intuitive search, device filters (Phone/Desktop), and category selections, or even our AI Generator, to explore a universe of possibilities and discover the background that truly reflects you.
     </p>
   </>
 );

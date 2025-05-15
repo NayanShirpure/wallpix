@@ -1,6 +1,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // Added Link import
 
 const ArticleContent = (): ReactNode => (
   <>
@@ -14,12 +15,12 @@ const ArticleContent = (): ReactNode => (
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/biophilic-trend-2025/800/450"
+        src="https://placehold.co/800x450.png"
         alt="Abstract wallpaper design inspired by natural leaf patterns and water textures, showcasing biophilic trend."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="nature abstract"
+        data-ai-hint="nature abstract texture"
       />
     </div>
 
@@ -29,27 +30,27 @@ const ArticleContent = (): ReactNode => (
     </p>
      <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/maximalism-trend-2025/800/450"
+        src="https://placehold.co/800x450.png"
         alt="A vibrant maximalist wallpaper with bold colors and intricate patterns."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="bold patterns"
+        data-ai-hint="bold patterns colorful"
       />
     </div>
 
-    <h2>3. AI-Generated & Algorithmic Art: The New Frontier</h2>
+    <h2>3. AI-Generated & Algorithmic Art: The New Frontier with Wallify</h2>
     <p>
-      Artificial intelligence is profoundly influencing creative fields, and wallpaper design is no exception. In 2025, expect a surge in unique, algorithmically generated patterns, surreal and dreamlike landscapes born from sophisticated AI prompts, and perhaps even personalized art that adapts to user preferences or real-time data. This trend beautifully blurs the line between human artistry and machine creativity, offering truly one-of-a-kind visuals.
+      Artificial intelligence is profoundly influencing creative fields, and wallpaper design is no exception. In 2025, expect a surge in unique, algorithmically generated patterns, surreal and dreamlike landscapes born from sophisticated AI prompts. With Wallify's own <Link href="/generate" className="text-accent hover:underline">AI Wallpaper Generator</Link>, you can be at the forefront of this trend! Craft truly one-of-a-kind visuals by simply describing your vision. This beautifully blurs the line between human artistry and machine creativity, offering personalized art that adapts to your unique prompts.
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/ai-art-trend-2025/800/450"
+        src="https://placehold.co/800x450.png"
         alt="Example of an AI-generated wallpaper featuring surreal, futuristic landscape with vibrant colors."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="futuristic algorithm"
+        data-ai-hint="futuristic algorithm art"
       />
     </div>
 
@@ -59,18 +60,18 @@ const ArticleContent = (): ReactNode => (
     </p>
      <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/retro-vibes-2025/800/450"
+        src="https://placehold.co/800x450.png"
         alt="Retro-themed wallpaper with 80s neon aesthetics or pixel art style."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="retro neon"
+        data-ai-hint="retro neon pixel"
       />
     </div>
 
     <h2>5. Interactive & Dynamic Wallpapers: Engaging Experiences</h2>
     <p>
-      Though currently more prevalent on mobile platforms, the desire for dynamic and responsive digital experiences is steadily growing on desktop environments too. For 2025, anticipate more wallpapers that subtly shift with the time of day, react to mouse movements or system events, or feature gentle, non-intrusive animations. These provide a more engaging, less static, and more immersive background.
+      Though currently more prevalent on mobile platforms, the desire for dynamic and responsive digital experiences is steadily growing on desktop environments too. For 2025, anticipate more wallpapers that subtly shift with the time of day, react to mouse movements or system events, or feature gentle, non-intrusive animations. These provide a more engaging, less static, and more immersive background. (Note: Wallify currently focuses on static wallpapers, but it's a trend to watch!)
     </p>
 
     <h2>6. Textured Minimalism: Depth in Simplicity</h2>
@@ -79,17 +80,17 @@ const ArticleContent = (): ReactNode => (
     </p>
     <div className="my-6 flex justify-center">
       <Image
-        src="https://picsum.photos/seed/textured-minimal-2025/800/450"
+        src="https://placehold.co/800x450.png"
         alt="Minimalist wallpaper with a subtle textured effect, like brushed metal or fine grain."
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="minimalist texture"
+        data-ai-hint="minimalist texture grain"
       />
     </div>
 
     <p>
-      Choosing a wallpaper is an intensely personal journey. Whether you find yourself drawn to the bold and vibrant statements of maximalism or the calm and subtle sophistication of textured minimalism, 2025 promises an exciting and diverse palette of options to refresh your digital spaces. Stay tuned to Wallify as we strive to bring these captivating trends directly to your fingertips!
+      Choosing a wallpaper is an intensely personal journey. Whether you find yourself drawn to the bold and vibrant statements of maximalism, the unique creations from our <Link href="/generate" className="text-accent hover:underline">AI Generator</Link>, or the calm and subtle sophistication of textured minimalism, 2025 promises an exciting and diverse palette of options to refresh your digital spaces. Stay tuned to Wallify as we strive to bring these captivating trends directly to your fingertips!
     </p>
   </>
 );
