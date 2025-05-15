@@ -25,14 +25,12 @@ export async function generateStaticParams() {
 }
 
 interface BlogPostPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function BlogPostPage({
   params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+}: BlogPostPageProps) { // Added type annotation for params
   const { slug } = await params;
   const post = blogPosts.find((p) => p.slug === slug);
 
@@ -76,20 +74,9 @@ export default async function BlogPostPage({
     keywords: keywordsString,
   };
 
-  // For Previous/Next post navigation
   const sortedPosts = [...blogPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const currentIndex = sortedPosts.findIndex(p => p.slug === post.slug);
   
-  const previousPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
-  // Note: Original sort was newest first, so previous post is at current + 1, next is current - 1 for display logic.
-  // Re-evaluating, if sortedPosts is newest to oldest:
-  // Previous (older chronologically) would be sortedPosts[currentIndex + 1]
-  // Next (newer chronologically) would be sortedPosts[currentIndex - 1]
-  // Let's adjust to make "Previous Article" the one published *before* the current, and "Next Article" the one *after*.
-  // If sortedPosts is descending by date (newest first):
-  // `previousPostInTime` (older) is `sortedPosts[currentIndex + 1]`
-  // `nextPostInTime` (newer) is `sortedPosts[currentIndex - 1]`
-
   const olderPost = currentIndex + 1 < sortedPosts.length ? sortedPosts[currentIndex + 1] : null;
   const newerPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
 
@@ -161,7 +148,7 @@ export default async function BlogPostPage({
           <div className="flex flex-col sm:flex-row justify-between gap-6">
             {olderPost ? (
               <Link href={`/blog/${olderPost.slug}`} passHref legacyBehavior>
-                <a className="group flex-1 block p-4 sm:p-5 rounded-lg border bg-card hover:border-accent transition-colors duration-200 shadow-sm hover:shadow-md">
+                <a className="group flex-1 block p-4 sm:p-5 rounded-lg border bg-card hover:border-accent transition-colors duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background">
                   <div className="flex items-center text-sm text-accent mb-1.5">
                     <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
                     Previous Article
@@ -169,32 +156,26 @@ export default async function BlogPostPage({
                   <h3 className="text-base sm:text-lg font-medium text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
                     {olderPost.title}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {olderPost.summary}
-                  </p>
                 </a>
               </Link>
             ) : (
-              <div className="flex-1"></div> // Placeholder for spacing if only one link exists
+              <div className="flex-1 hidden sm:block"></div> // Placeholder for spacing on larger screens if only "Next" exists
             )}
 
             {newerPost ? (
               <Link href={`/blog/${newerPost.slug}`} passHref legacyBehavior>
-                <a className="group flex-1 block p-4 sm:p-5 rounded-lg border bg-card hover:border-accent transition-colors duration-200 shadow-sm hover:shadow-md text-right sm:text-right">
-                  <div className="flex items-center justify-end text-sm text-accent mb-1.5">
+                <a className="group flex-1 block p-4 sm:p-5 rounded-lg border bg-card hover:border-accent transition-colors duration-200 shadow-sm hover:shadow-md text-left sm:text-right focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background">
+                  <div className="flex items-center sm:justify-end text-sm text-accent mb-1.5">
                     Next Article
                     <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
                   </div>
                   <h3 className="text-base sm:text-lg font-medium text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
                     {newerPost.title}
                   </h3>
-                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {newerPost.summary}
-                  </p>
                 </a>
               </Link>
             ) : (
-              <div className="flex-1"></div> // Placeholder for spacing
+              <div className="flex-1 hidden sm:block"></div> // Placeholder for spacing on larger screens if only "Previous" exists
             )}
           </div>
         </section>
