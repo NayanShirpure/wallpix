@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, Compass, Check, ListFilter, Wand2 } from 'lucide-react'; // Added Wand2
+import { Menu, Palette, Compass, Check, ListFilter, Wand2, Info } from 'lucide-react'; // Added Info icon
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Sheet,
@@ -89,6 +89,12 @@ export function GlobalHeader({
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link href="/what-we-offer" className="flex items-center">
+                        <Info className="mr-2 h-4 w-4" />
+                        What We Offer
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href="/generate" className="flex items-center">
                         <Wand2 className="mr-2 h-4 w-4" />
                         AI Generate
@@ -149,6 +155,15 @@ export function GlobalHeader({
                       <a className="block">
                         <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
                           <Compass className="mr-2 h-4 w-4" /> Discover
+                        </Button>
+                      </a>
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/what-we-offer" passHref legacyBehavior>
+                      <a className="block">
+                        <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
+                          <Info className="mr-2 h-4 w-4" /> What We Offer
                         </Button>
                       </a>
                     </Link>

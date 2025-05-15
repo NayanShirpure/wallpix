@@ -3,13 +3,14 @@ import type { MetadataRoute } from 'next';
 import { blogPosts } from '@/config/blog';
 export const dynamic = 'force-static'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     { url: '/', changeFrequency: 'daily', priority: 1.0 },
     { url: '/discover', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/generate', changeFrequency: 'monthly', priority: 0.7 }, // Added generate page
+    { url: '/what-we-offer', changeFrequency: 'monthly', priority: 0.7 },
+    { url: '/generate', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/blog', changeFrequency: 'weekly', priority: 0.9 },
     { url: '/search', changeFrequency: 'weekly', priority: 0.7 },
     { url: '/about', changeFrequency: 'monthly', priority: 0.7 },

@@ -59,7 +59,8 @@ export function GlobalFooter() {
           <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1.5 flex-wrap justify-center md:justify-end" aria-label="Footer navigation">
             <Link href="/" className="hover:text-accent hover:underline">Home</Link>
             <Link href="/discover" className="hover:text-accent hover:underline">Discover</Link>
-            <Link href="/generate" className="hover:text-accent hover:underline">Generate</Link> {/* Added Generate link */}
+            <Link href="/what-we-offer" className="hover:text-accent hover:underline">What We Offer</Link>
+            <Link href="/generate" className="hover:text-accent hover:underline">Generate</Link>
             <Link href="/blog" className="hover:text-accent hover:underline">Blog</Link>
             <Link href="/about" className="hover:text-accent hover:underline">About</Link>
             <Link href="/privacy-policy" className="hover:text-accent hover:underline">Privacy</Link>
