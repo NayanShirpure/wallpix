@@ -1,16 +1,18 @@
 
-'use client';
+// 'use client'; // Removed to make it a Server Component
 
 import Link from 'next/link';
 import { Twitter, Instagram, Github } from 'lucide-react';
 
 export function GlobalFooter() {
+  const currentYear = new Date().getFullYear(); // Safe to use in Server Component
+
   return (
     <footer className="text-center text-muted-foreground text-sm py-4 sm:py-6 border-t border-border bg-card/80 backdrop-blur-sm print:hidden">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-4">
         <div className="text-center md:text-left mb-2 md:mb-0">
           <p>
-            © {new Date().getFullYear()} Wallify. All rights reserved.
+            © {currentYear} Wallify. All rights reserved.
           </p>
           <p className="mt-0.5">
              Wallpapers generously provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">Pexels</a>.
@@ -18,7 +20,7 @@ export function GlobalFooter() {
         </div>
         
         <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-6">
-          <div className="flex items-center justify-center gap-x-4 sm:gap-x-5"> 
+          <div className="flex items-center justify-center gap-x-4 sm:gap-x-5">
             <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
               <Twitter className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" />
             </a>

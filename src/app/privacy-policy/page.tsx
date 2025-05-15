@@ -1,30 +1,24 @@
 
-'use client'; 
+// 'use client'; // Removed to make it a Server Component
 
-import React, { useState, useEffect } from 'react'; 
+// Removed React, useState, useEffect imports as they are not needed for Server Component
 import Link from 'next/link';
 import { StructuredData } from '@/components/structured-data';
 import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
-import { ThemeToggle } from '@/components/theme-toggle'; 
+import { ThemeToggle } from '@/components/theme-toggle';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function PrivacyPolicyPage() {
-  const [lastUpdatedDate, setLastUpdatedDate] = useState<string | null>(null);
+  // This is the actual date the policy content was last substantively modified.
+  const actualPolicyModificationDate = "2024-07-20"; 
+  const displayModificationDate = new Date(actualPolicyModificationDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  useEffect(() => {
-    // This will set the "Last updated" to the current date when the page is viewed.
-    // If you want a static "Last updated" date, replace this with a fixed string.
-    setLastUpdatedDate(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
-  }, []);
-  
-  // This should be the actual date the policy content was last substantively modified.
-  const actualPolicyModificationDate = "2024-07-20"; // Update this if policy text changes significantly
 
   const webPageSchema: MinimalWithContext<SchemaWebPage> = {
     '@context': 'https://schema.org',
-    '@type': 'WebPage', 
+    '@type': 'WebPage',
     name: 'Privacy Policy for Wallify Wallpaper Application',
     url: `${BASE_URL}privacy-policy`,
     description: 'Official Privacy Policy for the Wallify application, detailing data handling practices.',
@@ -32,8 +26,8 @@ export default function PrivacyPolicyPage() {
       '@type': 'WebPage',
       '@id': `${BASE_URL}privacy-policy`,
     } as SchemaWebPage,
-    datePublished: "2024-01-01", 
-    dateModified: actualPolicyModificationDate, 
+    datePublished: "2024-01-01",
+    dateModified: actualPolicyModificationDate,
   };
 
   return (
@@ -50,7 +44,7 @@ export default function PrivacyPolicyPage() {
       <main className="flex-grow container mx-auto max-w-4xl p-4 py-8 md:p-6 md:py-12">
         <article className="prose prose-invert max-w-none dark:prose-invert prose-headings:text-primary prose-a:text-accent prose-a:no-underline hover:prose-a:underline">
           <h2 className="text-2xl font-semibold text-primary">Privacy Policy for Wallify</h2>
-          <p>Last updated: {lastUpdatedDate || 'Loading date...'}</p>
+          <p>Last substantively modified: {displayModificationDate}</p>
 
           <p>
             Welcome to Wallify! Your privacy is important to us. This Privacy Policy explains how we collect, use, disclose, and protect your information when you use our application ("Wallify", "we", "our", or "us").
@@ -63,7 +57,7 @@ export default function PrivacyPolicyPage() {
           <p>
             Wallify does not collect any personally identifiable information (PII) from its users.
           </p>
-          
+
           <h4 className="text-lg font-semibold text-primary mt-4">a. Search and Category Data</h4>
           <p>
             We use the Pexels API to fetch wallpapers based on your search terms and category selections. These inputs are processed in real-time to provide results but are not stored or linked to you personally.
@@ -91,7 +85,6 @@ export default function PrivacyPolicyPage() {
           <p>
             Wallify uses the Pexels API (<a href="https://www.pexels.com/api/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/api/</a>) to display wallpapers. Your interactions with Pexels content are subject to Pexels' Privacy Policy (<a href="https://www.pexels.com/privacy-policy/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/privacy-policy/</a>) and Terms of Service (<a href="https://www.pexels.com/terms-of-service/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/terms-of-service/</a>). We encourage you to review those policies.
           </p>
-          {/* Note: Formspree mention removed as per the new text. If contact form still uses it, it should be added back. */}
 
           <h3 className="text-xl font-semibold text-primary mt-6">Data Security</h3>
           <p>
