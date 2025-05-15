@@ -17,23 +17,21 @@ export function WallpaperCard({ photo, onClick, orientation }: WallpaperCardProp
     ? (photo.src.landscape || photo.src.large2x || photo.src.large || photo.src.original)
     : (photo.src.portrait || photo.src.large || photo.src.medium || photo.src.original);
 
-  // Sizes attribute for next/image, optimized for common grid layouts
   const imageSizes = 
     orientation === 'desktop'
-    ? "(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16.6vw" // Up to 6 cols on xl
-    : "(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16.6vw"; // Similar for phone, as columns increase
+    ? "(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16.6vw"
+    : "(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16.6vw";
 
   const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Wallpaper thumbnail';
   const cardAriaLabel = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `by ${photo.photographer}`;
   const overlayTitle = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
 
-
   return (
     <Card
       className={cn(
         "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
-        "bg-card border-border shadow-sm hover:shadow-lg focus-within:shadow-lg", // Minimalist shadow, enhanced on hover/focus
-        "rounded-md md:rounded-lg" // Consistent rounded corners, slightly larger on md+
+        "bg-card border-border shadow-sm hover:shadow-lg focus-within:shadow-lg",
+        "rounded-md md:rounded-lg"
       )}
       onClick={onClick}
       role="button"
@@ -51,7 +49,7 @@ export function WallpaperCard({ photo, onClick, orientation }: WallpaperCardProp
           className="transition-transform duration-300 ease-in-out group-hover:scale-105 group-focus-within:scale-105"
           priority={photo.id < 3000000} 
           placeholder="blur"
-          blurDataURL={photo.src.tiny} // Use 'tiny' for a very small blur placeholder
+          blurDataURL={photo.src.tiny}
           data-ai-hint={photo.alt ? photo.alt.split(' ').slice(0,2).join(' ') : "wallpaper abstract"}
         />
         <div 
@@ -61,10 +59,10 @@ export function WallpaperCard({ photo, onClick, orientation }: WallpaperCardProp
             "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out"
           )}
         >
-          <p className="text-white text-[10px] xs:text-xs font-semibold truncate drop-shadow-sm leading-tight">
+          <p className="text-white text-xs font-semibold truncate drop-shadow-sm leading-snug">
             {overlayTitle}
           </p>
-          <p className="text-gray-300 text-[9px] xs:text-[10px] truncate drop-shadow-sm mt-0.5">
+          <p className="text-gray-300 text-xs truncate drop-shadow-sm mt-0.5 leading-snug">
             by {photo.photographer}
           </p>
         </div>
