@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose, 
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -39,7 +39,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
   useEffect(() => {
     if (photo) {
       setSelectedDownloadUrl(photo.src.original);
-      setSelectedResolutionLabel('Original'); 
+      setSelectedResolutionLabel('Original');
     } else {
       setSelectedDownloadUrl('');
       setSelectedResolutionLabel('Original');
@@ -48,28 +48,39 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
 
   if (!photo) return null;
 
-  const downloadOptions = [
+  const isAiGenerated = photo.photographer === 'AI Generator (Wallify)';
+
+  const downloadOptions = isAiGenerated ? [] : [ // Empty array for AI to hide selector logic
     { label: 'Original', url: photo.src.original, resolution: `${photo.width}x${photo.height}` },
-    { label: 'Large (2x)', url: photo.src.large2x, resolution: 'Approx 1920px wide' }, 
+    { label: 'Large (2x)', url: photo.src.large2x, resolution: 'Approx 1920px wide' },
     { label: 'Large', url: photo.src.large, resolution: 'Approx 1280px wide' },
     { label: 'Medium', url: photo.src.medium, resolution: 'Approx 640px wide' },
     { label: 'Small', url: photo.src.small, resolution: 'Approx 320px wide' },
     { label: 'Portrait Optimized', url: photo.src.portrait, resolution: 'Optimized for Portrait' },
     { label: 'Landscape Optimized', url: photo.src.landscape, resolution: 'Optimized for Landscape' },
-  ].filter(opt => opt.url); 
+  ].filter(opt => opt.url);
 
   const handleDownload = async () => {
     if (!selectedDownloadUrl || !photo) return;
 
+    // For AI generated images, the photographer name is "AI Generator (Wallify)"
+    // For Pexels images, it's the actual photographer's name.
     const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
-    const simpleResLabel = selectedResolutionLabel.split(' ')[0].replace('(','').replace(')','');
-    const filename = `wallify_${photographerName}_${photo.id}_${simpleResLabel}.jpg`;
+    
+    // For AI images, simpleResLabel will always be "Original" since the selector is hidden.
+    // For Pexels images, it's derived from the selected resolution label.
+    const simpleResLabel = selectedResolutionLabel.split(' ')[0].replace('(', '').replace(')', '');
+    
+    const filenameSuffix = isAiGenerated ? 'ai_generated' : photographerName;
+    const filename = `wallify_${filenameSuffix}_${photo.id}_${simpleResLabel}.jpg`;
+
 
     toast({
       title: "Download Starting",
       description: `Preparing ${filename} for download...`,
     });
     try {
+      // For AI images, selectedDownloadUrl is already photo.src.original (the data URI)
       await downloadFile(selectedDownloadUrl, filename);
       toast({
         title: "Download Complete",
@@ -84,20 +95,20 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
       });
     }
   };
-  
+
   const handleSelectChange = (value: string) => {
     const selectedOpt = downloadOptions.find(opt => opt.url === value);
     if (selectedOpt) {
-        setSelectedDownloadUrl(selectedOpt.url);
-        setSelectedResolutionLabel(selectedOpt.label);
+      setSelectedDownloadUrl(selectedOpt.url);
+      setSelectedResolutionLabel(selectedOpt.label);
     }
   };
 
-  const modalImageAspectRatio = photo.width / photo.height > 1.2 
-    ? 'aspect-video' 
+  const modalImageAspectRatio = photo.width / photo.height > 1.2
+    ? 'aspect-video'
     : photo.height / photo.width > 1.2
-    ? 'aspect-[9/16]' 
-    : 'aspect-square'; 
+    ? 'aspect-[9/16]'
+    : 'aspect-square';
 
   const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Wallpaper Preview';
   const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Wallpaper preview';
@@ -109,15 +120,29 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
            <div className="flex flex-col mr-4 overflow-hidden">
             <DialogTitle className="text-sm sm:text-base font-semibold text-white truncate">{displayAlt}</DialogTitle>
             <DialogDescription className="text-xs text-gray-300">
-                Photo by <a 
-                  href={photo.photographer_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded"
-                  aria-label={`View profile of photographer ${photo.photographer} (opens in new tab)`}
-                >{photo.photographer}</a>
-                <span className="mx-1.5">·</span>
-                {photo.width}x{photo.height}
+              {isAiGenerated ? (
+                <>
+                  AI Generated by Wallify
+                  {photo.width && photo.height && photo.width !== 1024 && photo.height !== 1024 ? (
+                    <span className="mx-1.5">·</span>
+                  ) : null}
+                  {photo.width && photo.height && photo.width !== 1024 && photo.height !== 1024 ? (
+                    `${photo.width}x${photo.height}`
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  Photo by <a
+                    href={photo.photographer_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded"
+                    aria-label={`View profile of photographer ${photo.photographer} (opens in new tab)`}
+                  >{photo.photographer}</a>
+                  <span className="mx-1.5">·</span>
+                  {photo.width}x{photo.height}
+                </>
+              )}
             </DialogDescription>
            </div>
            <DialogClose
@@ -128,10 +153,10 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
               <X size={16} className="sm:size-[18px]" />
             </DialogClose>
         </DialogHeader>
-        
+
         <div className={`relative w-full ${modalImageAspectRatio} flex-grow bg-black/50 flex items-center justify-center overflow-hidden`}>
           <Image
-            src={photo.src.large2x || photo.src.original} 
+            src={photo.src.large2x || photo.src.original}
             alt={imageAlt}
             fill
             sizes="(max-width: 768px) 90vw, 70vw"
@@ -144,32 +169,39 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
         </div>
 
         <DialogFooter className="relative p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3 bg-gradient-to-t from-black/50 to-transparent z-10">
-          <Button variant="outline" size="sm" asChild className="bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm text-xs sm:text-sm">
-            <a 
-              href={photo.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              aria-label="View original image on Pexels (opens in new tab)"
-            >
-              View on Pexels <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-            </a>
-          </Button>
+          {!isAiGenerated && (
+            <Button variant="outline" size="sm" asChild className="bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm text-xs sm:text-sm">
+              <a
+                href={photo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View original image on Pexels (opens in new tab)"
+              >
+                View on Pexels <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+              </a>
+            </Button>
+          )}
+          {/* Placeholder for alignment if "View on Pexels" is hidden */}
+          {isAiGenerated && <div className="hidden sm:block sm:w-[150px]"></div>}
+
           <div className="flex items-center space-x-2 w-full sm:w-auto">
-            <Select value={selectedDownloadUrl} onValueChange={handleSelectChange}>
-              <SelectTrigger className="w-full sm:min-w-[180px] sm:w-auto h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white focus:ring-accent focus:ring-offset-black/30 focus:border-accent backdrop-blur-sm">
-                <SelectValue placeholder="Select resolution" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border-border text-foreground">
-                {downloadOptions.map(opt => (
-                  <SelectItem key={opt.label} value={opt.url} disabled={!opt.url} className="text-xs sm:text-sm">
-                    {opt.label} ({opt.resolution})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button 
-                onClick={handleDownload} 
-                className="h-9 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md text-xs sm:text-sm" 
+            {!isAiGenerated && downloadOptions.length > 0 && (
+              <Select value={selectedDownloadUrl} onValueChange={handleSelectChange}>
+                <SelectTrigger className="w-full sm:min-w-[180px] sm:w-auto h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white focus:ring-accent focus:ring-offset-black/30 focus:border-accent backdrop-blur-sm">
+                  <SelectValue placeholder="Select resolution" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border text-foreground">
+                  {downloadOptions.map(opt => (
+                    <SelectItem key={opt.label} value={opt.url} disabled={!opt.url} className="text-xs sm:text-sm">
+                      {opt.label} ({opt.resolution})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Button
+                onClick={handleDownload}
+                className="h-9 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md text-xs sm:text-sm flex-grow sm:flex-grow-0"
                 disabled={!selectedDownloadUrl}
             >
               <Download className="mr-1.5 h-3.5 w-3.5" /> Download
@@ -180,3 +212,4 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     </Dialog>
   );
 }
+
