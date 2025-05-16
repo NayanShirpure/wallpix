@@ -32,7 +32,7 @@ export default function Loading() {
         
         {/* Grid of items Skeleton */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {[...Array(10)].map((_, i) => ( // Reduced from 15 to 10 items
+          {[...Array(12)].map((_, i) => ( // Increased from 10 to 12 items
             <Skeleton key={`loading-page-grid-skeleton-${i}`} className="aspect-[9/16] sm:aspect-video w-full rounded-lg" />
           ))}
         </div>
