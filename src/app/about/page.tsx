@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2, Wand2 } from 'lucide-react';
+import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2, Wand2, ImageIcon } from 'lucide-react'; // Added ImageIcon
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
@@ -185,4 +185,3 @@ export default function AboutUsPage() {
     </>
   );
 }
-
