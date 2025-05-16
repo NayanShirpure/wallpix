@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2 } from 'lucide-react';
+import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2, Wand2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
@@ -19,7 +19,7 @@ export default function AboutUsPage() {
     name: 'Wallify',
     url: BASE_URL,
     logo: `${BASE_URL}opengraph-image.png`,
-    description: 'Wallify is your go-to destination for stunning, high-quality wallpapers for both mobile and desktop devices.',
+    description: 'Wallify is your go-to destination for stunning, high-quality wallpapers for both mobile and desktop devices, featuring Pexels integration and an AI Wallpaper Generator.',
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
@@ -49,14 +49,14 @@ export default function AboutUsPage() {
           <section className="text-center">
             <Image
               src="https://placehold.co/300x150.png"
-              alt="Wallify Concept Art"
+              alt="Wallify app concept art showing diverse wallpaper styles"
               width={300}
               height={150}
               className="mx-auto mb-6 rounded-lg shadow-xl"
               data-ai-hint="app concept visual"
               priority
             />
-            <h2 className="text-3xl font-bold text-primary mb-4">Welcome to Wallify</h2>
+            <h1 className="text-3xl font-bold text-primary mb-4">Welcome to Wallify</h1>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
               Wallify is your go-to destination for stunning, high-quality wallpapers for both mobile and desktop devices. We believe that the right background can inspire creativity, promote calm, and reflect your personal style in the digital world.
             </p>
@@ -88,7 +88,7 @@ export default function AboutUsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-start">
-                  <span className="mr-4 text-2xl flex-shrink-0 mt-0.5" role="img" aria-label="Artist palette emoji">🎨</span>
+                   <Palette className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-semibold text-primary text-lg">Curated Collections</h3>
                     <p className="text-muted-foreground leading-relaxed">
@@ -97,7 +97,7 @@ export default function AboutUsPage() {
                   </div>
                 </div>
                 <div className="flex items-start">
-                   <span className="mr-4 text-2xl flex-shrink-0 mt-0.5" role="img" aria-label="Camera emoji">📸</span>
+                   <ImageIcon className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-semibold text-primary text-lg">High-Quality Images</h3>
                     <p className="text-muted-foreground leading-relaxed">
@@ -105,8 +105,17 @@ export default function AboutUsPage() {
                     </p>
                   </div>
                 </div>
+                 <div className="flex items-start">
+                   <Wand2 className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-semibold text-primary text-lg">AI Wallpaper Generator</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                       Unleash your creativity with our experimental AI tool! Describe your ideal wallpaper, and let our AI bring it to life.
+                    </p>
+                  </div>
+                </div>
                 <div className="flex items-start">
-                  <span className="mr-4 text-2xl flex-shrink-0 mt-0.5" role="img" aria-label="Mobile phone emoji">📱</span>
+                   <Smartphone className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-semibold text-primary text-lg">Intuitive Interface</h3>
                     <p className="text-muted-foreground leading-relaxed">
@@ -115,7 +124,7 @@ export default function AboutUsPage() {
                   </div>
                 </div>
                  <div className="flex items-start">
-                   <span className="mr-4 text-2xl flex-shrink-0 mt-0.5" role="img" aria-label="Desktop computer emoji">💻</span>
+                   <Monitor className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-semibold text-primary text-lg">Optimized for All Devices</h3>
                     <p className="text-muted-foreground leading-relaxed">
@@ -176,3 +185,4 @@ export default function AboutUsPage() {
     </>
   );
 }
+

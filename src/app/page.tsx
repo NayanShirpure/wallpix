@@ -3,7 +3,7 @@
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation'; // Added useRouter
+import { useRouter } from 'next/navigation';
 import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +16,7 @@ import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 
 
 export default function Home() {
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('Wallpaper');
   const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
@@ -192,7 +192,10 @@ export default function Home() {
             <h1 className="text-3xl sm:text-4xl font-bold text-primary">
               {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
             </h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Browse our collection or use the search and filters in the header.</p>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-2xl mx-auto">
+              Welcome to Wallify, your premier destination for stunning, high-quality wallpapers for desktop and mobile. 
+              Browse our vast collection or use the search and filters in the header to find the perfect background to personalize your digital space.
+            </p>
             <h2 className="text-xl sm:text-2xl font-semibold text-foreground/90 mt-3">Curated High-Quality Wallpapers</h2>
         </div>
 
@@ -243,3 +246,4 @@ export default function Home() {
     </>
   );
 }
+

@@ -7,18 +7,18 @@ import { PageHeader } from '@/components/layout/PageHeader';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export const metadata: Metadata = {
-  title: 'Wallify Blog - Trends, Tips, and Inspiration',
-  description: 'Explore the Wallify blog for the latest wallpaper trends, design tips, how-to guides, and inspiration to personalize your digital space.',
-  keywords: ['Wallify blog', 'wallpaper trends', 'design tips', 'wallpaper guides', 'digital art', 'desktop backgrounds', 'smartphone wallpapers', 'personalization ideas'],
+  title: 'Wallify Blog - Wallpaper Trends, Tips, and Inspiration',
+  description: 'Explore the Wallify blog for the latest wallpaper trends, design tips, AI generation guides, how-to articles, and inspiration to personalize your digital space.',
+  keywords: ['Wallify blog', 'wallpaper trends', 'design tips', 'wallpaper guides', 'ai wallpaper', 'desktop backgrounds', 'smartphone wallpapers', 'personalization ideas', 'Pexels images'],
   alternates: {
-    canonical: '/blog',
+    canonical: `${BASE_URL}blog`,
     types: {
       'application/rss+xml': `${BASE_URL}blog/rss.xml`,
     },
   },
   openGraph: {
-    title: 'Wallify Blog - Trends, Tips, and Inspiration',
-    description: 'Stay updated with wallpaper trends, design insights, and personalization tips from the Wallify blog.',
+    title: 'Wallify Blog - Insights on Wallpapers, Design & AI',
+    description: 'Stay updated with wallpaper trends, design insights, AI generation tips, and personalization ideas from the Wallify blog.',
     url: `${BASE_URL}blog`,
     type: 'website', 
     images: [
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         url: `${BASE_URL}blog/og-blog-main.png`, 
         width: 1200,
         height: 630,
-        alt: 'Wallify Blog',
+        alt: 'Wallify Blog - Wallpaper Trends and Tips',
       },
     ],
   },
@@ -63,3 +63,4 @@ export default function BlogLayout({
     </>
   );
 }
+
