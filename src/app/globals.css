@@ -21,7 +21,7 @@
     --secondary-foreground: 210 10% 30%; /* Medium Dark Gray #495057 */
     
     --muted: 210 16% 85%; /* Lighter Gray, slightly darker for better TabsList visibility */
-    --muted-foreground: 210 10% 45%; /* Darker Medium Gray, for better text contrast on new muted and placeholders */
+    --muted-foreground: 210 10% 35%; /* Darker Medium Gray for better text contrast (was 45%) */
     
     --accent: 190 88% 50%; /* Vibrant Cyan #0DCAF0 (Kept for accents) */
     --accent-foreground: 210 10% 15%; /* Dark Gray #212529 */
