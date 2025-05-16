@@ -187,15 +187,16 @@ export default function Home() {
         navigateToSearchPage={true} 
       />
 
-      <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
+      <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-primary">
-              {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
+              Discover Your Next Wallpaper
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-2xl mx-auto">
-              Your premier destination for stunning, high-quality wallpapers for desktop and mobile.
-              Explore our vast collection or use search and filters to personalize your digital space.
+              Wallify is your premier destination for stunning, high-quality wallpapers for desktop and mobile.
+              Explore our vast collection from Pexels to personalize your digital space.
             </p>
+            <h2 className="sr-only">Extensive Collection of High-Quality Wallpapers</h2>
         </div>
 
         {loading && wallpapers.length === 0 ? (
@@ -245,4 +246,3 @@ export default function Home() {
     </>
   );
 }
-
