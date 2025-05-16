@@ -43,7 +43,7 @@ export function SearchBar({
     <form onSubmit={handleSearch} className="flex w-full items-center space-x-1 sm:space-x-2">
       <Input
         type="text"
-        placeholder="Search..."
+        placeholder="Search for wallpapers..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="h-9 flex-grow text-xs sm:text-sm"
@@ -55,3 +55,4 @@ export function SearchBar({
     </form>
   );
 }
+

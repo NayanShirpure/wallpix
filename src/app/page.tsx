@@ -193,10 +193,9 @@ export default function Home() {
               {searchTerm === "Wallpaper" ? "Discover Your Next Wallpaper" : `Displaying: "${searchTerm}"`}
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-2xl mx-auto">
-              Welcome to Wallify, your premier destination for stunning, high-quality wallpapers for desktop and mobile. 
-              Browse our vast collection or use the search and filters in the header to find the perfect background to personalize your digital space.
+              Your premier destination for stunning, high-quality wallpapers for desktop and mobile.
+              Explore our vast collection or use search and filters to personalize your digital space.
             </p>
-            <h2 className="text-xl sm:text-2xl font-semibold text-foreground/90 mt-3">Curated High-Quality Wallpapers</h2>
         </div>
 
         {loading && wallpapers.length === 0 ? (
