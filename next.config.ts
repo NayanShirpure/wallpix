@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'images.pexels.com', // Added Pexels image hostname
+        hostname: 'images.pexels.com',
         port: '',
         pathname: '/**',
       }
@@ -35,17 +35,24 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_PEXELS_API_KEY: process.env.PEXELS_API_KEY,
   },
   webpack: (config, { isServer, webpack }) => {
-    // For server-side builds, if @opentelemetry/exporter-jaeger is causing issues,
-    // we can alias it to false to prevent the bundler from trying to resolve it.
-    // This is useful if it's an optional dependency of a library (e.g., OpenTelemetry SDK used by Genkit)
-    // that you don't intend to use or haven't installed.
+    // For server-side builds
     if (isServer) {
       // Ensure config.resolve.alias exists and is an object
       if (typeof config.resolve.alias !== 'object' || config.resolve.alias === null) {
         config.resolve.alias = {};
       }
-      // Alias the problematic module to false
+      // Alias @opentelemetry/exporter-jaeger to false to prevent module not found errors
+      // for this optional dependency.
       (config.resolve.alias as Record<string, string | false>)['@opentelemetry/exporter-jaeger'] = false;
+
+      // Add handlebars to externals for server builds.
+      // This prevents webpack from processing its internals which might use `require.extensions`,
+      // a deprecated Node.js feature that webpack doesn't support.
+      // By making it external, Node.js will handle the `require('handlebars')` at runtime.
+      if (!config.externals) { // Next.js typically initializes config.externals as an array
+        config.externals = [];
+      }
+      config.externals.push('handlebars');
     }
     
     // Important: return the modified config
