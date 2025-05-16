@@ -18,7 +18,7 @@ interface SearchPageContentProps {
   initialQuery: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const router = useRouter();
@@ -161,7 +161,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         navigateToSearchPage={false} 
       />
 
-      <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
+      <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">
             {currentSearchTerm === "Wallpaper" ? "Search Wallpapers" : `Results for: "${currentSearchTerm}"`}
@@ -174,8 +174,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         {loading && wallpapers.length === 0 ? (
           <div 
             className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4`}
-            aria-busy="true"
-            aria-live="polite"
+            
           >
             {[...Array(18)].map((_, i) => ( 
               <Skeleton key={`search-content-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />

@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next';
 import { blogPosts } from '@/config/blog';
 export const dynamic = 'force-static'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [

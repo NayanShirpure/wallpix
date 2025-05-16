@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export const metadata: Metadata = {
   title: 'About Wallify - Discover Our Mission and Story',

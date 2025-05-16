@@ -16,7 +16,7 @@ const inter = Inter({
   display: 'swap',
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 const SITE_NAME = 'Wallify';
 const SITE_DESCRIPTION = 'Discover and download stunning, high-quality wallpapers for your desktop and smartphone. Personalize your digital space with Wallify.';
 
@@ -70,11 +70,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Vibrant Professional Light: Background
-  // Updated to use the vibrant cyan accent from the current theme
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'hsl(210 17% 98%)' }, // Original light background
-    { media: '(prefers-color-scheme: dark)', color: 'hsl(220 13% 10%)' }, // Original dark background
+    { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' }, 
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' }, 
   ],
 };
 
@@ -102,7 +100,7 @@ export default function RootLayout({
 
   const nprogressOptions = {
     template: '<div class="bar" role="progressbar" aria-label="Loading progress"><div class="peg"></div></div><div class="spinner" aria-hidden="true"><div class="spinner-icon"></div></div>',
-    showSpinner: true, // Default is true, can be set to false if spinner is not desired
+    showSpinner: true, 
   };
 
   return (
@@ -121,7 +119,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClientProgressBar
-            color="hsl(var(--accent))" // Use theme's accent color
+            color="hsl(var(--accent))"
             startPosition={0.3}
             stopDelayMs={200}
             height={3}

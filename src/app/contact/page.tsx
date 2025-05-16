@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export default function ContactPage() {
   // Correctly typed with MinimalWithContext<SchemaContactPage>
@@ -31,6 +31,7 @@ export default function ContactPage() {
         backHref="/"
         backTextDesktop="Back to Wallify"
         backTextMobile="Home"
+        aria-busy="false"
       >
         <ThemeToggle />
       </PageHeader>

@@ -1,18 +1,19 @@
+
 // src/app/blog/[slug]/layout.tsx
 
 import type { Metadata, ResolvingMetadata } from 'next';
-import type { ReactNode } from 'react'; // Explicitly import ReactNode
+import type { ReactNode } from 'react'; 
 import { blogPosts } from '@/config/blog';
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 // Async metadata generator
 export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: { slug: string } }, // Corrected params type
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = await params;
+  const slug  = params.slug; // Directly access slug
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) {

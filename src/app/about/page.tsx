@@ -10,7 +10,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export default function AboutUsPage() {
   const orgData: MinimalWithContext<Organization> = {
@@ -40,6 +40,7 @@ export default function AboutUsPage() {
         backHref="/"
         backTextDesktop="Back to Wallify"
         backTextMobile="Home"
+        aria-busy="false"
       >
         <ThemeToggle />
       </PageHeader>

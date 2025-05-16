@@ -4,7 +4,7 @@ import { Rss } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PageHeader } from '@/components/layout/PageHeader';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export const metadata: Metadata = {
   title: 'Wallify Blog - Trends, Tips, and Inspiration',
@@ -44,6 +44,7 @@ export default function BlogLayout({
         backHref="/"
         backTextDesktop="Back to Wallify"
         backTextMobile="Home"
+        aria-busy="false"
       >
         <a 
           href="/blog/rss.xml" 

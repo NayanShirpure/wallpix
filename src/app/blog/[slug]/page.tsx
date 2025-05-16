@@ -18,20 +18,20 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
 }
 
 interface BlogPostPageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string }; // Corrected params type
 }
 
 export default async function BlogPostPage({
   params,
-}: BlogPostPageProps) { // Added type annotation for params
-  const { slug } = await params;
+}: BlogPostPageProps) { 
+  const slug = params.slug; // Directly access slug
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) notFound();
@@ -159,7 +159,7 @@ export default async function BlogPostPage({
                 </a>
               </Link>
             ) : (
-              <div className="flex-1 hidden sm:block"></div> // Placeholder for spacing on larger screens if only "Next" exists
+              <div className="flex-1 hidden sm:block"></div> 
             )}
 
             {newerPost ? (
@@ -175,7 +175,7 @@ export default async function BlogPostPage({
                 </a>
               </Link>
             ) : (
-              <div className="flex-1 hidden sm:block"></div> // Placeholder for spacing on larger screens if only "Previous" exists
+              <div className="flex-1 hidden sm:block"></div> 
             )}
           </div>
         </section>

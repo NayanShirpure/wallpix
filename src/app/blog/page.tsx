@@ -9,7 +9,7 @@ import { StructuredData } from '@/components/structured-data';
 // Updated import for local minimal types
 import type { Blog as SchemaBlog, BlogPosting, Person, ImageObject as SchemaImageObject, MinimalWithContext } from '@/types/schema-dts';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export default function BlogIndexPage() {
   const sortedBlogPosts = [...blogPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

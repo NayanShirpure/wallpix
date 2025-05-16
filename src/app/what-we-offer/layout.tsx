@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export const metadata: Metadata = {
   title: 'What Wallify Offers - Features & Benefits',
