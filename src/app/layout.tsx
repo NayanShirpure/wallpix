@@ -32,6 +32,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  icons: {
+    icon: '/favicon.ico', // Assuming your favicon is at this path
+    apple: '/apple-touch-icon.png', // Added Apple Touch Icon
+  },
   openGraph: {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
@@ -71,8 +75,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' }, 
-    { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' }, 
+    { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' },
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' },
   ],
 };
 
@@ -100,7 +104,7 @@ export default function RootLayout({
 
   const nprogressOptions = {
     template: '<div class="bar" role="progressbar" aria-label="Loading progress"><div class="peg"></div></div><div class="spinner" aria-hidden="true"><div class="spinner-icon"></div></div>',
-    showSpinner: true, 
+    showSpinner: true,
   };
 
   return (
@@ -119,7 +123,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClientProgressBar
-            color="hsl(var(--accent))"
+            color="hsl(var(--accent))" // Vibrant Professional: #0DCAF0 (or #27D2F5 for dark)
             startPosition={0.3}
             stopDelayMs={200}
             height={3}
