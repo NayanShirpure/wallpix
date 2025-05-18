@@ -31,9 +31,8 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  env: {
-    NEXT_PUBLIC_PEXELS_API_KEY: process.env.PEXELS_API_KEY,
-  },
+  // Removed env mapping for NEXT_PUBLIC_PEXELS_API_KEY as it's no longer needed on client.
+  // PEXELS_API_KEY will be used server-side only.
   webpack: (config, { isServer, webpack }) => {
     // For server-side builds
     if (isServer) {
