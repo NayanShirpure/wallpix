@@ -4,8 +4,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, Compass, Check, ListFilter, Wand2, Info } from 'lucide-react'; // Added Info icon
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Menu, Palette, Compass, ListFilter, Wand2, Info, ShoppingBag } from 'lucide-react'; // Added ShoppingBag for consistency, ensure it's used or remove if not
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"; // Added TabsContent
 import {
   Sheet,
   SheetClose,
@@ -53,7 +53,7 @@ export function GlobalHeader({
           <span className="font-bold text-lg sm:text-xl text-primary hidden xxs:inline">Wallify</span>
         </Link>
 
-        <div className="flex-1 flex justify-center px-2 sm:px-4">
+        <div className="flex-1 flex justify-center items-center px-2 sm:px-4">
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
             <SearchBar 
               onSubmitSearch={onSearchSubmit} 
@@ -71,6 +71,12 @@ export function GlobalHeader({
                     <TabsTrigger key={opt.value} value={opt.value} className="px-2.5 py-1.5 sm:px-3">{opt.label}</TabsTrigger>
                   ))}
                 </TabsList>
+                 {/* Add sr-only TabsContent to satisfy aria-controls */}
+                {deviceOrientationTabs.map(opt => (
+                  <TabsContent key={`panel-sr-${opt.value}`} value={opt.value} className="sr-only">
+                    Content for {opt.label} device orientation view.
+                  </TabsContent>
+                ))}
               </Tabs>
             
               <Sheet> 
@@ -88,7 +94,7 @@ export function GlobalHeader({
                         Discover
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                     <DropdownMenuItem asChild>
                       <Link href="/what-we-offer" className="flex items-center">
                         <Info className="mr-2 h-4 w-4" />
                         What We Offer
@@ -98,6 +104,12 @@ export function GlobalHeader({
                       <Link href="/generate" className="flex items-center">
                         <Wand2 className="mr-2 h-4 w-4" />
                         AI Generate
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/background-remover" className="flex items-center">
+                        <ShoppingBag className="mr-2 h-4 w-4" /> {/* Changed to ShoppingBag for variety */}
+                        AI Background Remover
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -137,7 +149,7 @@ export function GlobalHeader({
               </Sheet>
           </nav>
 
-          <div className="sm:hidden">
+          <div className="sm:hidden"> {/* Mobile Menu Trigger */}
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
@@ -177,23 +189,33 @@ export function GlobalHeader({
                       </a>
                     </Link>
                   </SheetClose>
-                  <Separator />
+                  <SheetClose asChild>
+                    <Link href="/background-remover" passHref legacyBehavior>
+                      <a className="block">
+                        <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
+                           <ShoppingBag className="mr-2 h-4 w-4" /> {/* Changed to ShoppingBag for variety */}
+                           AI Background Remover
+                        </Button>
+                      </a>
+                    </Link>
+                  </SheetClose>
+                  <Separator className="my-1.5" />
                   <div className="py-1">
                     <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Device</h4>
                     {deviceOrientationTabs.map(opt => (
                       <SheetClose asChild key={`mobile-sheet-device-${opt.value}`}>
                         <Button
                           variant={currentDeviceOrientation === opt.value ? "secondary" : "ghost"}
-                          className="w-full justify-between px-2 py-1.5 text-sm h-auto"
+                          className="w-full justify-start px-2 py-1.5 text-sm h-auto"
                           onClick={() => onDeviceOrientationChange(opt.value as DeviceOrientationCategory)}
                         >
                           {opt.label}
-                          {currentDeviceOrientation === opt.value && <Check className="h-4 w-4" />}
+                          {currentDeviceOrientation === opt.value && <span className="ml-auto text-primary">✓</span>}
                         </Button>
                       </SheetClose>
                     ))}
                   </div>
-                  <Separator />
+                  <Separator className="my-1.5" />
                   <div className="py-1">
                     <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>
                     {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
