@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Download, ExternalLink, User, X, ChevronDown } from 'lucide-react';
+import { Download, ExternalLink, User, X, Share2 } from 'lucide-react'; // Added Share2
 import {
   Select,
   SelectContent,
@@ -49,6 +49,9 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
   if (!photo) return null;
 
   const isAiGenerated = photo.photographer === 'AI Generator (Wallify)';
+  const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : (isAiGenerated ? 'AI Generated Wallpaper' : `Wallpaper by ${photo.photographer}`);
+  const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Full-size wallpaper preview';
+
 
   const downloadOptions = isAiGenerated ? [] : [
     { label: 'Original', url: photo.src.original, resolution: `${photo.width}x${photo.height}` },
@@ -94,23 +97,92 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     }
   };
 
-  const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : (isAiGenerated ? 'AI Generated Wallpaper' : `Wallpaper by ${photo.photographer}`);
-  const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Full-size wallpaper preview';
+  const copyToClipboard = async (url: string, title: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link Copied!",
+        description: `${title} link copied to clipboard.`,
+      });
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+      toast({
+        title: "Manual Copy Needed",
+        description: `Could not copy link automatically. Please copy this link: ${url}`,
+        duration: 9000,
+        variant: "default",
+      });
+    }
+  };
+
+  const handleDialogShare = async () => {
+    if (!photo) return;
+
+    const shareTitle = displayAlt;
+    const shareText = `Check out this amazing wallpaper on Wallify: "${displayAlt}" by ${photo.photographer}.`;
+    // For AI images, the photo.url is the data URI. We should share the /generate page link instead.
+    // For Pexels images, photo.url is the Pexels page for that photo.
+    const shareUrl = isAiGenerated ? `${window.location.origin}/generate` : photo.url || `${window.location.origin}/discover`;
+
+
+    const shareData = {
+      title: shareTitle,
+      text: shareText,
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast({
+          title: "Shared successfully!",
+          description: "The wallpaper link has been shared.",
+        });
+      } catch (error) {
+        const err = error as Error;
+        if (err.name !== 'AbortError') { // User didn't cancel
+            if (err.message && err.message.toLowerCase().includes('permission denied')) {
+                 toast({
+                    title: "Share Permission Denied",
+                    description: "Browser prevented sharing. Trying to copy link instead. Check site permissions if this persists.",
+                    variant: "default",
+                    duration: 7000,
+                });
+            } else {
+                console.error("Error sharing:", err);
+                toast({
+                    title: "Sharing via App Failed",
+                    description: "An unexpected error occurred. Trying to copy link to clipboard instead...",
+                    variant: "default",
+                });
+            }
+            await copyToClipboard(shareData.url, shareTitle);
+        }
+      }
+    } else {
+      toast({
+        title: "Web Share Not Supported",
+        description: "Trying to copy link to clipboard instead...",
+        variant: "default",
+      });
+      await copyToClipboard(shareData.url, shareTitle);
+    }
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={cn(
-        "p-0 border-none !rounded-lg shadow-2xl bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95", // Changed to bg-card for solid background
+        "p-0 border-none !rounded-lg shadow-2xl bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[90vh] lg:w-[70vw] xl:w-[60vw]"
       )}>
-        <DialogHeader className="sr-only">
+        <DialogHeader className="sr-only"> {/* Visually hidden, for accessibility */}
           <DialogTitle>{displayAlt}</DialogTitle>
           <DialogDescription>
-            Full-size preview of the selected wallpaper. Actions to download or view source are available.
+            Full-size preview of the selected wallpaper: {displayAlt}. Actions to download or view source are available.
           </DialogDescription>
         </DialogHeader>
         <div className="relative w-full h-full flex flex-col">
-          {/* Close Button - Top Right Overlay */}
           <DialogClose
             onClick={onClose}
             className="absolute top-2.5 right-2.5 z-20 text-white bg-black/40 hover:bg-black/60 rounded-full p-1.5 sm:p-2 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors"
@@ -119,8 +191,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
             <X size={18} className="sm:size-5" />
           </DialogClose>
 
-          {/* Image Display Area */}
-          <div className="relative flex-grow w-full h-full bg-black/40 flex items-center justify-center overflow-hidden rounded-t-lg"> {/* Slightly darker bg for image area */}
+          <div className="relative flex-grow w-full h-full bg-black/40 flex items-center justify-center overflow-hidden rounded-t-lg">
             <Image
               src={photo.src.large2x || photo.src.original}
               alt={imageAlt}
@@ -134,12 +205,10 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
             />
           </div>
 
-          {/* Information and Actions Overlay - Bottom */}
           <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent z-10 rounded-b-lg">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-              {/* Left side: Title and Photographer */}
               <div className="text-white overflow-hidden flex-shrink min-w-0">
-                <h2 className="text-base sm:text-lg font-semibold truncate" title={displayAlt}> {/* Slightly larger title */}
+                <h2 className="text-base sm:text-lg font-semibold truncate" title={displayAlt}>
                   {displayAlt}
                 </h2>
                 {!isAiGenerated && (
@@ -160,8 +229,17 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                 )}
               </div>
 
-              {/* Right side: Actions */}
-              <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0"> {/* Reduced gap slightly */}
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDialogShare}
+                    className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm px-2.5 sm:px-3"
+                    aria-label="Share this wallpaper"
+                  >
+                    <Share2 className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" /> Share
+                </Button>
+
                 {!isAiGenerated && (
                   <Button variant="outline" size="sm" asChild className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm px-2.5 sm:px-3">
                     <a
@@ -205,8 +283,8 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                         <Download className="mr-1.5 h-3.5 w-3.5" /> {isAiGenerated ? "Download" : "Download"}
                     </Button>
                  )}
-                 {isAiGenerated && ( /* Placeholder for alignment if Pexels/Select hidden */
-                    <div className="hidden sm:block w-px"></div> /* Adjust width if needed */
+                 {isAiGenerated && !downloadOptions.length && ( /* Placeholder for alignment if Pexels/Select hidden for AI */
+                    <div className="hidden sm:block w-px h-8 sm:h-9"></div>
                  )}
               </div>
             </div>
