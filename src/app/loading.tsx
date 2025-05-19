@@ -33,13 +33,16 @@ export default function Loading() {
         <Skeleton className="h-8 w-1/3 mt-4" />
         
         {/* Grid of items Skeleton - Updated for masonry-like layout */}
-        <div className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 sm:gap-4 [column-fill:auto]" aria-busy="true" aria-live="polite">
+        <div className="my-masonry-grid" aria-busy="true" aria-live="polite">
           {[...Array(12)].map((_, i) => (
-            <div key={`loading-page-grid-skeleton-column-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
-                <Skeleton 
-                    key={`loading-page-grid-skeleton-item-${i}`} 
-                    className={`w-full rounded-lg bg-muted/70 ${i % 3 === 0 ? 'h-60' : i % 3 === 1 ? 'h-80' : 'h-72'}`} 
-                />
+            <div key={`loading-page-grid-skeleton-column-${i}`} className="my-masonry-grid_column">
+                {/* This div acts as the masonry item */}
+                <div className="mb-3"> 
+                    <Skeleton 
+                        key={`loading-page-grid-skeleton-item-${i}`} 
+                        className={`w-full rounded-lg bg-muted/70 h-72`} // Use a representative fixed height
+                    />
+                </div>
             </div>
           ))}
         </div>

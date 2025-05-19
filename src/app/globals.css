@@ -240,22 +240,20 @@
   }
 }
 
-/* Masonry grid styles (Removed react-masonry-css specific styles) */
-/* 
+/* Masonry grid styles for react-masonry-css */
 .my-masonry-grid {
-  display: -webkit-box; 
-  display: -ms-flexbox;
+  display: -webkit-box; /* Not needed if autoprefixing */
+  display: -ms-flexbox; /* Not needed if autoprefixing */
   display: flex;
-  margin-left: -12px; 
+  margin-left: -12px; /* gutter size offset */
   width: auto;
 }
 .my-masonry-grid_column {
-  padding-left: 12px; 
+  padding-left: 12px; /* gutter size */
   background-clip: padding-box;
 }
 
-.my-masonry-grid_column > div { 
-  margin-bottom: 12px; 
+/* Style for individual items within a column */
+.my-masonry-grid_column > div { /* Masonry item */
+  margin-bottom: 12px; /* space between items */
 }
-*/
-

@@ -2,7 +2,7 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +10,7 @@ import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
-// Removed import for InfiniteScroll
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 interface SearchPageContentProps {
   initialQueryFromServer?: string;
@@ -31,21 +31,6 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Intersection Observer for infinite scrolling
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastWallpaperElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (loading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          handleLoadMore();
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore]
-  );
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -79,11 +64,13 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toast]); 
 
   useEffect(() => {
     const queryFromUrl = searchParamsHook.get('query');
     const termToUse = queryFromUrl || initialQueryFromServer || 'Wallpaper';
+    
     if (termToUse !== currentSearchTerm || (termToUse === currentSearchTerm && wallpapers.length === 0 && !loading)) {
       setCurrentSearchTerm(termToUse);
       setPage(1); 
@@ -92,7 +79,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       fetchWallpapers(termToUse, 1, false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParamsHook, initialQueryFromServer]); // currentSearchTerm and fetchWallpapers removed to prevent re-fetch loops
+  }, [searchParamsHook, initialQueryFromServer, fetchWallpapers]);
 
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -114,11 +101,13 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     }
   };
 
-  const loadingSkeleton = (
-    <div className="text-center py-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+  const loadingSkeletonItems = (
+     <div className="my-masonry-grid">
       {[...Array(6)].map((_, i) => (
-        <div key={`search-loading-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
-          <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+        <div key={`search-loading-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
+           <div className="mb-3"> {/* This div acts as the masonry item */}
+             <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+           </div>
         </div>
       ))}
     </div>
@@ -143,27 +132,31 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
 
         {loading && wallpapers.length === 0 && (
           <div
-            className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 sm:gap-4 [column-fill:auto]"
+            className="my-masonry-grid"
             aria-busy="true"
             aria-live="polite"
           >
             {[...Array(18)].map((_, i) => (
-               <div key={`search-content-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
-                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+               <div key={`search-content-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
+                  <div className="mb-3"> {/* This div acts as the masonry item */}
+                    <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+                  </div>
               </div>
             ))}
           </div>
         )}
         
+      <InfiniteScroll
+        dataLength={wallpapers.length}
+        next={handleLoadMore}
+        hasMore={hasMore}
+        loader={loadingSkeletonItems}
+        scrollThreshold="200px"
+        className="w-full"
+      >
         <WallpaperGrid photos={wallpapers} />
+      </InfiniteScroll>
 
-        {/* Sentinel for Intersection Observer */}
-        {hasMore && !loading && (
-          <div ref={lastWallpaperElementRef} style={{ height: '1px', marginTop: '1rem' }} />
-        )}
-
-        {loading && wallpapers.length > 0 && loadingSkeleton}
-        
         {!loading && !hasMore && wallpapers.length > 0 && (
            <p className="text-center text-muted-foreground py-6">You've reached the end!</p>
         )}

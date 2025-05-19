@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2 } from 'lucide-react'; // Removed Bookmark
+import { Share2, Bookmark } from 'lucide-react'; 
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
@@ -65,6 +65,7 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
     const shareTitle = displayAlt;
     const shareText = `Check out this amazing wallpaper on Wallify: "${displayAlt}" by ${photo.photographer}.`;
     
+    // Always generate a search link to Wallify site
     const query = encodeURIComponent(displayAlt);
     const shareUrl = `${window.location.origin}/search?query=${query}`; 
 
@@ -76,7 +77,8 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
         toast({ title: "Shared successfully!", description: "The wallpaper link has been shared." });
       } catch (error: any) {
         if (error.name !== 'AbortError') {
-          if (error.message && error.message.toLowerCase().includes('permission denied')) {
+          const errorMessage = (error.message || '').toLowerCase();
+          if (errorMessage.includes('permission denied')) {
             toast({
               title: "Share Permission Denied",
               description: "Browser prevented sharing. Trying to copy link instead. Check site permissions if this persists.",
@@ -85,7 +87,10 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
             });
             await copyToClipboard(shareData.url, shareTitle);
           } else {
-            console.error("Web Share API error (card):", error); 
+            // Avoid console.error for "Permission denied" as it's handled
+            if (!errorMessage.includes('permission denied')) {
+              console.error("Web Share API error (card):", error); 
+            }
             toast({ title: "Sharing via App Failed", description: "Trying to copy link to clipboard instead...", variant: "default" });
             await copyToClipboard(shareData.url, shareTitle);
           }
@@ -95,6 +100,14 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
       toast({ title: "Web Share Not Supported", description: "Trying to copy link to clipboard instead...", variant: "default" });
       await copyToClipboard(shareData.url, shareTitle);
     }
+  };
+
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast({
+      title: 'Save Feature Coming Soon!',
+      description: 'You\'ll soon be able to save your favorite wallpapers.',
+    });
   };
   
   return (
@@ -157,6 +170,16 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
               aria-label="Share wallpaper"
             >
               <Share2 size={16} className="sm:size-[18px]" />
+            </Button>
+             {/* Save button is currently visual only */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-1.5 sm:p-2 bg-white/20 hover:bg-white/30 text-white rounded-full h-auto w-auto"
+              onClick={handleSaveClick}
+              aria-label="Save wallpaper (coming soon)"
+            >
+              <Bookmark size={16} className="sm:size-[18px]" />
             </Button>
           </div>
         </div>
