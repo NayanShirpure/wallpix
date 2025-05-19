@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, Compass, ListFilter, Wand2, Info, Home, MessageSquare, Users, Award, MoreVertical } from 'lucide-react';
+import { Menu, Palette, Compass, ListFilter, Wand2, Info, Home, MessageSquare, Users, Award, MoreVertical, ImageIcon } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
@@ -58,72 +58,46 @@ export function GlobalHeader({
           </div>
         </div>
 
-        <div className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
-          <nav className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
-            <Sheet> 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
-                    <Menu className="mr-1 h-3.5 w-3.5" />
-                    Browse
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/discover" className="flex items-center">
-                      <Compass className="mr-2 h-4 w-4" />
-                      Discover
-                    </Link>
-                  </DropdownMenuItem>
-                   <DropdownMenuItem asChild>
-                    <Link href="/what-we-offer" className="flex items-center">
-                      <Info className="mr-2 h-4 w-4" />
-                      What We Offer
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/generate" className="flex items-center">
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      AI Generate
-                    </Link>
-                  </DropdownMenuItem>
-                  {/* Removed AI Background Remover link */}
-                  <DropdownMenuSeparator />
-                  <SheetTrigger asChild>
-                    <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
-                      <ListFilter className="mr-2 h-4 w-4" />
-                      <span>Filter Categories</span>
-                    </DropdownMenuItem>
-                  </SheetTrigger>
-                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/about" className="flex items-center">
-                      <Users className="mr-2 h-4 w-4" /> About
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/blog" className="flex items-center">
-                      <Award className="mr-2 h-4 w-4" /> Blog
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/contact" className="flex items-center">
-                      <MessageSquare className="mr-2 h-4 w-4" /> Contact
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/privacy-policy" className="flex items-center">
-                      Privacy Policy
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/terms-conditions" className="flex items-center">
-                      Terms & Conditions
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+        <nav className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
+          {/* Desktop Navigation */}
+          <div className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
+                  <Menu className="mr-1 h-3.5 w-3.5" />
+                  Browse
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/discover" className="flex items-center">
+                    <Compass className="mr-2 h-4 w-4" />
+                    Discover
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/what-we-offer" className="flex items-center">
+                    <Info className="mr-2 h-4 w-4" />
+                    What We Offer
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/generate" className="flex items-center">
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    AI Generate
+                  </Link>
+                </DropdownMenuItem>
+                {/* Removed AI Background Remover link from here */}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
+                  <ListFilter className="mr-1 h-3.5 w-3.5" />
+                  Categories
+                </Button>
+              </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
                 <SheetHeader className="p-4 border-b">
                   <SheetTitle>Filter by Category</SheetTitle>
@@ -150,9 +124,47 @@ export function GlobalHeader({
                 </div>
               </SheetContent>
             </Sheet>
-          </nav>
 
-          <div className="sm:hidden"> {/* Mobile Menu Trigger */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">More options</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/about" className="flex items-center">
+                    <Users className="mr-2 h-4 w-4" /> About
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/blog" className="flex items-center">
+                    <Award className="mr-2 h-4 w-4" /> Blog
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/contact" className="flex items-center">
+                    <MessageSquare className="mr-2 h-4 w-4" /> Contact
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/privacy-policy" className="flex items-center">
+                    Privacy Policy
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/terms-conditions" className="flex items-center">
+                    Terms & Conditions
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Mobile Menu Trigger */}
+          <div className="sm:hidden"> 
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
@@ -169,7 +181,6 @@ export function GlobalHeader({
                   <SheetClose asChild><Link href="/discover" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/what-we-offer" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/generate" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></a></Link></SheetClose>
-                  {/* Removed AI Background Remover link */}
                   <Separator className="my-1.5" />
                   <SheetClose asChild><Link href="/about" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/blog" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Award className="mr-2 h-4 w-4" /> Blog</Button></a></Link></SheetClose>
@@ -204,7 +215,7 @@ export function GlobalHeader({
           </div>
                     
           <ThemeToggle />
-        </div>
+        </nav>
       </div>
     </header>
   );
