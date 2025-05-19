@@ -42,7 +42,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, hasMore] // handleLoadMore will be memoized by useCallback
   );
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
@@ -92,31 +92,34 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     }
   }, [searchParamsHook, initialQueryFromServer, fetchWallpapers, currentSearchTerm, wallpapers.length, loading]);
 
-
-  const handleWallpaperCategorySelect = (categoryValue: string) => {
-    router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
-  };
-
-  const handleSearchSubmit = (newSearchTerm: string) => {
-    const trimmedNewSearchTerm = newSearchTerm.trim();
-    if (trimmedNewSearchTerm) {
-      router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`); 
-    }
-  };
-
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (!loading && hasMore && currentSearchTerm) {
       const nextPage = page + 1;
       setPage(nextPage);
       fetchWallpapers(currentSearchTerm, nextPage, true);
     }
-  };
+  }, [loading, hasMore, currentSearchTerm, page, fetchWallpapers]);
+
+
+  const loadingSkeletons = (
+    <div className={cn(
+      "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
+      "gap-3 md:gap-4", // Adjusted gaps
+      "mt-4 w-full" 
+    )}>
+      {[...Array(6)].map((_, i) => (
+        <div key={`search-loading-skeleton-column-wrapper-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
+          <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <>
       <GlobalHeader
-        onWallpaperCategorySelect={handleWallpaperCategorySelect}
-        onSearchSubmit={handleSearchSubmit}
+        // onWallpaperCategorySelect is optional and defaults to noOp if not provided
+        // onSearchSubmit is optional and defaults to noOp if not provided
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
@@ -129,46 +132,37 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
           </p>
         </div>
 
-        {loading && wallpapers.length === 0 && (
+        {(loading && wallpapers.length === 0) && (
           <div
              className={cn(
-                "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-                "gap-2 sm:gap-3 md:gap-4",
-                "[column-fill:auto]"
+                "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
+                "gap-3 md:gap-4", // Adjusted gaps
+                "[column-fill:auto]" 
               )}
             aria-busy="true"
             aria-live="polite"
           >
             {[...Array(18)].map((_, i) => (
-               <div key={`search-content-skeleton-column-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+               <div key={`search-content-skeleton-column-wrapper-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
                 <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
               </div>
             ))}
           </div>
         )}
         
-        <WallpaperGrid photos={wallpapers} />
+        {wallpapers.length > 0 && <WallpaperGrid photos={wallpapers} />}
 
-        {loading && wallpapers.length > 0 && (
-          <div className={cn(
-            "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-            "gap-2 sm:gap-3 md:gap-4",
-            "mt-4 [column-fill:auto]"
-          )}>
-            {[...Array(6)].map((_, i) => (
-              <div key={`search-loading-skeleton-column-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
-                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-              </div>
-            ))}
-          </div>
-        )}
+        {loading && wallpapers.length > 0 && loadingSkeletons}
 
         {!loading && hasMore && wallpapers.length > 0 && (
-           <div ref={lastWallpaperElementRef} className="h-10"></div> // Sentinel
+           <div ref={lastWallpaperElementRef} className="h-10 w-full"></div>
         )}
         
         {!loading && !hasMore && wallpapers.length > 0 && (
            <p className="text-center text-muted-foreground py-6">You've reached the end!</p>
+        )}
+         {!loading && !hasMore && wallpapers.length === 0 && currentSearchTerm && (
+             <p className="text-center text-muted-foreground py-6">No wallpapers found for "{currentSearchTerm}". Try a different search!</p>
         )}
       </main>
     </>

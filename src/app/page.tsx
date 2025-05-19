@@ -3,7 +3,7 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation'; // Removed useSearchParams as it's not directly used here now
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
@@ -15,14 +15,13 @@ const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
 export default function Home() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM;
+  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM; // Homepage always fetches default term
 
   const fetchWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -74,7 +73,7 @@ export default function Home() {
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore, handleLoadMore]
+    [loading, hasMore, handleLoadMore] 
   );
 
   useEffect(() => {
@@ -82,12 +81,7 @@ export default function Home() {
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(1, false);
-  }, [fetchWallpapers]);
-
-
-  const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
-    router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
-  }, [router]);
+  }, [fetchWallpapers]); // fetchWallpapers depends on currentFetchTerm which is constant here
 
   const handleSearchSubmit = useCallback((newSearchTerm: string) => {
     const trimmedNewSearchTerm = newSearchTerm.trim();
@@ -98,12 +92,12 @@ export default function Home() {
   
   const loadingSkeletons = (
     <div className={cn(
-      "columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-      "gap-2 sm:gap-3 md:gap-4",
-      "mt-4 [column-fill:auto]"
+      "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
+      "gap-3 md:gap-4", // Adjusted gaps
+      "mt-4 w-full"
     )}>
       {[...Array(6)].map((_, i) => (
-        <div key={`loading-skeleton-column-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+        <div key={`loading-skeleton-column-wrapper-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
           <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
         </div>
       ))}
@@ -112,7 +106,10 @@ export default function Home() {
 
   return (
     <>
-      <GlobalHeader />
+      <GlobalHeader
+        // onWallpaperCategorySelect is optional and defaults to noOp if not provided
+        // onSearchSubmit is optional and defaults to noOp if not provided
+      />
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-primary">
@@ -128,22 +125,22 @@ export default function Home() {
         {(loading && wallpapers.length === 0) && (
              <div
                 className={cn(
-                    "columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-                    "gap-2 sm:gap-3 md:gap-4",
-                    "[column-fill:auto]"
+                    "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
+                    "gap-3 md:gap-4", // Adjusted gaps
+                    "[column-fill:auto]" 
                   )}
                 aria-busy="true"
                 aria-live="polite"
               >
                 {[...Array(12)].map((_, i) => (
-                  <div key={`initial-skeleton-column-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                  <div key={`initial-skeleton-column-wrapper-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
                     <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
                   </div>
                 ))}
             </div>
         )}
 
-        <WallpaperGrid photos={wallpapers} />
+        {wallpapers.length > 0 && <WallpaperGrid photos={wallpapers} />}
         
         {loading && wallpapers.length > 0 && loadingSkeletons}
         
@@ -154,7 +151,7 @@ export default function Home() {
         {!loading && !hasMore && wallpapers.length > 0 && (
           <p className="text-center text-muted-foreground py-6">You've reached the end!</p>
         )}
-        {!loading && !hasMore && wallpapers.length === 0 && (
+        {!loading && !hasMore && wallpapers.length === 0 && currentFetchTerm && (
              <p className="text-center text-muted-foreground py-6">No wallpapers found for "{currentFetchTerm}". Try a different search!</p>
         )}
       </main>

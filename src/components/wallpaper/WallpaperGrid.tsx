@@ -20,15 +20,14 @@ export function WallpaperGrid({ photos }: WallpaperGridProps) {
 
   return (
     <div className={cn(
-      "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-      "gap-2 sm:gap-3 md:gap-4",
-      "[column-fill:auto]" // May help with reflow, can be removed if causing issues
+      "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
+      "gap-3 md:gap-4" // Adjusted gaps to match simplification
     )}>
       {photos.map((photo, index) => (
-        <div key={`${photo.id}-grid-item-${index}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+        <div key={`${photo.id}-grid-item-${index}`} className="mb-3 md:mb-4 break-inside-avoid-column">
           <WallpaperCard
             photo={photo}
-            isPriority={index < 8} // Prioritize first few images
+            isPriority={index < 8} 
           />
         </div>
       ))}

@@ -33,17 +33,16 @@ export default function Loading() {
         {/* Section Title Skeleton */}
         <Skeleton className="h-8 w-1/3 mt-4" />
         
-        {/* Grid of items Skeleton - Updated for masonry-like layout */}
+        {/* Grid of items Skeleton */}
         <div className={cn(
-            "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-            "gap-2 sm:gap-3 md:gap-4",
-            "[column-fill:auto]"
+            "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
+            "gap-3 md:gap-4" // Adjusted gaps
           )} aria-busy="true" aria-live="polite">
           {[...Array(12)].map((_, i) => (
-            <div key={`loading-page-grid-skeleton-column-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+            <div key={`loading-page-grid-skeleton-column-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
                 <Skeleton 
                     key={`loading-page-grid-skeleton-item-${i}`} 
-                    className={`w-full rounded-lg bg-muted/70 h-72`} // Use a representative fixed height
+                    className={`w-full rounded-lg bg-muted/70 h-72`} 
                 />
             </div>
           ))}
