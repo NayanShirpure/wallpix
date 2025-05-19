@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Download, ExternalLink, User, X, Share2 } from 'lucide-react'; // Added Share2
+import { Download, ExternalLink, User, X, Share2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -120,10 +120,15 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
 
     const shareTitle = displayAlt;
     const shareText = `Check out this amazing wallpaper on Wallify: "${displayAlt}" by ${photo.photographer}.`;
-    // For AI images, the photo.url is the data URI. We should share the /generate page link instead.
-    // For Pexels images, photo.url is the Pexels page for that photo.
-    const shareUrl = isAiGenerated ? `${window.location.origin}/generate` : photo.url || `${window.location.origin}/discover`;
-
+    
+    let shareUrl: string;
+    if (isAiGenerated) {
+      shareUrl = `${window.location.origin}/generate`;
+    } else {
+      // For Pexels images, share a search link on Wallify using the image's alt text
+      const query = encodeURIComponent(displayAlt);
+      shareUrl = `${window.location.origin}/search?query=${query}`;
+    }
 
     const shareData = {
       title: shareTitle,
@@ -140,7 +145,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
         });
       } catch (error) {
         const err = error as Error;
-        if (err.name !== 'AbortError') { // User didn't cancel
+        if (err.name !== 'AbortError') { 
             if (err.message && err.message.toLowerCase().includes('permission denied')) {
                  toast({
                     title: "Share Permission Denied",
@@ -176,7 +181,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
         "p-0 border-none !rounded-lg shadow-2xl bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[90vh] lg:w-[70vw] xl:w-[60vw]"
       )}>
-        <DialogHeader className="sr-only"> {/* Visually hidden, for accessibility */}
+        <DialogHeader className="sr-only">
           <DialogTitle>{displayAlt}</DialogTitle>
           <DialogDescription>
             Full-size preview of the selected wallpaper: {displayAlt}. Actions to download or view source are available.
@@ -283,7 +288,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                         <Download className="mr-1.5 h-3.5 w-3.5" /> {isAiGenerated ? "Download" : "Download"}
                     </Button>
                  )}
-                 {isAiGenerated && !downloadOptions.length && ( /* Placeholder for alignment if Pexels/Select hidden for AI */
+                 {isAiGenerated && !downloadOptions.length && ( 
                     <div className="hidden sm:block w-px h-8 sm:h-9"></div>
                  )}
               </div>
@@ -294,3 +299,5 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     </Dialog>
   );
 }
+
+    
