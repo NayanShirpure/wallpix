@@ -12,15 +12,19 @@ import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
 
 interface SearchPageContentProps {
-  initialQuery: string;
+  initialQueryFromServer?: string; // Renamed to clarify its origin
 }
 
-export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
+export function SearchPageContent({ initialQueryFromServer }: SearchPageContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const [currentSearchTerm, setCurrentSearchTerm] = useState<string>(initialQuery);
+  const [currentSearchTerm, setCurrentSearchTerm] = useState<string>(() => {
+    const queryFromUrl = searchParams.get('query');
+    return queryFromUrl || initialQueryFromServer || 'Wallpaper';
+  });
+  
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -38,30 +42,20 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
       });
       if (node) observer.current.observe(node);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [loading, hasMore] 
   );
 
+  // Effect to update currentSearchTerm when URL query param changes
   useEffect(() => {
     const queryFromUrl = searchParams.get('query');
-    const termToUse = queryFromUrl || initialQuery || 'Wallpaper';
+    const termToUse = queryFromUrl || 'Wallpaper';
     if (termToUse !== currentSearchTerm) {
-        setCurrentSearchTerm(termToUse);
-        // Reset page and wallpapers when search term changes
-        setPage(1);
-        setWallpapers([]);
-        setHasMore(true);
-    } else if (queryFromUrl && termToUse === currentSearchTerm && wallpapers.length === 0 && !loading) {
-        // This handles the case where the component mounts with a query,
-        // but the currentSearchTerm is already set (e.g., from initialQuery prop)
-        // and an initial fetch might be needed if wallpapers are empty.
-        setPage(1);
-        setWallpapers([]);
-        setHasMore(true);
-        fetchWallpapers(termToUse, 1, false);
+      setCurrentSearchTerm(termToUse);
+      setPage(1); // Reset page when search term changes
+      setWallpapers([]); // Clear previous wallpapers
+      setHasMore(true); // Assume there's more data for the new term
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, initialQuery, currentSearchTerm]); // Removed loading and wallpapers dependency to avoid loops
+  }, [searchParams, currentSearchTerm]);
 
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
@@ -96,16 +90,14 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast]);
 
+  // Effect to fetch wallpapers when currentSearchTerm changes (and it's the first page for that term)
   useEffect(() => {
-    // Only fetch if currentSearchTerm is defined and wallpapers are empty (initial load for this term)
-    if (currentSearchTerm && wallpapers.length === 0) {
+    if (currentSearchTerm && page === 1) { // Fetch only if page is 1 (new term or reset)
       fetchWallpapers(currentSearchTerm, 1, false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSearchTerm, fetchWallpapers]); // Removed page, wallpapers.length to avoid re-fetch loops from parent state updates
+  }, [currentSearchTerm, page, fetchWallpapers]);
 
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -115,7 +107,11 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const handleSearchSubmit = (newSearchTerm: string) => {
     const trimmedNewSearchTerm = newSearchTerm.trim();
     if (trimmedNewSearchTerm) {
-      router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`);
+      // setCurrentSearchTerm(trimmedNewSearchTerm); // This will trigger the useEffect to fetch
+      // setPage(1);
+      // setWallpapers([]);
+      // setHasMore(true);
+      router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`); // Let URL drive state
     }
   };
 
@@ -132,8 +128,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm={currentSearchTerm}
-        navigateToSearchPage={false} 
+        // initialSearchTerm is no longer passed as GlobalHeader handles its display logic
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">

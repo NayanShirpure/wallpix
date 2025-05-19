@@ -3,8 +3,9 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation'; // Added usePathname and useSearchParams
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, Compass, ListFilter, Wand2, Info, Home, MessageSquare, Users, Award, MoreVertical, ImageIcon } from 'lucide-react';
+import { Menu, Palette, ListFilter, Wand2, Info, MessageSquare, Users, Award, MoreVertical, Home, Compass, ImageIcon } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
@@ -29,16 +30,25 @@ import { SearchBar } from '@/components/wallpaper/SearchBar';
 interface GlobalHeaderProps {
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
-  initialSearchTerm?: string; 
-  navigateToSearchPage?: boolean;
+  // initialSearchTerm prop is no longer strictly needed from parent pages
+  // as its display logic is now handled internally based on route.
 }
 
 export function GlobalHeader({
   onWallpaperCategorySelect,
   onSearchSubmit,
-  initialSearchTerm,
-  navigateToSearchPage,
 }: GlobalHeaderProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  let displaySearchTerm = '';
+  if (pathname === '/search') {
+    const queryParam = searchParams.get('query');
+    if (queryParam) {
+      displaySearchTerm = queryParam;
+    }
+  }
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 print:hidden">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-2 px-3 sm:px-4">
@@ -52,8 +62,8 @@ export function GlobalHeader({
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
             <SearchBar 
               onSubmitSearch={onSearchSubmit} 
-              initialValue={initialSearchTerm}
-              navigateToSearchPage={navigateToSearchPage}
+              initialValue={displaySearchTerm} // Use dynamically determined term
+              navigateToSearchPage={true}
             />
           </div>
         </div>
@@ -61,7 +71,6 @@ export function GlobalHeader({
         <nav className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
-            {/* "Categories" button remains separate */}
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
@@ -96,7 +105,6 @@ export function GlobalHeader({
               </SheetContent>
             </Sheet>
 
-            {/* "More Options" Dropdown Menu (3 dots) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -105,7 +113,6 @@ export function GlobalHeader({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {/* Items previously under "Browse" are now here */}
                 <DropdownMenuItem asChild>
                   <Link href="/discover" className="flex items-center">
                     <Compass className="mr-2 h-4 w-4" />
@@ -125,7 +132,6 @@ export function GlobalHeader({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {/* Existing "More Options" items */}
                 <DropdownMenuItem asChild>
                   <Link href="/about" className="flex items-center">
                     <Users className="mr-2 h-4 w-4" /> About

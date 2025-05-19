@@ -105,7 +105,7 @@ export default function DiscoverPage() {
   useEffect(() => {
     const limitedCategories = initialDiscoverPageCategories.slice(0, 4); 
     limitedCategories.forEach(catDefinition => {
-      pexelsSearchPhotosLib(catDefinition.query, 1, 1, 'landscape')
+      pexelsSearchPhotosLib(catDefinition.query, 1, 1) // Removed orientation filter
         .then(response => {
           let imageUrl: string | null = null;
           if (response && response.photos && response.photos.length > 0) {
@@ -176,8 +176,7 @@ export default function DiscoverPage() {
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm="Discover"
-        navigateToSearchPage={true}
+        // initialSearchTerm is no longer passed as GlobalHeader handles its display logic
       />
       <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12 space-y-10 sm:space-y-12" aria-busy={loadingWOTD || loadingTrending || loadingEditorsPicks || loadingSeasonal || loadingThemeCyberpunk || loadingThemeVintage}>
 
@@ -248,7 +247,7 @@ export default function DiscoverPage() {
                         sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                         className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                         data-ai-hint={category.dataAiHint}
-                        priority={index < 3} // Prioritize the first 3 category images
+                        priority={index < 3} 
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 sm:p-4">

@@ -13,16 +13,14 @@ import { User } from 'lucide-react';
 interface PhotoPageClientWrapperProps {
   photo: PexelsPhoto;
   relatedQuery: string;
-  initialSearchTerm: string;
+  // initialSearchTerm prop is no longer strictly needed as GlobalHeader handles its display logic
 }
 
 export function PhotoPageClientWrapper({
   photo,
   relatedQuery,
-  initialSearchTerm
 }: PhotoPageClientWrapperProps) {
   const router = useRouter();
-  // Device orientation state is removed
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
     router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
@@ -41,8 +39,7 @@ export function PhotoPageClientWrapper({
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm={initialSearchTerm}
-        navigateToSearchPage={true}
+        // initialSearchTerm is no longer passed
       />
       <main className="container mx-auto max-w-5xl p-4 md:p-6 py-8 md:py-10">
         <div className="bg-card p-4 sm:p-6 md:p-8 rounded-xl shadow-xl border border-border">
@@ -100,7 +97,6 @@ export function PhotoPageClientWrapper({
         <RelatedWallpapersGrid 
             initialQuery={relatedQuery} 
             currentPhotoId={photo.id}
-            // orientation prop removed
         />
       </main>
     </>

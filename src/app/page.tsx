@@ -21,7 +21,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [currentSearchTerm, setCurrentSearchTerm] = useState(DEFAULT_HOME_SEARCH_TERM);
+  // currentSearchTerm is effectively always DEFAULT_HOME_SEARCH_TERM for this page now
+  const currentSearchTerm = DEFAULT_HOME_SEARCH_TERM;
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastWallpaperElementRef = useCallback(
@@ -35,14 +36,13 @@ export default function Home() {
       });
       if (node) observer.current.observe(node);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [loading, hasMore] 
   );
 
-  const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
+  const fetchWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
     
-    const response = await searchPhotosLib(query, pageNum, 30); 
+    const response = await searchPhotosLib(currentSearchTerm, pageNum, 30); 
 
     if (response && response.photos && response.photos.length > 0) {
       const newPhotos = response.photos;
@@ -57,28 +57,24 @@ export default function Home() {
         setWallpapers([]);
       }
       setHasMore(false);
-      // Show toast only if it's not the initial load for the default term or if explicitly searched for something that yielded no results
-      if (query !== DEFAULT_HOME_SEARCH_TERM || pageNum > 1) {
-        toast({
-          title: "API Fetch Issue (Home)",
-          description: `Failed to fetch wallpapers for "${query}" or no results. Check server logs for Pexels API key status or API errors.`,
-          variant: "default",
-          duration: 7000
-        });
-      }
+      toast({
+        title: "API Fetch Issue (Home)",
+        description: `Failed to fetch wallpapers for "${currentSearchTerm}" or no results. Check server logs for Pexels API key status or API errors.`,
+        variant: "default",
+        duration: 7000
+      });
     }
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast]);
+  }, [toast, currentSearchTerm]);
 
 
   useEffect(() => {
-    // This effect runs when currentSearchTerm changes, resetting to page 1
+    // Initial fetch for the homepage
     setPage(1);
-    setWallpapers([]); // Clear previous wallpapers
-    setHasMore(true); // Assume there's more data for the new term
-    fetchWallpapers(currentSearchTerm, 1, false);
-  }, [currentSearchTerm, fetchWallpapers]);
+    setWallpapers([]);
+    setHasMore(true);
+    fetchWallpapers(1, false);
+  }, [fetchWallpapers]); // Only depends on fetchWallpapers, which depends on currentSearchTerm (constant)
 
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -89,11 +85,6 @@ export default function Home() {
     const trimmedNewSearchTerm = newSearchTerm.trim();
     if (trimmedNewSearchTerm) {
       router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`);
-    } else {
-      // If search is cleared, we might want to reset to default or do nothing.
-      // For now, if it's cleared and submitted, it will search for "Wallpaper" due to how setCurrentSearchTerm works.
-      // Alternatively, we could explicitly reset setCurrentSearchTerm(DEFAULT_HOME_SEARCH_TERM) if navigating to search
-      // but since we are navigating away, the SearchPageContent will handle its own default.
     }
   };
 
@@ -101,7 +92,7 @@ export default function Home() {
     if (!loading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchWallpapers(currentSearchTerm, nextPage, true);
+      fetchWallpapers(nextPage, true);
     }
   };
 
@@ -110,8 +101,7 @@ export default function Home() {
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm={currentSearchTerm}
-        navigateToSearchPage={true}
+        // initialSearchTerm is no longer explicitly passed as GlobalHeader handles its display logic
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
