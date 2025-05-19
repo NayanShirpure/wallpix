@@ -2,16 +2,16 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { WallpaperGrid } from './WallpaperGrid';
-import { Button } from '@/components/ui/button';
+// Removed Button import
 import { Skeleton } from '@/components/ui/skeleton';
 import { searchPhotos } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
 
 interface RelatedWallpapersGridProps {
   initialQuery: string;
-  currentPhotoId: number; // To exclude the current photo from related results
+  currentPhotoId: number; 
 }
 
 export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedWallpapersGridProps) {
@@ -20,6 +20,21 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastWallpaperElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          handleLoadMore();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
+
   const fetchRelatedWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     if (!initialQuery) {
       setHasMore(false);
@@ -27,7 +42,6 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       return;
     }
     setLoading(true);
-    // Fetch without orientation filter
     const response = await searchPhotos(initialQuery, pageNum, 15);
 
     if (response && response.photos && response.photos.length > 0) {
@@ -89,7 +103,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
           aria-live="polite"
         >
           {[...Array(12)].map((_, i) => (
-            <Skeleton key={`related-skeleton-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+            <Skeleton key={`related-skeleton-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
           ))}
         </div>
       ) : relatedWallpapers.length > 0 ? (
@@ -98,12 +112,9 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
          <p className="text-center text-muted-foreground py-4">No related wallpapers found for "{initialQuery}".</p>
       ) : null}
 
+      {/* Sentinel for infinite scroll */}
       {hasMore && !loading && relatedWallpapers.length > 0 && (
-        <div className="flex justify-center mt-6 sm:mt-8 mb-4">
-          <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
-            Load More Related
-          </Button>
-        </div>
+          <div ref={lastWallpaperElementRef} style={{ height: '1px' }} />
       )}
 
       {loading && relatedWallpapers.length > 0 && (
@@ -117,7 +128,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
           aria-live="polite"
         >
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={`loading-more-related-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+            <Skeleton key={`loading-more-related-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
           ))}
         </div>
       )}

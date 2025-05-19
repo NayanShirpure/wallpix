@@ -2,13 +2,13 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-import { Button } from '@/components/ui/button';
+// Removed Button import
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
 
@@ -27,11 +27,30 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastWallpaperElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          handleLoadMore();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
+
   useEffect(() => {
     const queryFromUrl = searchParams.get('query');
     const termToUse = queryFromUrl || initialQuery || 'Wallpaper';
     if (termToUse !== currentSearchTerm) {
         setCurrentSearchTerm(termToUse);
+        // Reset page and wallpapers when search term changes
+        setPage(1);
+        setWallpapers([]);
+        setHasMore(true);
     }
   }, [searchParams, initialQuery, currentSearchTerm]);
 
@@ -71,13 +90,12 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   }, [toast]);
 
   useEffect(() => {
-    setPage(1);
-    setWallpapers([]);
-    setHasMore(true);
-    if (currentSearchTerm) {
+    // Only fetch if currentSearchTerm is defined and page is 1 (initial load for this term)
+    // or if wallpapers array is empty (ensuring initial fetch if term hasn't changed but was cleared)
+    if (currentSearchTerm && (page === 1 || wallpapers.length === 0)) {
       fetchWallpapers(currentSearchTerm, 1, false);
     }
-  }, [currentSearchTerm, fetchWallpapers]);
+  }, [currentSearchTerm, fetchWallpapers]); // Removed page dependency here to prevent re-fetch on page increment by observer
 
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -137,12 +155,9 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
           />
         )}
 
+        {/* Sentinel for infinite scroll */}
         {hasMore && !loading && wallpapers.length > 0 && (
-          <div className="flex justify-center mt-6 sm:mt-8 mb-4">
-            <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
-              Load More
-            </Button>
-          </div>
+            <div ref={lastWallpaperElementRef} style={{ height: '1px' }} />
         )}
 
         {loading && wallpapers.length > 0 && (

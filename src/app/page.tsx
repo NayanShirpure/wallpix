@@ -2,13 +2,13 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-import { Button } from '@/components/ui/button';
+// Removed Button import as Load More button is removed
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +24,20 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [currentSearchTerm, setCurrentSearchTerm] = useState(DEFAULT_HOME_SEARCH_TERM);
 
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastWallpaperElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          handleLoadMore();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -71,8 +85,8 @@ export default function Home() {
     if (trimmedNewSearchTerm) {
       router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`);
     } else {
-      // If search is cleared on home, reset to default home search term
-      setCurrentSearchTerm(DEFAULT_HOME_SEARCH_TERM);
+      // If search is cleared on home, it resets to default home search term handled by currentSearchTerm state.
+      // We are navigating away, so no need to setCurrentSearchTerm(DEFAULT_HOME_SEARCH_TERM) here.
     }
   };
 
@@ -124,13 +138,10 @@ export default function Home() {
           />
         )}
 
-         {hasMore && !loading && wallpapers.length > 0 && (
-            <div className="flex justify-center mt-6 sm:mt-8 mb-4">
-                <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm px-6 py-2.5">
-                Load More
-                </Button>
-            </div>
-          )}
+        {/* Sentinel for infinite scroll */}
+        {hasMore && !loading && wallpapers.length > 0 && (
+            <div ref={lastWallpaperElementRef} style={{ height: '1px' }} />
+        )}
 
           {loading && wallpapers.length > 0 && (
               <div
