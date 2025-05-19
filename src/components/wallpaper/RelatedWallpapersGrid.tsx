@@ -4,7 +4,6 @@
 import type { PexelsPhoto } from '@/types/pexels';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { WallpaperGrid } from './WallpaperGrid';
-// Removed Button import
 import { Skeleton } from '@/components/ui/skeleton';
 import { searchPhotos } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
@@ -32,7 +31,8 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [loading, hasMore] 
   );
 
   const fetchRelatedWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
@@ -59,6 +59,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       setHasMore(false);
     }
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery, currentPhotoId]);
 
   useEffect(() => {
@@ -95,7 +96,6 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       {loading && relatedWallpapers.length === 0 ? (
         <div
           className={cn(
-            "p-1",
             "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
             "gap-2 sm:gap-3 md:gap-4"
           )}
@@ -103,7 +103,9 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
           aria-live="polite"
         >
           {[...Array(12)].map((_, i) => (
-            <Skeleton key={`related-skeleton-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+            <div key={`related-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
+              <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+            </div>
           ))}
         </div>
       ) : relatedWallpapers.length > 0 ? (
@@ -120,7 +122,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       {loading && relatedWallpapers.length > 0 && (
         <div
           className={cn(
-            "p-1 mt-4",
+            "mt-4",
             "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
             "gap-2 sm:gap-3 md:gap-4"
           )}
@@ -128,7 +130,9 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
           aria-live="polite"
         >
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={`loading-more-related-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+            <div key={`loading-more-related-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
+                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+            </div>
           ))}
         </div>
       )}

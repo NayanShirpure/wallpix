@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-// Removed Button import
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +38,8 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [loading, hasMore] 
   );
 
   useEffect(() => {
@@ -51,8 +51,17 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         setPage(1);
         setWallpapers([]);
         setHasMore(true);
+    } else if (queryFromUrl && termToUse === currentSearchTerm && wallpapers.length === 0 && !loading) {
+        // This handles the case where the component mounts with a query,
+        // but the currentSearchTerm is already set (e.g., from initialQuery prop)
+        // and an initial fetch might be needed if wallpapers are empty.
+        setPage(1);
+        setWallpapers([]);
+        setHasMore(true);
+        fetchWallpapers(termToUse, 1, false);
     }
-  }, [searchParams, initialQuery, currentSearchTerm]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, initialQuery, currentSearchTerm]); // Removed loading and wallpapers dependency to avoid loops
 
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
@@ -87,15 +96,16 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast]);
 
   useEffect(() => {
-    // Only fetch if currentSearchTerm is defined and page is 1 (initial load for this term)
-    // or if wallpapers array is empty (ensuring initial fetch if term hasn't changed but was cleared)
-    if (currentSearchTerm && (page === 1 || wallpapers.length === 0)) {
+    // Only fetch if currentSearchTerm is defined and wallpapers are empty (initial load for this term)
+    if (currentSearchTerm && wallpapers.length === 0) {
       fetchWallpapers(currentSearchTerm, 1, false);
     }
-  }, [currentSearchTerm, fetchWallpapers]); // Removed page dependency here to prevent re-fetch on page increment by observer
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSearchTerm, fetchWallpapers]); // Removed page, wallpapers.length to avoid re-fetch loops from parent state updates
 
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -146,7 +156,9 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
             aria-live="polite"
           >
             {[...Array(18)].map((_, i) => (
-              <Skeleton key={`search-content-skeleton-${i}`} className="w-full h-72 mb-2 sm:mb-3 md:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+               <div key={`search-content-skeleton-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+              </div>
             ))}
           </div>
         ) : (
@@ -171,7 +183,9 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
             aria-live="polite"
           >
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={`search-content-loading-more-${i}`} className="w-full h-72 mb-2 sm:mb-3 md:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+              <div key={`search-content-loading-more-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+              </div>
             ))}
           </div>
         )}

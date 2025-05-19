@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-// Removed Button import as Load More button is removed
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +35,8 @@ export default function Home() {
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [loading, hasMore] 
   );
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
@@ -57,21 +57,26 @@ export default function Home() {
         setWallpapers([]);
       }
       setHasMore(false);
-      toast({
-        title: "API Fetch Issue (Home)",
-        description: `Failed to fetch wallpapers for "${query}" or no results. Check server logs for Pexels API key status or API errors.`,
-        variant: "default",
-        duration: 7000
-      });
+      // Show toast only if it's not the initial load for the default term or if explicitly searched for something that yielded no results
+      if (query !== DEFAULT_HOME_SEARCH_TERM || pageNum > 1) {
+        toast({
+          title: "API Fetch Issue (Home)",
+          description: `Failed to fetch wallpapers for "${query}" or no results. Check server logs for Pexels API key status or API errors.`,
+          variant: "default",
+          duration: 7000
+        });
+      }
     }
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast]);
 
 
   useEffect(() => {
+    // This effect runs when currentSearchTerm changes, resetting to page 1
     setPage(1);
-    setWallpapers([]);
-    setHasMore(true);
+    setWallpapers([]); // Clear previous wallpapers
+    setHasMore(true); // Assume there's more data for the new term
     fetchWallpapers(currentSearchTerm, 1, false);
   }, [currentSearchTerm, fetchWallpapers]);
 
@@ -85,8 +90,10 @@ export default function Home() {
     if (trimmedNewSearchTerm) {
       router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`);
     } else {
-      // If search is cleared on home, it resets to default home search term handled by currentSearchTerm state.
-      // We are navigating away, so no need to setCurrentSearchTerm(DEFAULT_HOME_SEARCH_TERM) here.
+      // If search is cleared, we might want to reset to default or do nothing.
+      // For now, if it's cleared and submitted, it will search for "Wallpaper" due to how setCurrentSearchTerm works.
+      // Alternatively, we could explicitly reset setCurrentSearchTerm(DEFAULT_HOME_SEARCH_TERM) if navigating to search
+      // but since we are navigating away, the SearchPageContent will handle its own default.
     }
   };
 
@@ -112,7 +119,7 @@ export default function Home() {
             <h1 className="text-3xl sm:text-4xl font-bold text-primary">
               Discover Your Next Wallpaper
             </h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-2xl mx-auto">
+             <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-2xl mx-auto">
               Wallify is your premier destination for stunning, high-quality wallpapers for desktop and mobile.
               Explore our vast collection from Pexels to personalize your digital space.
             </p>
@@ -129,7 +136,9 @@ export default function Home() {
                 aria-live="polite"
               >
                 {[...Array(12)].map((_, i) => (
-                 <Skeleton key={`initial-skeleton-${i}`} className="w-full h-72 mb-2 sm:mb-3 md:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+                  <div key={`initial-skeleton-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                    <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+                  </div>
                 ))}
             </div>
         ) : (
@@ -154,7 +163,9 @@ export default function Home() {
                 aria-live="polite"
               >
                 {[...Array(6)].map((_, i) => (
-                  <Skeleton key={`loading-skeleton-${i}`} className="w-full h-72 mb-2 sm:mb-3 md:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+                  <div key={`loading-skeleton-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                    <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+                  </div>
                 ))}
             </div>
           )}
