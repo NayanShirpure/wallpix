@@ -5,13 +5,14 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, Award, MessageSquare, Home } from 'lucide-react';
+import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, Award, MessageSquare, Home, ShoppingBag } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger, // Added SheetTrigger
 } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -128,6 +129,7 @@ export function GlobalHeader({
                     AI Generate
                   </Link>
                 </DropdownMenuItem>
+                {/* AI Background Remover link removed */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/about" className="flex items-center">
@@ -177,6 +179,7 @@ export function GlobalHeader({
                   <SheetClose asChild><Link href="/discover" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/what-we-offer" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/generate" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></a></Link></SheetClose>
+                  {/* AI Background Remover link removed from mobile menu */}
                   <Separator className="my-1.5" />
                   <SheetClose asChild><Link href="/about" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/blog" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Award className="mr-2 h-4 w-4" /> Blog</Button></a></Link></SheetClose>
