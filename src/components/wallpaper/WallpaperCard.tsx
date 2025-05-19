@@ -5,7 +5,7 @@ import type { PexelsPhoto } from '@/types/pexels';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2 } from 'lucide-react'; // Changed from Download to Share2
+import { Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface WallpaperCardProps {
@@ -33,22 +33,23 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
     } catch (err) {
       console.error("Failed to copy link:", err);
       toast({
-        title: "Copy Link Manually",
-        description: `Web Share and clipboard copy failed. Please copy this link: ${url}`,
+        title: "Manual Copy Needed",
+        description: `Could not copy link automatically. Please copy this link: ${url}`,
         duration: 9000,
-        variant: "default",
+        variant: "default", // Changed from destructive
       });
     }
   };
 
   const handleShareClick = async (e: React.MouseEvent) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
 
     if (!photo) return;
 
     const shareTitle = imageAltText;
     const shareText = `Check out this amazing wallpaper on Wallify: "${imageAltText}" by ${photo.photographer}.`;
-    const shareUrl = window.location.href; // Ideally, this would be a direct link to the image details if available
+    // Use the photo's Pexels URL for sharing if available, otherwise current page
+    const shareUrl = photo.url || window.location.href;
 
     const shareData = {
       title: shareTitle,
@@ -64,22 +65,40 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
           description: "The wallpaper link has been shared.",
         });
       } catch (error) {
-        if ((error as Error).name !== 'AbortError') { // User didn't cancel
-          console.error("Error sharing:", error); // Log the actual error (e.g., Permission denied)
-          toast({
-            title: "Sharing via App Failed",
-            description: "Trying to copy link to clipboard instead...",
-            variant: "default",
-          });
-          await copyToClipboard(shareUrl, shareTitle);
+        const err = error as Error;
+        if (err.name !== 'AbortError') { // User didn't cancel
+          console.error("Error sharing:", err); // Log the actual error
+
+          if (err.message && err.message.toLowerCase().includes('permission denied')) {
+            toast({
+              title: "Share Permission Denied",
+              description: "Browser prevented sharing. Trying to copy link instead. Check site permissions if this persists.",
+              variant: "default",
+              duration: 7000,
+            });
+          } else {
+            toast({
+              title: "Sharing via App Failed",
+              description: "An unexpected error occurred. Trying to copy link to clipboard instead...",
+              variant: "default",
+            });
+          }
+          await copyToClipboard(shareData.url, shareTitle); // Attempt fallback
         }
-        // If AbortError, do nothing as the user cancelled.
+        // If it is an AbortError, do nothing as the user cancelled.
       }
     } else {
       // Fallback for browsers that don't support Web Share API
-      await copyToClipboard(shareUrl, shareTitle);
+      toast({
+        title: "Web Share Not Supported",
+        description: "Trying to copy link to clipboard instead...",
+        variant: "default",
+      });
+      await copyToClipboard(shareData.url, shareTitle);
     }
   };
+  
+  const dataAiHintForImage = (photo.alt || "wallpaper abstract").split(' ').slice(0,2).join(' ');
 
   return (
     <Card
@@ -101,15 +120,15 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
           width={imageWidth}
           height={imageHeight}
           className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:brightness-75 group-focus-within:brightness-75"
-          priority={photo.id < 3000000} 
+          priority={photo.id < 3000000}
           placeholder="blur"
           blurDataURL={photo.src.tiny}
-          data-ai-hint={photo.alt ? photo.alt.split(' ').slice(0,2).join(' ') : "wallpaper image"}
+          data-ai-hint={dataAiHintForImage}
         />
         <div
           className={cn(
             "absolute inset-0 flex flex-col justify-between p-2 sm:p-3",
-            "bg-gradient-to-t from-black/70 via-black/30 to-transparent", // Adjusted gradient for better text visibility
+            "bg-gradient-to-t from-black/70 via-black/30 to-transparent",
             "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out"
           )}
         >
@@ -132,7 +151,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-200 text-[10px] xxs:text-xs hover:text-accent focus:text-accent focus:outline-none focus:underline truncate block mt-0.5 leading-snug"
-              onClick={(e) => e.stopPropagation()} 
+              onClick={(e) => e.stopPropagation()}
               aria-label={`View photographer ${photo.photographer} on Pexels (opens in new tab)`}
             >
               by {photo.photographer}
