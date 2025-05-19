@@ -3,17 +3,15 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation'; // Added usePathname and useSearchParams
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, Wand2, Info, MessageSquare, Users, Award, MoreVertical, Home, Compass, ImageIcon } from 'lucide-react';
+import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, Award, MessageSquare, Home } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -28,15 +26,15 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchBar } from '@/components/wallpaper/SearchBar'; 
 
 interface GlobalHeaderProps {
-  onWallpaperCategorySelect: (categoryValue: string) => void;
-  onSearchSubmit: (searchTerm: string) => void;
-  // initialSearchTerm prop is no longer strictly needed from parent pages
-  // as its display logic is now handled internally based on route.
+  onWallpaperCategorySelect?: (categoryValue: string) => void;
+  onSearchSubmit?: (searchTerm: string) => void;
 }
 
+const noOp = () => {};
+
 export function GlobalHeader({
-  onWallpaperCategorySelect,
-  onSearchSubmit,
+  onWallpaperCategorySelect = noOp,
+  onSearchSubmit = noOp,
 }: GlobalHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -62,7 +60,7 @@ export function GlobalHeader({
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
             <SearchBar 
               onSubmitSearch={onSearchSubmit} 
-              initialValue={displaySearchTerm} // Use dynamically determined term
+              initialValue={displaySearchTerm}
               navigateToSearchPage={true}
             />
           </div>
@@ -81,9 +79,8 @@ export function GlobalHeader({
               <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
                 <SheetHeader className="p-4 border-b">
                   <SheetTitle>Filter by Category</SheetTitle>
-                  <SheetDescription>Select a category to refine your wallpaper search.</SheetDescription>
                 </SheetHeader>
-                <div className="py-4 px-2 h-[calc(100%-73px)] overflow-y-auto">
+                <div className="py-4 px-2 h-[calc(100%-57px)] overflow-y-auto">
                   {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
                     <React.Fragment key={`desktop-sheet-group-${group.groupLabel}-${groupIndex}`}>
                       <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">{group.groupLabel}</h4>
