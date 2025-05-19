@@ -13,7 +13,7 @@ interface WallpaperSectionProps {
   title: string;
   wallpapers: PexelsPhoto[];
   loading: boolean;
-  onWallpaperClick: (wallpaper: PexelsPhoto) => void; // Kept for potential future use if needed, e.g. if cards don't navigate directly
+  onWallpaperClick: (wallpaper: PexelsPhoto) => void; 
   itemCount?: number;
 }
 
@@ -21,13 +21,12 @@ export function WallpaperSection({
   title,
   wallpapers,
   loading,
-  onWallpaperClick, // This prop is now less critical as WallpaperCard handles navigation
-  itemCount = 10,
+  onWallpaperClick, 
+  itemCount = 6, // Updated default itemCount
 }: WallpaperSectionProps) {
 
   const displayedWallpapers = wallpapers.slice(0, itemCount);
 
-  // General skeleton width for horizontal scroll items, relies on WallpaperCard's aspect ratio
   const skeletonItemWidth = 'w-36 xs:w-40 sm:w-44 md:w-48 lg:w-52';
 
   return (
@@ -38,21 +37,21 @@ export function WallpaperSection({
           {[...Array(Math.min(itemCount, 5))].map((_, i) => (
             <div key={`skeleton-${title}-${i}`} className={cn("flex-shrink-0", skeletonItemWidth)}>
               <Skeleton className={cn(
-                "w-full rounded-md md:rounded-lg shadow-sm aspect-[3/4]" // Match WallpaperCard aspect ratio
+                "w-full rounded-md md:rounded-lg shadow-sm aspect-[3/4]" 
                 )} />
             </div>
           ))}
         </div>
       ) : wallpapers.length > 0 ? (
         <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
-          {displayedWallpapers.map((wallpaper) => (
+          {displayedWallpapers.map((wallpaper, index) => (
             <div
               key={`${wallpaper.id}-${title}`}
               className={cn("flex-shrink-0", skeletonItemWidth)}
             >
               <WallpaperCard
                 photo={wallpaper}
-                // onClick is handled internally by WallpaperCard now
+                isPriority={index < 3} // Prioritize the first 3 images in horizontal scroll
               />
             </div>
           ))}

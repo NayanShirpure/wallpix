@@ -42,7 +42,6 @@ const initialDiscoverPageCategories: DiscoverCategory[] = [
 export default function DiscoverPage() {
   const router = useRouter();
   const { toast } = useToast();
-  // Removed currentDeviceOrientation state
 
   const [wallpaperOfTheDay, setWallpaperOfTheDay] = useState<PexelsPhoto | null>(null);
   const [loadingWOTD, setLoadingWOTD] = useState(true);
@@ -70,10 +69,9 @@ export default function DiscoverPage() {
     query: string,
     setter: React.Dispatch<React.SetStateAction<PexelsPhoto[]>>,
     loader: React.Dispatch<React.SetStateAction<boolean>>,
-    perPage: number = 6 // Default perPage to 6
+    perPage: number = 6 
   ) => {
     loader(true);
-    // Call pexelsSearchPhotosLib without orientation filter
     const response = await pexelsSearchPhotosLib(query, 1, perPage);
     if (response && response.photos) {
       setter(response.photos);
@@ -96,7 +94,6 @@ export default function DiscoverPage() {
       setLoadingWOTD(false);
     });
 
-    // Fetch section photos without orientation
     fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending);
     fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks);
     fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal);
@@ -106,9 +103,8 @@ export default function DiscoverPage() {
   }, [fetchSectionPhotos]);
 
   useEffect(() => {
-    const limitedCategories = initialDiscoverPageCategories.slice(0, 4); // Fetch for first 4 categories
+    const limitedCategories = initialDiscoverPageCategories.slice(0, 4); 
     limitedCategories.forEach(catDefinition => {
-      // Fetch without orientation filter, using 'landscape' as a general preference for category cards
       pexelsSearchPhotosLib(catDefinition.query, 1, 1, 'landscape')
         .then(response => {
           let imageUrl: string | null = null;
@@ -178,7 +174,6 @@ export default function DiscoverPage() {
   return (
     <>
       <GlobalHeader
-        // Removed currentDeviceOrientation and onDeviceOrientationChange props
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm="Discover"
@@ -189,7 +184,6 @@ export default function DiscoverPage() {
         <WallpaperOfTheDay
           wallpaper={wallpaperOfTheDay}
           loading={loadingWOTD}
-          // Removed orientation prop
           onDownloadClick={handleDownloadWallpaper}
         />
 
@@ -197,7 +191,6 @@ export default function DiscoverPage() {
           title="Trending Wallpapers"
           wallpapers={trendingWallpapers}
           loading={loadingTrending}
-          // Removed orientation prop
           onWallpaperClick={handleViewWallpaper}
           itemCount={6}
         />
@@ -206,7 +199,6 @@ export default function DiscoverPage() {
           title="Editor's Picks"
           wallpapers={editorsPicks}
           loading={loadingEditorsPicks}
-          // Removed orientation prop
           onWallpaperClick={handleViewWallpaper}
           itemCount={6}
         />
@@ -215,7 +207,6 @@ export default function DiscoverPage() {
           title="Autumn Vibes"
           wallpapers={seasonalWallpapers}
           loading={loadingSeasonal}
-          // Removed orientation prop
           onWallpaperClick={handleViewWallpaper}
           itemCount={6}
         />
@@ -226,7 +217,6 @@ export default function DiscoverPage() {
               title="Cyberpunk Worlds"
               wallpapers={themeCollectionCyberpunk}
               loading={loadingThemeCyberpunk}
-              // Removed orientation prop
               onWallpaperClick={handleViewWallpaper}
               itemCount={6}
             />
@@ -234,7 +224,6 @@ export default function DiscoverPage() {
               title="Vintage Rides"
               wallpapers={themeCollectionVintage}
               loading={loadingThemeVintage}
-              // Removed orientation prop
               onWallpaperClick={handleViewWallpaper}
               itemCount={6}
             />
@@ -243,7 +232,7 @@ export default function DiscoverPage() {
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Explore Popular Categories</h2>
           <div className="columns-1 xs:columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-4 gap-4 sm:gap-6">
-            {categories.map((category) => {
+            {categories.map((category, index) => {
               const imageToDisplay = category.fetchedImageUrl || category.imageUrl;
               const imageAltText = `Preview for ${category.title} category, showing ${category.dataAiHint}`;
               return (
@@ -259,6 +248,7 @@ export default function DiscoverPage() {
                         sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                         className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                         data-ai-hint={category.dataAiHint}
+                        priority={index < 3} // Prioritize the first 3 category images
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 sm:p-4">

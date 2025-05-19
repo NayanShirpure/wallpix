@@ -6,15 +6,16 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2 } from 'lucide-react';
+import { Share2 } from 'lucide-react'; // Removed Bookmark
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
 interface WallpaperCardProps {
   photo: PexelsPhoto;
+  isPriority?: boolean; // New prop
 }
 
-export function WallpaperCard({ photo }: WallpaperCardProps) {
+export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps) {
   const { toast } = useToast();
   const router = useRouter();
 
@@ -82,11 +83,12 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
               variant: "default",
               duration: 7000,
             });
+            await copyToClipboard(shareData.url, shareTitle);
           } else {
             console.error("Web Share API error:", error); 
             toast({ title: "Sharing via App Failed", description: "Trying to copy link to clipboard instead...", variant: "default" });
+            await copyToClipboard(shareData.url, shareTitle);
           }
-          await copyToClipboard(shareData.url, shareTitle);
         }
       }
     } else {
@@ -100,7 +102,7 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
       className={cn(
         "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
         "bg-card border-border shadow-md hover:shadow-xl focus-within:shadow-xl",
-        "rounded-lg"
+        "rounded-lg" 
       )}
       onClick={handleCardClick}
       role="link"
@@ -109,7 +111,7 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
       aria-label={cardAriaLabel}
     >
       <CardContent className="p-0 relative">
-        <div className="relative w-full"> {/* Container for image to maintain aspect ratio with h-auto on Image */}
+        <div className="relative w-full">
           <Image
             src={imageSrc}
             alt={imageAltText}
@@ -117,7 +119,7 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
             height={photo.height}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-            priority={photo.id < 3000000} 
+            priority={isPriority} 
             placeholder="blur"
             blurDataURL={photo.src.tiny}
             data-ai-hint={dataAiHintForImage}
@@ -157,7 +159,6 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
             >
               <Share2 size={16} className="sm:size-[18px]" />
             </Button>
-            {/* Save button removed */}
           </div>
         </div>
       </CardContent>

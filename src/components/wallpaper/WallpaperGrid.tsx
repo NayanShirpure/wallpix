@@ -17,14 +17,10 @@ export function WallpaperGrid({ photos }: WallpaperGridProps) {
     return (
       <div className="text-center py-10">
         <p className="text-xl text-muted-foreground">No wallpapers found.</p>
-        {process.env.NODE_ENV === 'development' && (
-            <p className="text-sm text-muted-foreground mt-2">Is your PEXELS_API_KEY (server-side) set correctly?</p>
-        )}
       </div>
     );
   }
 
-  // Removed p-1, page-level container should handle this
   const gridClasses = cn(
     "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6", 
     "gap-2 sm:gap-3 md:gap-4" 
@@ -33,10 +29,11 @@ export function WallpaperGrid({ photos }: WallpaperGridProps) {
   return (
     <>
       <div className={gridClasses}>
-        {photos.map((photo) => (
+        {photos.map((photo, index) => (
           <div key={`${photo.id}-masonry`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
             <WallpaperCard
               photo={photo}
+              isPriority={index < 4} // Prioritize the first 4 images in the grid
             />
           </div>
         ))}
