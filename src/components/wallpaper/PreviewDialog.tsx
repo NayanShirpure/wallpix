@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Download, ExternalLink, User, X, Share2 } from 'lucide-react';
+import { Download, ExternalLink, User, X, Share2, Bookmark } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -64,7 +64,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
 
   const handleDownload = async () => {
     if (!selectedDownloadUrl || !photo) return;
-    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
+    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_\\-\\s]/g, '').replace(/\s+/g, '_');
     const simpleResLabel = selectedResolutionLabel.split(' ')[0].replace('(', '').replace(')', '');
     const filenameSuffix = isAiGenerated ? 'ai_generated' : photographerName;
     const filename = `wallify_${filenameSuffix}_${photo.id}_${simpleResLabel}.jpg`;
@@ -125,7 +125,6 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     if (isAiGenerated) {
       shareUrl = `${window.location.origin}/generate`;
     } else {
-      // For Pexels images, share a search link on Wallify using the image's alt text
       const query = encodeURIComponent(displayAlt);
       shareUrl = `${window.location.origin}/search?query=${query}`;
     }
@@ -153,6 +152,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     variant: "default",
                     duration: 7000,
                 });
+                await copyToClipboard(shareData.url, shareTitle);
             } else {
                 console.error("Error sharing:", err);
                 toast({
@@ -160,8 +160,8 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     description: "An unexpected error occurred. Trying to copy link to clipboard instead...",
                     variant: "default",
                 });
+                await copyToClipboard(shareData.url, shareTitle);
             }
-            await copyToClipboard(shareData.url, shareTitle);
         }
       }
     } else {
@@ -174,6 +174,13 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     }
   };
 
+  const handleSave = () => {
+    toast({
+      title: "Save Feature",
+      description: "Saving wallpapers will be available soon!",
+    });
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -184,7 +191,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
         <DialogHeader className="sr-only">
           <DialogTitle>{displayAlt}</DialogTitle>
           <DialogDescription>
-            Full-size preview of the selected wallpaper: {displayAlt}. Actions to download or view source are available.
+            Full-size preview of the selected wallpaper: {displayAlt}. Actions to download, share, or view source are available.
           </DialogDescription>
         </DialogHeader>
         <div className="relative w-full h-full flex flex-col">
@@ -211,7 +218,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent z-10 rounded-b-lg">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div className="text-white overflow-hidden flex-shrink min-w-0">
                 <h2 className="text-base sm:text-lg font-semibold truncate" title={displayAlt}>
                   {displayAlt}
@@ -234,8 +241,8 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
-                <Button
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0 flex-wrap justify-end">
+                 <Button
                     variant="outline"
                     size="sm"
                     onClick={handleDialogShare}
@@ -243,6 +250,15 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     aria-label="Share this wallpaper"
                   >
                     <Share2 className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" /> Share
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSave}
+                  className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm px-2.5 sm:px-3"
+                  aria-label="Save wallpaper (feature coming soon)"
+                >
+                  <Bookmark className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" /> Save
                 </Button>
 
                 {!isAiGenerated && (
@@ -299,5 +315,3 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     </Dialog>
   );
 }
-
-    

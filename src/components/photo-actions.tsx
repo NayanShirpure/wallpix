@@ -34,7 +34,7 @@ export function PhotoActions({ photo }: { photo: PexelsPhoto }) {
       toast({ title: "Error", description: "Photo data is incomplete for download.", variant: "destructive" });
       return;
     }
-    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_-\\s]/g, '').replace(/\\s+/g, '_');
+    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_\\-\\s]/g, '').replace(/\s+/g, '_');
     const filename = `wallify_${photographerName}_${photo.id}_original.jpg`;
     toast({
       title: "Download Starting",
@@ -82,11 +82,12 @@ export function PhotoActions({ photo }: { photo: PexelsPhoto }) {
                     variant: "default",
                     duration: 7000,
                 });
+                await copyToClipboardLocal(shareData.url, shareTitle);
             } else {
                 console.error("Error sharing via navigator.share:", err);
                 toast({ title: "Sharing via App Failed", description: "Trying to copy link instead.", variant: "default"});
+                await copyToClipboardLocal(shareData.url, shareTitle);
             }
-            await copyToClipboardLocal(shareData.url, shareTitle);
         }
       }
     } else {
@@ -113,7 +114,7 @@ export function PhotoActions({ photo }: { photo: PexelsPhoto }) {
       <Button onClick={handleDownload} size="sm" className="h-9 text-sm bg-primary text-primary-foreground hover:bg-primary/90">
         <Download className="mr-2 h-4 w-4" /> Download Original
       </Button>
-      {photo.url && (
+      {photo.url && (photo.url.trim() !== '') && (
         <Button variant="outline" size="sm" asChild className="h-9 text-sm">
           <a href={photo.url} target="_blank" rel="noopener noreferrer" aria-label="View original image on Pexels (opens in new tab)">
             Pexels <ExternalLink className="ml-2 h-4 w-4" />
