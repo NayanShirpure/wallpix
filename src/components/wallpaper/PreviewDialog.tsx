@@ -6,10 +6,9 @@ import type { PexelsPhoto } from '@/types/pexels';
 import {
   Dialog,
   DialogContent,
-  // DialogHeader, // No longer using separate DialogHeader
-  // DialogTitle, // Title will be part of the overlay
-  // DialogDescription, // Description will be part of the overlay
-  // DialogFooter, // Footer actions will be overlaid or positioned differently
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -105,6 +104,12 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
         "p-0 border-none !rounded-lg shadow-2xl bg-background/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[90vh] lg:w-[70vw] xl:w-[60vw]" // Responsive sizing
       )}>
+        <DialogHeader className="sr-only">
+          <DialogTitle>{displayAlt}</DialogTitle>
+          <DialogDescription>
+            Full-size preview of the selected wallpaper. Actions to download or view source are available.
+          </DialogDescription>
+        </DialogHeader>
         <div className="relative w-full h-full flex flex-col">
           {/* Close Button - Top Right Overlay */}
           <DialogClose
@@ -192,14 +197,14 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     </SelectContent>
                   </Select>
                 )}
-                 {isAiGenerated && (
+                 {(isAiGenerated || (!isAiGenerated && downloadOptions.length === 0) || (!isAiGenerated && selectedDownloadUrl)) && ( // Show download button for AI, or if Pexels image and options are available/selected
                     <Button
                         onClick={handleDownload}
                         className="h-8 sm:h-9 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md text-xs sm:text-sm px-3"
                         disabled={!selectedDownloadUrl}
-                        aria-label="Download AI generated wallpaper"
+                        aria-label={isAiGenerated ? "Download AI generated wallpaper" : `Download wallpaper in ${selectedResolutionLabel} resolution`}
                     >
-                        <Download className="mr-1.5 h-3.5 w-3.5" /> Download
+                        <Download className="mr-1.5 h-3.5 w-3.5" /> {isAiGenerated ? "Download" : "Download"}
                     </Button>
                  )}
               </div>
@@ -210,3 +215,4 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     </Dialog>
   );
 }
+
