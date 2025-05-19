@@ -1,5 +1,5 @@
 
-import type { Category as DeviceOrientationCategory } from '@/types/pexels'; // Renamed for clarity
+// Removed import for DeviceOrientationCategory as it's no longer used
 
 export const popularSearchQueries: string[] = [
   'Wallpaper',
@@ -44,11 +44,11 @@ export interface CategoryGroup {
   categories: WallpaperFilterCategory[];
 }
 
-// This list controls the Tabs for Smartphone/Desktop (orientation)
-export const deviceOrientationTabs: { label: string; value: DeviceOrientationCategory }[] = [
-  { label: 'Phone', value: 'smartphone' },
-  { label: 'Desktop', value: 'desktop' },
-];
+// Removed deviceOrientationTabs as the feature is removed
+// export const deviceOrientationTabs: { label: string; value: DeviceOrientationCategory }[] = [
+//   { label: 'Phone', value: 'smartphone' },
+//   { label: 'Desktop', value: 'desktop' },
+// ];
 
 // These are for the Dropdown Menu to refine search queries
 export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
@@ -71,8 +71,8 @@ export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
     groupLabel: "By Device/Resolution Focus",
     categories: [
       { label: "Tablet", value: "Tablet Wallpaper" },
-      { label: "4K", value: "4K Ultra HD" }, // Changed for potentially better search results
-      { label: "Ultrawide", value: "Ultrawide Monitor" }, // Changed for potentially better search results
+      { label: "4K", value: "4K Ultra HD" },
+      { label: "Ultrawide", value: "Ultrawide Monitor" },
     ],
   },
   {
@@ -81,7 +81,7 @@ export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
       { label: "Dark", value: "Dark" },
       { label: "Light", value: "Light" },
       { label: "Pastel", value: "Pastel Colors" },
-      { label: "Neon", value: "Neon Lights" }, // Changed for potentially better search results
+      { label: "Neon", value: "Neon Lights" },
     ],
   },
   {
@@ -96,5 +96,4 @@ export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
   },
 ];
 
-// Exporting DeviceOrientationCategory for use in pages
-export type { DeviceOrientationCategory };
+// Removed re-export of DeviceOrientationCategory

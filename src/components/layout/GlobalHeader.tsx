@@ -4,8 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, Compass, ListFilter, Wand2, Info, ShoppingBag } from 'lucide-react'; // Added ShoppingBag for consistency, ensure it's used or remove if not
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"; // Added TabsContent
+import { Menu, Palette, Compass, ListFilter, Wand2, Info, Home, MessageSquare, Users, Award, MoreVertical, ShoppingBag } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
@@ -23,13 +22,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { wallpaperFilterCategoryGroups, deviceOrientationTabs, type DeviceOrientationCategory } from '@/config/categories';
+import { wallpaperFilterCategoryGroups } from '@/config/categories'; // Removed deviceOrientationTabs and DeviceOrientationCategory
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchBar } from '@/components/wallpaper/SearchBar'; 
 
 interface GlobalHeaderProps {
-  currentDeviceOrientation: DeviceOrientationCategory;
-  onDeviceOrientationChange: (newCategory: DeviceOrientationCategory) => void;
+  // Removed currentDeviceOrientation and onDeviceOrientationChange
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
   initialSearchTerm?: string; 
@@ -37,8 +35,6 @@ interface GlobalHeaderProps {
 }
 
 export function GlobalHeader({
-  currentDeviceOrientation,
-  onDeviceOrientationChange,
   onWallpaperCategorySelect,
   onSearchSubmit,
   initialSearchTerm,
@@ -65,88 +61,115 @@ export function GlobalHeader({
 
         <div className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
           <nav className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
-              <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="w-auto">
-                <TabsList className="h-9 text-xs sm:text-sm">
-                  {deviceOrientationTabs.map(opt => (
-                    <TabsTrigger key={opt.value} value={opt.value} className="px-2.5 py-1.5 sm:px-3">{opt.label}</TabsTrigger>
-                  ))}
-                </TabsList>
-                 {/* Add sr-only TabsContent to satisfy aria-controls */}
-                {deviceOrientationTabs.map(opt => (
-                  <TabsContent key={`panel-sr-${opt.value}`} value={opt.value} className="sr-only">
-                    Content for {opt.label} device orientation view.
-                  </TabsContent>
-                ))}
-              </Tabs>
+            {/* Device Orientation Tabs Removed */}
             
-              <Sheet> 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
-                      <Menu className="mr-1 h-3.5 w-3.5" />
-                      Browse
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href="/discover" className="flex items-center">
-                        <Compass className="mr-2 h-4 w-4" />
-                        Discover
-                      </Link>
+            <Sheet> 
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
+                    <Menu className="mr-1 h-3.5 w-3.5" />
+                    Browse
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/discover" className="flex items-center">
+                      <Compass className="mr-2 h-4 w-4" />
+                      Discover
+                    </Link>
+                  </DropdownMenuItem>
+                   <DropdownMenuItem asChild>
+                    <Link href="/what-we-offer" className="flex items-center">
+                      <Info className="mr-2 h-4 w-4" />
+                      What We Offer
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/generate" className="flex items-center">
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      AI Generate
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/background-remover" className="flex items-center">
+                      <ShoppingBag className="mr-2 h-4 w-4" />
+                      AI Background Remover
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <SheetTrigger asChild>
+                    <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
+                      <ListFilter className="mr-2 h-4 w-4" />
+                      <span>Filter Categories</span>
                     </DropdownMenuItem>
-                     <DropdownMenuItem asChild>
-                      <Link href="/what-we-offer" className="flex items-center">
-                        <Info className="mr-2 h-4 w-4" />
-                        What We Offer
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/generate" className="flex items-center">
-                        <Wand2 className="mr-2 h-4 w-4" />
-                        AI Generate
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/background-remover" className="flex items-center">
-                        <ShoppingBag className="mr-2 h-4 w-4" /> {/* Changed to ShoppingBag for variety */}
-                        AI Background Remover
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <SheetTrigger asChild>
-                      <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
-                        <ListFilter className="mr-2 h-4 w-4" />
-                        <span>Filter Categories</span>
-                      </DropdownMenuItem>
-                    </SheetTrigger>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
-                  <SheetHeader className="p-4 border-b">
-                    <SheetTitle>Filter by Category</SheetTitle>
-                    <SheetDescription>Select a category to refine your wallpaper search.</SheetDescription>
-                  </SheetHeader>
-                  <div className="py-4 px-2 h-[calc(100%-73px)] overflow-y-auto">
-                    {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
-                      <React.Fragment key={`desktop-sheet-group-${group.groupLabel}-${groupIndex}`}>
-                        <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">{group.groupLabel}</h4>
-                        {group.categories.map((cat) => (
-                          <SheetClose asChild key={`desktop-sheet-cat-${cat.value}`}>
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start px-2 py-1.5 text-sm h-auto"
-                              onClick={() => onWallpaperCategorySelect(cat.value)}
-                            >
-                              {cat.label}
-                            </Button>
-                          </SheetClose>
-                        ))}
-                        {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <Separator className="my-2" />}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </SheetContent>
-              </Sheet>
+                  </SheetTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>Filter by Category</SheetTitle>
+                  <SheetDescription>Select a category to refine your wallpaper search.</SheetDescription>
+                </SheetHeader>
+                <div className="py-4 px-2 h-[calc(100%-73px)] overflow-y-auto">
+                  {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
+                    <React.Fragment key={`desktop-sheet-group-${group.groupLabel}-${groupIndex}`}>
+                      <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">{group.groupLabel}</h4>
+                      {group.categories.map((cat) => (
+                        <SheetClose asChild key={`desktop-sheet-cat-${cat.value}`}>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start px-2 py-1.5 text-sm h-auto"
+                            onClick={() => onWallpaperCategorySelect(cat.value)}
+                          >
+                            {cat.label}
+                          </Button>
+                        </SheetClose>
+                      ))}
+                      {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <Separator className="my-2" />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* More Options Dropdown for Desktop */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">More options</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/about" className="flex items-center">
+                    <Users className="mr-2 h-4 w-4" /> About
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/blog" className="flex items-center">
+                    <Award className="mr-2 h-4 w-4" /> Blog
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/contact" className="flex items-center">
+                    <MessageSquare className="mr-2 h-4 w-4" /> Contact
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/privacy-policy" className="flex items-center">
+                    Privacy Policy
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/terms-conditions" className="flex items-center">
+                    Terms & Conditions
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
           </nav>
 
           <div className="sm:hidden"> {/* Mobile Menu Trigger */}
@@ -162,60 +185,20 @@ export function GlobalHeader({
                   <SheetTitle>Navigation</SheetTitle>
                 </SheetHeader>
                 <div className="py-2 px-2 h-[calc(100%-57px)] overflow-y-auto">
-                  <SheetClose asChild>
-                    <Link href="/discover" passHref legacyBehavior>
-                      <a className="block">
-                        <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
-                          <Compass className="mr-2 h-4 w-4" /> Discover
-                        </Button>
-                      </a>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/what-we-offer" passHref legacyBehavior>
-                      <a className="block">
-                        <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
-                          <Info className="mr-2 h-4 w-4" /> What We Offer
-                        </Button>
-                      </a>
-                    </Link>
-                  </SheetClose>
-                   <SheetClose asChild>
-                    <Link href="/generate" passHref legacyBehavior>
-                      <a className="block">
-                        <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
-                          <Wand2 className="mr-2 h-4 w-4" /> AI Generate
-                        </Button>
-                      </a>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/background-remover" passHref legacyBehavior>
-                      <a className="block">
-                        <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1">
-                           <ShoppingBag className="mr-2 h-4 w-4" /> {/* Changed to ShoppingBag for variety */}
-                           AI Background Remover
-                        </Button>
-                      </a>
-                    </Link>
-                  </SheetClose>
+                  <SheetClose asChild><Link href="/" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Home className="mr-2 h-4 w-4" /> Home</Button></a></Link></SheetClose>
+                  <SheetClose asChild><Link href="/discover" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></a></Link></SheetClose>
+                  <SheetClose asChild><Link href="/what-we-offer" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></a></Link></SheetClose>
+                  <SheetClose asChild><Link href="/generate" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></a></Link></SheetClose>
+                  <SheetClose asChild><Link href="/background-remover" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><ShoppingBag className="mr-2 h-4 w-4" /> AI Background Remover</Button></a></Link></SheetClose>
                   <Separator className="my-1.5" />
-                  <div className="py-1">
-                    <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Device</h4>
-                    {deviceOrientationTabs.map(opt => (
-                      <SheetClose asChild key={`mobile-sheet-device-${opt.value}`}>
-                        <Button
-                          variant={currentDeviceOrientation === opt.value ? "secondary" : "ghost"}
-                          className="w-full justify-start px-2 py-1.5 text-sm h-auto"
-                          onClick={() => onDeviceOrientationChange(opt.value as DeviceOrientationCategory)}
-                        >
-                          {opt.label}
-                          {currentDeviceOrientation === opt.value && <span className="ml-auto text-primary">✓</span>}
-                        </Button>
-                      </SheetClose>
-                    ))}
-                  </div>
+                  <SheetClose asChild><Link href="/about" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></a></Link></SheetClose>
+                  <SheetClose asChild><Link href="/blog" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Award className="mr-2 h-4 w-4" /> Blog</Button></a></Link></SheetClose>
+                  <SheetClose asChild><Link href="/contact" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><MessageSquare className="mr-2 h-4 w-4" /> Contact</Button></a></Link></SheetClose>
                   <Separator className="my-1.5" />
+                  <SheetClose asChild><Link href="/privacy-policy" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Privacy Policy</Button></a></Link></SheetClose>
+                  <SheetClose asChild><Link href="/terms-conditions" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Terms & Conditions</Button></a></Link></SheetClose>
+                  <Separator className="my-1.5" />
+                  {/* Device Orientation toggle removed from mobile menu */}
                   <div className="py-1">
                     <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>
                     {wallpaperFilterCategoryGroups.map((group, groupIndex) => (

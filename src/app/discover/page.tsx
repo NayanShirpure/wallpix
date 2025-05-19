@@ -7,10 +7,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-import type { DeviceOrientationCategory, PexelsPhoto, PexelsResponse } from '@/types/pexels';
+import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { WallpaperSection } from '@/components/wallpaper-section';
-// PreviewDialog is removed
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
 import { getCuratedPhotos, searchPhotos as pexelsSearchPhotosLib } from '@/lib/pexels';
@@ -21,12 +20,12 @@ interface DiscoverCategory {
   title: string;
   description: string;
   query: string;
-  imageUrl: string; 
+  imageUrl: string;
   dataAiHint: string;
   imageWidth: number;
   imageHeight: number;
-  fetchedImageUrl?: string | null; 
-  imageLoading?: boolean; 
+  fetchedImageUrl?: string | null;
+  imageLoading?: boolean;
 }
 
 const initialDiscoverPageCategories: DiscoverCategory[] = [
@@ -43,27 +42,26 @@ const initialDiscoverPageCategories: DiscoverCategory[] = [
 export default function DiscoverPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
-  
+  // Removed currentDeviceOrientation state
+
   const [wallpaperOfTheDay, setWallpaperOfTheDay] = useState<PexelsPhoto | null>(null);
   const [loadingWOTD, setLoadingWOTD] = useState(true);
-  
+
   const [trendingWallpapers, setTrendingWallpapers] = useState<PexelsPhoto[]>([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
-  
+
   const [editorsPicks, setEditorsPicks] = useState<PexelsPhoto[]>([]);
   const [loadingEditorsPicks, setLoadingEditorsPicks] = useState(true);
-  
+
   const [seasonalWallpapers, setSeasonalWallpapers] = useState<PexelsPhoto[]>([]);
   const [loadingSeasonal, setLoadingSeasonal] = useState(true);
-  
+
   const [themeCollectionCyberpunk, setThemeCollectionCyberpunk] = useState<PexelsPhoto[]>([]);
   const [loadingThemeCyberpunk, setLoadingThemeCyberpunk] = useState(true);
 
   const [themeCollectionVintage, setThemeCollectionVintage] = useState<PexelsPhoto[]>([]);
   const [loadingThemeVintage, setLoadingThemeVintage] = useState(true);
 
-  // selectedWallpaper and isModalOpen state removed
   const [categories, setCategories] = useState<DiscoverCategory[]>(
     initialDiscoverPageCategories.map(cat => ({ ...cat, imageLoading: true, fetchedImageUrl: null }))
   );
@@ -72,49 +70,50 @@ export default function DiscoverPage() {
     query: string,
     setter: React.Dispatch<React.SetStateAction<PexelsPhoto[]>>,
     loader: React.Dispatch<React.SetStateAction<boolean>>,
-    orientation?: 'landscape' | 'portrait' | 'square',
-    perPage: number = 10
+    perPage: number = 6 // Default perPage to 6
   ) => {
     loader(true);
-    const response = await pexelsSearchPhotosLib(query, 1, perPage, orientation);
+    // Call pexelsSearchPhotosLib without orientation filter
+    const response = await pexelsSearchPhotosLib(query, 1, perPage);
     if (response && response.photos) {
       setter(response.photos);
     } else {
       setter([]);
-      console.warn(`Failed to fetch photos for query: ${query}`);
+      console.warn(`[Discover Page] Failed to fetch photos for query: ${query}. Check console for Pexels API errors (e.g., rate limits).`);
     }
     loader(false);
   }, []);
 
   useEffect(() => {
-    const orientationParam = currentDeviceOrientation === 'desktop' ? 'landscape' : 'portrait';
-
     setLoadingWOTD(true);
     getCuratedPhotos(1, 1).then(data => {
       if (data && data.photos && data.photos.length > 0) {
         setWallpaperOfTheDay(data.photos[0]);
       } else {
         setWallpaperOfTheDay(null);
-        console.warn("Failed to fetch wallpaper of the day.");
+        console.warn("[Discover Page] Failed to fetch wallpaper of the day.");
       }
       setLoadingWOTD(false);
     });
 
-    fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending, orientationParam);
-    fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks, orientationParam);
-    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal, orientationParam);
-    fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk, orientationParam);
-    fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage, orientationParam);
+    // Fetch section photos without orientation
+    fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending);
+    fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks);
+    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal);
+    fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk);
+    fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage);
 
-  }, [currentDeviceOrientation, fetchSectionPhotos]);
+  }, [fetchSectionPhotos]);
 
   useEffect(() => {
-    initialDiscoverPageCategories.forEach(catDefinition => {
-      pexelsSearchPhotosLib(catDefinition.query, 1, 1, 'landscape') 
+    const limitedCategories = initialDiscoverPageCategories.slice(0, 4); // Fetch for first 4 categories
+    limitedCategories.forEach(catDefinition => {
+      // Fetch without orientation filter, using 'landscape' as a general preference for category cards
+      pexelsSearchPhotosLib(catDefinition.query, 1, 1, 'landscape')
         .then(response => {
           let imageUrl: string | null = null;
           if (response && response.photos && response.photos.length > 0) {
-            imageUrl = response.photos[0].src.medium; 
+            imageUrl = response.photos[0].src.large || response.photos[0].src.medium;
           }
           setCategories(prevCategories =>
             prevCategories.map(c =>
@@ -125,7 +124,7 @@ export default function DiscoverPage() {
           );
         })
         .catch(error => {
-          console.warn(`Failed to fetch image for category ${catDefinition.title}:`, error);
+          console.warn(`[Discover Page] Failed to fetch image for category ${catDefinition.title}:`, error);
           setCategories(prevCategories =>
             prevCategories.map(c =>
               c.id === catDefinition.id ? { ...c, imageLoading: false } : c
@@ -134,11 +133,8 @@ export default function DiscoverPage() {
         });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []);
 
-  const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
-    setCurrentDeviceOrientation(newCategory);
-  };
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
     router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
@@ -151,14 +147,14 @@ export default function DiscoverPage() {
   };
 
   const handleViewWallpaper = (photo: PexelsPhoto) => {
-    router.push(`/photo/${photo.id}`); // Navigate to dedicated page
+    router.push(`/photo/${photo.id}`);
   };
 
   const handleDownloadWallpaper = async (photo: PexelsPhoto | null) => {
     if (!photo) return;
-    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_-\\s]/g, '').replace(/\\s+/g, '_');
+    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_\\-\\s]/g, '').replace(/\s+/g, '_');
     const filename = `wallify_${photographerName}_${photo.id}_original.jpg`;
-    
+
     toast({
       title: "Download Starting",
       description: `Preparing ${filename} for download...`,
@@ -179,25 +175,21 @@ export default function DiscoverPage() {
     }
   };
 
-  // closeModal is removed
-
   return (
     <>
       <GlobalHeader
-        currentDeviceOrientation={currentDeviceOrientation}
-        onDeviceOrientationChange={handleDeviceOrientationChange}
+        // Removed currentDeviceOrientation and onDeviceOrientationChange props
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm="Discover" 
+        initialSearchTerm="Discover"
         navigateToSearchPage={true}
       />
       <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12 space-y-10 sm:space-y-12" aria-busy={loadingWOTD || loadingTrending || loadingEditorsPicks || loadingSeasonal || loadingThemeCyberpunk || loadingThemeVintage}>
-        
+
         <WallpaperOfTheDay
           wallpaper={wallpaperOfTheDay}
           loading={loadingWOTD}
-          orientation={currentDeviceOrientation}
-          // onViewClick prop removed
+          // Removed orientation prop
           onDownloadClick={handleDownloadWallpaper}
         />
 
@@ -205,27 +197,27 @@ export default function DiscoverPage() {
           title="Trending Wallpapers"
           wallpapers={trendingWallpapers}
           loading={loadingTrending}
-          orientation={currentDeviceOrientation}
+          // Removed orientation prop
           onWallpaperClick={handleViewWallpaper}
-          itemCount={8}
+          itemCount={6}
         />
 
         <WallpaperSection
           title="Editor's Picks"
           wallpapers={editorsPicks}
           loading={loadingEditorsPicks}
-          orientation={currentDeviceOrientation}
+          // Removed orientation prop
           onWallpaperClick={handleViewWallpaper}
-          itemCount={8}
+          itemCount={6}
         />
-        
+
         <WallpaperSection
           title="Autumn Vibes"
           wallpapers={seasonalWallpapers}
           loading={loadingSeasonal}
-          orientation={currentDeviceOrientation}
+          // Removed orientation prop
           onWallpaperClick={handleViewWallpaper}
-          itemCount={8}
+          itemCount={6}
         />
 
         <div className="space-y-6">
@@ -234,7 +226,7 @@ export default function DiscoverPage() {
               title="Cyberpunk Worlds"
               wallpapers={themeCollectionCyberpunk}
               loading={loadingThemeCyberpunk}
-              orientation={currentDeviceOrientation}
+              // Removed orientation prop
               onWallpaperClick={handleViewWallpaper}
               itemCount={6}
             />
@@ -242,7 +234,7 @@ export default function DiscoverPage() {
               title="Vintage Rides"
               wallpapers={themeCollectionVintage}
               loading={loadingThemeVintage}
-              orientation={currentDeviceOrientation}
+              // Removed orientation prop
               onWallpaperClick={handleViewWallpaper}
               itemCount={6}
             />
@@ -256,16 +248,16 @@ export default function DiscoverPage() {
               const imageAltText = `Preview for ${category.title} category, showing ${category.dataAiHint}`;
               return (
                 <Link key={category.id} href={`/search?query=${encodeURIComponent(category.query)}`} passHref legacyBehavior>
-                  <a className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 mb-4 sm:mb-6 break-inside-avoid-column">
+                  <a className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 mb-4 sm:mb-6 break-inside-avoid-column aspect-[3/4]">
                     {category.imageLoading ? (
-                      <Skeleton className="w-full h-auto" style={{ aspectRatio: `${category.imageWidth}/${category.imageHeight}` }} />
+                      <Skeleton className="w-full h-full" />
                     ) : (
                       <Image
                         src={imageToDisplay}
                         alt={imageAltText}
-                        width={category.imageWidth}
-                        height={category.imageHeight}
-                        className="object-cover w-full h-auto transition-transform duration-300 ease-in-out group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                        className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                         data-ai-hint={category.dataAiHint}
                       />
                     )}
@@ -287,7 +279,6 @@ export default function DiscoverPage() {
           </div>
         </div>
       </main>
-      {/* Removed PreviewDialog component usage */}
     </>
   );
 }

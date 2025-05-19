@@ -30,5 +30,4 @@ export interface PexelsResponse {
   next_page?: string;
 }
 
-export type Category = 'smartphone' | 'desktop';
-export type DeviceOrientationCategory = 'smartphone' | 'desktop';
+// Removed DeviceOrientationCategory as it's no longer used
