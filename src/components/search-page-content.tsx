@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization, MinimalWithContext } from '@/types/schema-dts';
+import { cn } from '@/lib/utils';
 
 interface SearchPageContentProps {
   initialQuery: string;
@@ -55,7 +56,8 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         const newPhotos = data.photos;
         setWallpapers((prev: PexelsPhoto[]): PexelsPhoto[] => {
           const combined = append ? [...prev, ...newPhotos] : newPhotos;
-          const uniqueMap = new Map(combined.map((item: PexelsPhoto) => [`${item.id}-${deviceCategory}`, item]));
+          // Deduplication based on ID only
+          const uniqueMap = new Map(combined.map((item: PexelsPhoto) => [item.id, item]));
           return Array.from(uniqueMap.values()) as PexelsPhoto[];
         });
         setHasMore(!!data.next_page && newPhotos.length > 0 && newPhotos.length === 30);
@@ -74,7 +76,8 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setPage(1);
@@ -96,7 +99,9 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const handleSearchSubmit = (newSearchTerm: string) => {
     const trimmedNewSearchTerm = newSearchTerm.trim();
     if (trimmedNewSearchTerm) {
+      // Update URL to reflect new search term
       router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`);
+      // No need to set currentSearchTerm here as useEffect on searchParams will handle it
     }
   };
 
@@ -117,8 +122,6 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     setIsModalOpen(false);
     setTimeout(() => setSelectedWallpaper(null), 300);
   };
-
-  const gridAspectRatio = currentDeviceOrientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
 
   const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
@@ -173,17 +176,21 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
 
         {loading && wallpapers.length === 0 ? (
           <div 
-            className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4`}
-            
+            className={cn(
+              "p-1",
+              "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
+              "gap-2 sm:gap-3 md:gap-4"
+            )}
+            aria-busy="true"
+            aria-live="polite"
           >
             {[...Array(18)].map((_, i) => ( 
-              <Skeleton key={`search-content-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+              <Skeleton key={`search-content-skeleton-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
             ))}
           </div>
         ) : (
           <WallpaperGrid
             photos={wallpapers}
-            orientation={currentDeviceOrientation}
             onPhotoClick={openModal}
           />
         )}
@@ -198,12 +205,16 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
 
         {loading && wallpapers.length > 0 && (
           <div 
-            className={`grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mt-4`}
+            className={cn(
+              "p-1 mt-4",
+              "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
+              "gap-2 sm:gap-3 md:gap-4"
+            )}
             aria-busy="true"
             aria-live="polite"
           >
             {[...Array(6)].map((_, i) => ( 
-              <Skeleton key={`search-content-loading-more-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+              <Skeleton key={`search-content-loading-more-${i}`} className="w-full h-64 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
             ))}
           </div>
         )}

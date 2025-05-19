@@ -13,6 +13,7 @@ import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { Button } from '@/components/ui/button';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
+import { cn } from '@/lib/utils';
 
 
 export default function Home() {
@@ -38,7 +39,8 @@ export default function Home() {
       const newPhotos = response.photos;
       setWallpapers(prev => {
         const combined = append ? [...prev, ...newPhotos] : newPhotos;
-        const uniqueMap = new Map(combined.map(item => [`${item.id}-${deviceCategory}`, item]));
+        // Deduplication based on ID only, as orientation is now handled by card's aspect ratio
+        const uniqueMap = new Map(combined.map(item => [item.id, item]));
         return Array.from(uniqueMap.values());
       });
       setHasMore(!!response.next_page && newPhotos.length > 0 && newPhotos.length === 30);
@@ -50,17 +52,13 @@ export default function Home() {
 
       if (process.env.NODE_ENV === 'development') {
         console.warn(`[Home Page] Failed to fetch wallpapers for "${finalQuery}" or no results returned from Pexels. Attempting to display mock data.`);
-        toast({
-          title: "PEXELS API Issue (Home)",
-          description: "Could not fetch from Pexels. Displaying mock data. Check console for API key details logged by pexels.ts.",
-          variant: "default",
-          duration: 10000,
-        });
-
-        const mockWidth = deviceCategory === 'desktop' ? 1920 : 1080;
-        const mockHeight = deviceCategory === 'desktop' ? 1080 : 1920;
+        // Mock data generation can be removed or simplified if API key handling is robust server-side
+        // For now, ensure Pexels API key (server-side) is correctly set for real data.
         const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => {
           const photoId = parseInt(`${pageNum}${i}${Date.now() % 10000}`);
+          // Generic placeholder sizes, actual image aspect ratio will determine display
+          const mockWidth = 1000 + Math.floor(Math.random() * 500); 
+          const mockHeight = 1200 + Math.floor(Math.random() * 800); 
           const placeholderUrl = (w: number, h: number) => `https://placehold.co/${w}x${h}.png`;
           
           return {
@@ -74,7 +72,7 @@ export default function Home() {
             avg_color: '#7F7F7F',
             src: { 
               original: placeholderUrl(mockWidth, mockHeight),
-              large2x: placeholderUrl(mockWidth, mockHeight),
+              large2x: placeholderUrl(mockWidth, mockHeight), // Keep consistent for simplicity
               large: placeholderUrl(Math.round(mockWidth * 0.75), Math.round(mockHeight * 0.75)),
               medium: placeholderUrl(Math.round(mockWidth * 0.5), Math.round(mockHeight * 0.5)),
               small: placeholderUrl(Math.round(mockWidth * 0.25), Math.round(mockHeight * 0.25)),
@@ -93,7 +91,8 @@ export default function Home() {
       }
     }
     setLoading(false);
-  }, [toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   useEffect(() => {
@@ -143,10 +142,7 @@ export default function Home() {
     setTimeout(() => setSelectedWallpaper(null), 300); 
   };
 
-
-   const gridAspectRatio = currentDeviceOrientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
-
-  const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
+   const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
     name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
@@ -201,18 +197,21 @@ export default function Home() {
 
         {loading && wallpapers.length === 0 ? (
              <div 
-                className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}
+                className={cn(
+                  "p-1",
+                  "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
+                  "gap-2 sm:gap-3 md:gap-4"
+                )}
                 aria-busy="true"
                 aria-live="polite"
               >
-                {[...Array(15)].map((_, i) => (
-                 <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                {[...Array(12)].map((_, i) => (
+                 <Skeleton key={`initial-skeleton-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
                 ))}
             </div>
         ) : (
           <WallpaperGrid
             photos={wallpapers}
-            orientation={currentDeviceOrientation}
             onPhotoClick={openModal}
           />
         )}
@@ -227,12 +226,16 @@ export default function Home() {
 
           {loading && wallpapers.length > 0 && (
               <div 
-                className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}
+                className={cn(
+                  "p-1 mt-4",
+                  "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
+                  "gap-2 sm:gap-3 md:gap-4"
+                )}
                 aria-busy="true"
                 aria-live="polite"
               >
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={`loading-skeleton-${i}`} className="w-full h-64 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
                 ))}
             </div>
           )}

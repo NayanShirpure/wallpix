@@ -3,7 +3,7 @@ import type { PexelsPhoto } from '@/types/pexels';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2 } from 'lucide-react'; // Changed from Download, Bookmark to Share2
+import { Share2 } from 'lucide-react';
 
 interface WallpaperCardProps {
   photo: PexelsPhoto;
@@ -11,19 +11,30 @@ interface WallpaperCardProps {
 }
 
 export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
-  const previewSrc = photo.src.large || photo.src.medium || photo.src.original;
-  const imageWidth = photo.width;
-  const imageHeight = photo.height;
+  // Prefer 'large' for card preview as 'original' can be very large.
+  // Fallback to medium, then original if others are not available.
+  const imageSrc = photo.src.large || photo.src.medium || photo.src.original;
+  // Use the dimensions of the source image being displayed for next/image
+  let imageWidth = photo.width;
+  let imageHeight = photo.height;
 
-  const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : 'Wallpaper thumbnail';
+  if (photo.src.large) {
+    // Typically, Pexels API doesn't provide separate width/height for each src variant,
+    // so we use the main photo.width/height. If specific dimensions were available
+    // for photo.src.large, we'd use those. For simplicity, we'll scale based on original.
+  } else if (photo.src.medium) {
+    // Similar logic if we had specific medium dimensions
+  }
+
+
+  const imageAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const cardAriaLabel = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const overlayTitle = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
 
   const handleShareClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click when clicking button
-    // In a real app, this would trigger the Web Share API or a custom share modal
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : ''; // Or a direct link to the image if available
-    alert(`Share functionality coming soon! You could share: ${shareUrl} (Image ID: ${photo.id})`);
+    e.stopPropagation(); 
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/?photoId=${photo.id}` : ''; 
+    alert(`Share functionality coming soon! You could share: ${shareUrl}`);
   };
 
   return (
@@ -31,7 +42,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
       className={cn(
         "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
         "bg-card border-border shadow-sm hover:shadow-lg focus-within:shadow-lg",
-        "rounded-md md:rounded-lg break-inside-avoid-column mb-3 sm:mb-4"
+        "rounded-md md:rounded-lg break-inside-avoid-column mb-3 sm:mb-4" // Essential for masonry
       )}
       onClick={onClick}
       role="button"
@@ -41,12 +52,12 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
     >
       <CardContent className="p-0 relative w-full">
         <Image
-          src={previewSrc}
+          src={imageSrc}
           alt={imageAlt}
-          width={imageWidth}
-          height={imageHeight}
+          width={imageWidth} 
+          height={imageHeight} 
           className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:brightness-75 group-focus-within:brightness-75"
-          priority={photo.id < 3000000} // Example priority, adjust as needed
+          priority={photo.id < 3000000} 
           placeholder="blur"
           blurDataURL={photo.src.tiny}
           data-ai-hint={photo.alt ? photo.alt.split(' ').slice(0,2).join(' ') : "wallpaper image"}
@@ -58,7 +69,6 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
             "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out"
           )}
         >
-          {/* Top right actions */}
           <div className="flex justify-end">
             <button
               className="p-1.5 sm:p-2 bg-black/40 hover:bg-black/60 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -69,7 +79,6 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
             </button>
           </div>
 
-          {/* Bottom details */}
           <div className="text-white drop-shadow-md">
             <p className="text-sm sm:text-base font-semibold truncate leading-snug" title={overlayTitle}>
               {overlayTitle}
