@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react'; // Added useCallback
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import type { PexelsPhoto } from '@/types/pexels';
@@ -13,7 +13,6 @@ import { User } from 'lucide-react';
 interface PhotoPageClientWrapperProps {
   photo: PexelsPhoto;
   relatedQuery: string;
-  // initialSearchTerm prop is no longer strictly needed as GlobalHeader handles its display logic
 }
 
 export function PhotoPageClientWrapper({
@@ -22,15 +21,16 @@ export function PhotoPageClientWrapper({
 }: PhotoPageClientWrapperProps) {
   const router = useRouter();
 
-  const handleWallpaperCategorySelect = (categoryValue: string) => {
-    router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
-  };
-
-  const handleSearchSubmit = (searchTerm: string) => {
-    if (searchTerm.trim()) {
-      router.push(`/search?query=${encodeURIComponent(searchTerm.trim())}`);
+  const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
+    if (categoryValue.trim()) {
+      router.push(`/search?query=${encodeURIComponent(categoryValue.trim())}`);
     }
-  };
+  }, [router]);
+
+  const handleSearchSubmit = useCallback((searchTerm: string) => {
+    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
+    console.log("Search submitted on Photo page:", searchTerm);
+  }, []);
 
   const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
 
@@ -39,7 +39,6 @@ export function PhotoPageClientWrapper({
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        // initialSearchTerm is no longer passed
       />
       <main className="container mx-auto max-w-5xl p-4 md:p-6 py-8 md:py-10">
         <div className="bg-card p-4 sm:p-6 md:p-8 rounded-xl shadow-xl border border-border">

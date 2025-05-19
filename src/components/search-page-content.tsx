@@ -2,7 +2,7 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -42,12 +42,13 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
         setWallpapers((prev: PexelsPhoto[]): PexelsPhoto[] => {
           const combined = append ? [...prev, ...newPhotos] : newPhotos;
           const uniqueMap = new Map(combined.map((item: PexelsPhoto) => [item.id, item]));
-          return Array.from(uniqueMap.values()) as PexelsPhoto[];
+          return Array.from(uniqueMap.values());
         });
         setHasMore(!!data.next_page && newPhotos.length > 0 && newPhotos.length === 30);
       } else {
         setWallpapers(prev => append ? prev : []);
         setHasMore(false);
+        // This toast is now unconditional (removed NODE_ENV check)
         toast({
           title: "API Fetch Issue (Search)",
           description: `Failed to fetch wallpapers for "${finalQuery}". Check server logs for Pexels API key status or API errors.`,
@@ -67,8 +68,10 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
 
   useEffect(() => {
     const queryFromUrl = searchParamsHook.get('query');
-    const termToUse = queryFromUrl || initialQueryFromServer || 'Wallpaper';
+    // Use a more specific default if neither URL nor server prop provides a query
+    const termToUse = queryFromUrl?.trim() || initialQueryFromServer?.trim() || 'Wallpaper'; 
     
+    // Fetch if the search term changed, or if it's the initial load for the current term and no wallpapers are loaded.
     if (termToUse !== currentSearchTerm || (termToUse === currentSearchTerm && wallpapers.length === 0 && !loading)) {
       setCurrentSearchTerm(termToUse);
       setPage(1); 
@@ -76,7 +79,9 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       setHasMore(true); 
       fetchWallpapers(termToUse, 1, false);
     }
+  // Ensure dependencies are minimal and correct for re-fetching on query change.
   }, [searchParamsHook, initialQueryFromServer, fetchWallpapers, currentSearchTerm, wallpapers.length, loading]);
+
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore && currentSearchTerm) {
@@ -85,6 +90,18 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       fetchWallpapers(currentSearchTerm, nextPage, true);
     }
   }, [loading, hasMore, currentSearchTerm, page, fetchWallpapers]);
+
+  const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
+    if (categoryValue.trim()) {
+      router.push(`/search?query=${encodeURIComponent(categoryValue.trim())}`);
+    }
+  }, [router]);
+
+  const handleSearchSubmit = useCallback((newSearchTerm: string) => {
+    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
+    // This handler is for any additional logic SearchPageContent might want to perform on search.
+    console.log("Search submitted from SearchPageContent header:", newSearchTerm);
+  }, []);
 
   const loadingSkeletons = (
     <div className="my-masonry-grid mt-4 w-full">
@@ -100,7 +117,10 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
 
   return (
     <>
-      <GlobalHeader />
+      <GlobalHeader 
+        onWallpaperCategorySelect={handleWallpaperCategorySelect}
+        onSearchSubmit={handleSearchSubmit}
+      />
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">

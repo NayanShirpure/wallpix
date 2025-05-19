@@ -132,15 +132,16 @@ export default function DiscoverPage() {
   }, []);
 
 
-  const handleWallpaperCategorySelect = (categoryValue: string) => {
-    router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
-  };
-
-  const handleSearchSubmit = (searchTerm: string) => {
-    if (searchTerm.trim()) {
-      router.push(`/search?query=${encodeURIComponent(searchTerm.trim())}`);
+  const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
+    if (categoryValue.trim()) {
+      router.push(`/search?query=${encodeURIComponent(categoryValue.trim())}`);
     }
-  };
+  }, [router]);
+
+  const handleSearchSubmit = useCallback((searchTerm: string) => {
+    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
+    console.log("Search submitted on Discover page:", searchTerm);
+  }, []);
 
   const handleViewWallpaper = (photo: PexelsPhoto) => {
     router.push(`/photo/${photo.id}`);

@@ -2,8 +2,8 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation'; // Removed useSearchParams as it's not directly used here for query changes
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
@@ -16,14 +16,13 @@ const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
 export default function Home() {
   const router = useRouter();
-  const searchParams = useSearchParams(); // For reading URL params
   const { toast } = useToast();
 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM;
+  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM; // Homepage always fetches this term
 
   const fetchWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -33,6 +32,7 @@ export default function Home() {
       const newPhotos = response.photos;
       setWallpapers(prev => {
         const combined = append ? [...prev, ...newPhotos] : newPhotos;
+        // Prevent duplicates if API somehow returns same items on pagination
         const uniqueMap = new Map(combined.map(item => [item.id, item]));
         return Array.from(uniqueMap.values());
       });
@@ -42,17 +42,17 @@ export default function Home() {
         setWallpapers([]);
       }
       setHasMore(false);
-      if (response === null) {
+      if (response === null) { // Indicates a fetch failure from lib/pexels
         toast({
           title: "API Fetch Issue (Home)",
-          description: `Failed to fetch wallpapers. Check server logs for Pexels API key status or API errors.`,
+          description: `Failed to fetch wallpapers for "${currentFetchTerm}". Check server logs for Pexels API key status or API errors.`,
           variant: "default",
           duration: 7000
         });
       }
     }
     setLoading(false);
-  }, [toast, currentFetchTerm]);
+  }, [toast, currentFetchTerm]); // Removed initialQueryFromServer as it's fixed for home
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
@@ -67,14 +67,20 @@ export default function Home() {
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(1, false);
-  }, [fetchWallpapers]);
+  }, [fetchWallpapers]); // Effect now only depends on fetchWallpapers (which depends on currentFetchTerm)
 
-  const handleSearchSubmit = useCallback((newSearchTerm: string) => {
-    const trimmedNewSearchTerm = newSearchTerm.trim();
-    if (trimmedNewSearchTerm) {
-      router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`);
+  const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
+    if (categoryValue.trim()) {
+      router.push(`/search?query=${encodeURIComponent(categoryValue.trim())}`);
     }
   }, [router]);
+
+  const handleSearchSubmit = useCallback((newSearchTerm: string) => {
+    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
+    // This handler can be used for other side-effects if needed, e.g., analytics.
+    console.log("Search submitted on Home page:", newSearchTerm);
+  }, []);
+
 
   const loadingSkeletons = (
     <div className="my-masonry-grid mt-4 w-full">
@@ -90,7 +96,10 @@ export default function Home() {
 
   return (
     <>
-      <GlobalHeader />
+      <GlobalHeader
+        onWallpaperCategorySelect={handleWallpaperCategorySelect}
+        onSearchSubmit={handleSearchSubmit}
+      />
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">
