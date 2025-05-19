@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
+import type { PexelsPhoto } from '@/types/pexels';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { WallpaperSection } from '@/components/wallpaper-section';
 import { useToast } from '@/hooks/use-toast';
@@ -69,7 +69,7 @@ export default function DiscoverPage() {
     query: string,
     setter: React.Dispatch<React.SetStateAction<PexelsPhoto[]>>,
     loader: React.Dispatch<React.SetStateAction<boolean>>,
-    perPage: number = 6 
+    perPage: number = 6
   ) => {
     loader(true);
     const response = await pexelsSearchPhotosLib(query, 1, perPage);
@@ -103,9 +103,9 @@ export default function DiscoverPage() {
   }, [fetchSectionPhotos]);
 
   useEffect(() => {
-    const limitedCategories = initialDiscoverPageCategories.slice(0, 4); 
+    const limitedCategories = initialDiscoverPageCategories.slice(0, 4);
     limitedCategories.forEach(catDefinition => {
-      pexelsSearchPhotosLib(catDefinition.query, 1, 1) // Removed orientation filter
+      pexelsSearchPhotosLib(catDefinition.query, 1, 1)
         .then(response => {
           let imageUrl: string | null = null;
           if (response && response.photos && response.photos.length > 0) {
@@ -176,7 +176,6 @@ export default function DiscoverPage() {
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        // initialSearchTerm is no longer passed as GlobalHeader handles its display logic
       />
       <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12 space-y-10 sm:space-y-12" aria-busy={loadingWOTD || loadingTrending || loadingEditorsPicks || loadingSeasonal || loadingThemeCyberpunk || loadingThemeVintage}>
 
@@ -235,8 +234,11 @@ export default function DiscoverPage() {
               const imageToDisplay = category.fetchedImageUrl || category.imageUrl;
               const imageAltText = `Preview for ${category.title} category, showing ${category.dataAiHint}`;
               return (
-                <Link key={category.id} href={`/search?query=${encodeURIComponent(category.query)}`} passHref legacyBehavior>
-                  <a className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 mb-4 sm:mb-6 break-inside-avoid-column aspect-[3/4]">
+                <Link
+                  key={category.id}
+                  href={`/search?query=${encodeURIComponent(category.query)}`}
+                  className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 mb-4 sm:mb-6 break-inside-avoid-column aspect-[3/4]"
+                >
                     {category.imageLoading ? (
                       <Skeleton className="w-full h-full" />
                     ) : (
@@ -247,7 +249,7 @@ export default function DiscoverPage() {
                         sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                         className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                         data-ai-hint={category.dataAiHint}
-                        priority={index < 3} 
+                        priority={index < 3}
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 sm:p-4">
@@ -261,7 +263,6 @@ export default function DiscoverPage() {
                         Explore <ArrowRight className="ml-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </div>
-                  </a>
                 </Link>
               );
             })}

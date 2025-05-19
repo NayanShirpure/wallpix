@@ -5,14 +5,14 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, Award, MessageSquare, Home, ShoppingBag } from 'lucide-react';
+import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, Award, MessageSquare, Home, ShoppingBag, FileText, Shield, InfoIcon } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger, // Added SheetTrigger
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { wallpaperFilterCategoryGroups } from '@/config/categories';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { SearchBar } from '@/components/wallpaper/SearchBar'; 
+import { SearchBar } from '@/components/wallpaper/SearchBar';
 
 interface GlobalHeaderProps {
   onWallpaperCategorySelect?: (categoryValue: string) => void;
@@ -51,7 +51,7 @@ export function GlobalHeader({
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 print:hidden">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-2 px-3 sm:px-4">
-        
+
         <Link href="/" className="flex items-center space-x-2 shrink-0" aria-label="Wallify Home">
           <Palette className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           <span className="font-bold text-lg sm:text-xl text-primary hidden xxs:inline">Wallify</span>
@@ -59,8 +59,8 @@ export function GlobalHeader({
 
         <div className="flex-1 flex justify-center items-center px-2 sm:px-4">
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-            <SearchBar 
-              onSubmitSearch={onSearchSubmit} 
+            <SearchBar
+              onSubmitSearch={onSearchSubmit}
               initialValue={displaySearchTerm}
               navigateToSearchPage={true}
             />
@@ -119,7 +119,7 @@ export function GlobalHeader({
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/what-we-offer" className="flex items-center">
-                    <Info className="mr-2 h-4 w-4" />
+                    <InfoIcon className="mr-2 h-4 w-4" />
                     What We Offer
                   </Link>
                 </DropdownMenuItem>
@@ -129,7 +129,6 @@ export function GlobalHeader({
                     AI Generate
                   </Link>
                 </DropdownMenuItem>
-                {/* AI Background Remover link removed */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/about" className="flex items-center">
@@ -138,7 +137,7 @@ export function GlobalHeader({
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/blog" className="flex items-center">
-                    <Award className="mr-2 h-4 w-4" /> Blog
+                    <FileText className="mr-2 h-4 w-4" /> Blog
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -149,7 +148,7 @@ export function GlobalHeader({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/privacy-policy" className="flex items-center">
-                    Privacy Policy
+                     <Shield className="mr-2 h-4 w-4" /> Privacy Policy
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -162,7 +161,7 @@ export function GlobalHeader({
           </div>
 
           {/* Mobile Menu Trigger */}
-          <div className="sm:hidden"> 
+          <div className="sm:hidden">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
@@ -175,18 +174,53 @@ export function GlobalHeader({
                   <SheetTitle>Navigation</SheetTitle>
                 </SheetHeader>
                 <div className="py-2 px-2 h-[calc(100%-57px)] overflow-y-auto">
-                  <SheetClose asChild><Link href="/" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Home className="mr-2 h-4 w-4" /> Home</Button></a></Link></SheetClose>
-                  <SheetClose asChild><Link href="/discover" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></a></Link></SheetClose>
-                  <SheetClose asChild><Link href="/what-we-offer" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></a></Link></SheetClose>
-                  <SheetClose asChild><Link href="/generate" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></a></Link></SheetClose>
-                  {/* AI Background Remover link removed from mobile menu */}
+                  <SheetClose asChild>
+                    <Link href="/" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Home className="mr-2 h-4 w-4" /> Home</Button>
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/discover" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button>
+                    </Link>
+                  </SheetClose>
+                   <SheetClose asChild>
+                    <Link href="/what-we-offer" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><InfoIcon className="mr-2 h-4 w-4" /> What We Offer</Button>
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/generate" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button>
+                    </Link>
+                  </SheetClose>
                   <Separator className="my-1.5" />
-                  <SheetClose asChild><Link href="/about" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></a></Link></SheetClose>
-                  <SheetClose asChild><Link href="/blog" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Award className="mr-2 h-4 w-4" /> Blog</Button></a></Link></SheetClose>
-                  <SheetClose asChild><Link href="/contact" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><MessageSquare className="mr-2 h-4 w-4" /> Contact</Button></a></Link></SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/about" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button>
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/blog" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><FileText className="mr-2 h-4 w-4" /> Blog</Button>
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/contact" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><MessageSquare className="mr-2 h-4 w-4" /> Contact</Button>
+                    </Link>
+                  </SheetClose>
                   <Separator className="my-1.5" />
-                  <SheetClose asChild><Link href="/privacy-policy" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Privacy Policy</Button></a></Link></SheetClose>
-                  <SheetClose asChild><Link href="/terms-conditions" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Terms & Conditions</Button></a></Link></SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/privacy-policy" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2"><Shield className="mr-2 h-4 w-4" /> Privacy Policy</Button>
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/terms-conditions" className="block">
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Terms & Conditions</Button>
+                    </Link>
+                  </SheetClose>
                   <Separator className="my-1.5" />
                   <div className="py-1">
                     <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>
@@ -212,7 +246,7 @@ export function GlobalHeader({
               </SheetContent>
             </Sheet>
           </div>
-                    
+
           <ThemeToggle />
         </nav>
       </div>
