@@ -30,10 +30,13 @@ export default function Loading() {
         {/* Section Title Skeleton */}
         <Skeleton className="h-8 w-1/3 mt-4" />
         
-        {/* Grid of items Skeleton */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {[...Array(12)].map((_, i) => ( // Increased from 10 to 12 items
-            <Skeleton key={`loading-page-grid-skeleton-${i}`} className="aspect-[9/16] sm:aspect-video w-full rounded-lg" />
+        {/* Grid of items Skeleton - Updated for masonry layout */}
+        <div className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-2 sm:gap-3 md:gap-4">
+          {[...Array(12)].map((_, i) => (
+            <Skeleton 
+              key={`loading-page-grid-skeleton-${i}`} 
+              className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" 
+            />
           ))}
         </div>
       </main>
