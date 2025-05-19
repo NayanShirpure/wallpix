@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, Compass, ListFilter, Wand2, Info, Home, MessageSquare, Users, Award, MoreVertical, ShoppingBag } from 'lucide-react';
+import { Menu, Palette, Compass, ListFilter, Wand2, Info, Home, MessageSquare, Users, Award, MoreVertical } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
@@ -22,12 +22,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { wallpaperFilterCategoryGroups } from '@/config/categories'; // Removed deviceOrientationTabs and DeviceOrientationCategory
+import { wallpaperFilterCategoryGroups } from '@/config/categories';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchBar } from '@/components/wallpaper/SearchBar'; 
 
 interface GlobalHeaderProps {
-  // Removed currentDeviceOrientation and onDeviceOrientationChange
   onWallpaperCategorySelect: (categoryValue: string) => void;
   onSearchSubmit: (searchTerm: string) => void;
   initialSearchTerm?: string; 
@@ -61,8 +60,6 @@ export function GlobalHeader({
 
         <div className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
           <nav className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
-            {/* Device Orientation Tabs Removed */}
-            
             <Sheet> 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -90,12 +87,7 @@ export function GlobalHeader({
                       AI Generate
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/background-remover" className="flex items-center">
-                      <ShoppingBag className="mr-2 h-4 w-4" />
-                      AI Background Remover
-                    </Link>
-                  </DropdownMenuItem>
+                  {/* Removed AI Background Remover link */}
                   <DropdownMenuSeparator />
                   <SheetTrigger asChild>
                     <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
@@ -103,6 +95,33 @@ export function GlobalHeader({
                       <span>Filter Categories</span>
                     </DropdownMenuItem>
                   </SheetTrigger>
+                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/about" className="flex items-center">
+                      <Users className="mr-2 h-4 w-4" /> About
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/blog" className="flex items-center">
+                      <Award className="mr-2 h-4 w-4" /> Blog
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/contact" className="flex items-center">
+                      <MessageSquare className="mr-2 h-4 w-4" /> Contact
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/privacy-policy" className="flex items-center">
+                      Privacy Policy
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/terms-conditions" className="flex items-center">
+                      Terms & Conditions
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
@@ -131,45 +150,6 @@ export function GlobalHeader({
                 </div>
               </SheetContent>
             </Sheet>
-
-            {/* More Options Dropdown for Desktop */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <MoreVertical className="h-4 w-4" />
-                  <span className="sr-only">More options</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href="/about" className="flex items-center">
-                    <Users className="mr-2 h-4 w-4" /> About
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/blog" className="flex items-center">
-                    <Award className="mr-2 h-4 w-4" /> Blog
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/contact" className="flex items-center">
-                    <MessageSquare className="mr-2 h-4 w-4" /> Contact
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/privacy-policy" className="flex items-center">
-                    Privacy Policy
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/terms-conditions" className="flex items-center">
-                    Terms & Conditions
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
           </nav>
 
           <div className="sm:hidden"> {/* Mobile Menu Trigger */}
@@ -189,7 +169,7 @@ export function GlobalHeader({
                   <SheetClose asChild><Link href="/discover" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/what-we-offer" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/generate" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></a></Link></SheetClose>
-                  <SheetClose asChild><Link href="/background-remover" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><ShoppingBag className="mr-2 h-4 w-4" /> AI Background Remover</Button></a></Link></SheetClose>
+                  {/* Removed AI Background Remover link */}
                   <Separator className="my-1.5" />
                   <SheetClose asChild><Link href="/about" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/blog" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Award className="mr-2 h-4 w-4" /> Blog</Button></a></Link></SheetClose>
@@ -198,7 +178,6 @@ export function GlobalHeader({
                   <SheetClose asChild><Link href="/privacy-policy" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Privacy Policy</Button></a></Link></SheetClose>
                   <SheetClose asChild><Link href="/terms-conditions" passHref legacyBehavior><a className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Terms & Conditions</Button></a></Link></SheetClose>
                   <Separator className="my-1.5" />
-                  {/* Device Orientation toggle removed from mobile menu */}
                   <div className="py-1">
                     <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>
                     {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
