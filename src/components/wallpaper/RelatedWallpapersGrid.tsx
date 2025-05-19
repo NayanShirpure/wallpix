@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
+import type { PexelsPhoto } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
 import { WallpaperGrid } from './WallpaperGrid';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,9 @@ import { cn } from '@/lib/utils';
 interface RelatedWallpapersGridProps {
   initialQuery: string;
   currentPhotoId: number; // To exclude the current photo from related results
-  orientation: DeviceOrientationCategory; // New prop for device orientation
 }
 
-export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, orientation }: RelatedWallpapersGridProps) {
+export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedWallpapersGridProps) {
   const [relatedWallpapers, setRelatedWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -28,8 +27,8 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, orientatio
       return;
     }
     setLoading(true);
-    const pexelsOrientation = orientation === 'desktop' ? 'landscape' : 'portrait';
-    const response = await searchPhotos(initialQuery, pageNum, 15, pexelsOrientation);
+    // Fetch without orientation filter
+    const response = await searchPhotos(initialQuery, pageNum, 15);
 
     if (response && response.photos && response.photos.length > 0) {
       const newPhotos = response.photos.filter(photo => photo.id !== currentPhotoId);
@@ -46,7 +45,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, orientatio
       setHasMore(false);
     }
     setLoading(false);
-  }, [initialQuery, currentPhotoId, orientation]); // Added orientation to dependencies
+  }, [initialQuery, currentPhotoId]);
 
   useEffect(() => {
     setPage(1);
@@ -58,7 +57,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, orientatio
       setLoading(false);
       setHasMore(false);
     }
-  }, [initialQuery, orientation, fetchRelatedWallpapers]); // Added orientation to dependencies
+  }, [initialQuery, fetchRelatedWallpapers]);
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
@@ -90,7 +89,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, orientatio
           aria-live="polite"
         >
           {[...Array(12)].map((_, i) => (
-            <Skeleton key={`related-skeleton-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
+            <Skeleton key={`related-skeleton-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
           ))}
         </div>
       ) : relatedWallpapers.length > 0 ? (
@@ -118,7 +117,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, orientatio
           aria-live="polite"
         >
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={`loading-more-related-${i}`} className="w-full h-64 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
+            <Skeleton key={`loading-more-related-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
           ))}
         </div>
       )}

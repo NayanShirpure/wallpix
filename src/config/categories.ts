@@ -1,6 +1,4 @@
 
-// Removed import for DeviceOrientationCategory as it's no longer used
-
 export const popularSearchQueries: string[] = [
   'Wallpaper',
   'Nature',
@@ -44,13 +42,6 @@ export interface CategoryGroup {
   categories: WallpaperFilterCategory[];
 }
 
-// Removed deviceOrientationTabs as the feature is removed
-// export const deviceOrientationTabs: { label: string; value: DeviceOrientationCategory }[] = [
-//   { label: 'Phone', value: 'smartphone' },
-//   { label: 'Desktop', value: 'desktop' },
-// ];
-
-// These are for the Dropdown Menu to refine search queries
 export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
   {
     groupLabel: "By Type",
@@ -95,5 +86,3 @@ export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
     ],
   },
 ];
-
-// Removed re-export of DeviceOrientationCategory

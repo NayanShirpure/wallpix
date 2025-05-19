@@ -29,5 +29,3 @@ export interface PexelsResponse {
   total_results: number;
   next_page?: string;
 }
-
-// Removed DeviceOrientationCategory as it's no longer used

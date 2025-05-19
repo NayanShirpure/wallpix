@@ -1,25 +1,20 @@
 
 'use client';
 
-import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
+import type { PexelsPhoto } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-// PreviewDialog is removed
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
-import { GlobalHeader } from '@/components/layout/GlobalHeader'; 
+import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { Button } from '@/components/ui/button';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
-import { StructuredData } from '@/components/structured-data';
-// MinimalWithContext and other schema types are no longer needed here as preview is on a new page
 import { cn } from '@/lib/utils';
 
 interface SearchPageContentProps {
   initialQuery: string;
 }
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const router = useRouter();
@@ -27,10 +22,8 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const { toast } = useToast();
 
   const [currentSearchTerm, setCurrentSearchTerm] = useState<string>(initialQuery);
-  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
-  // Removed selectedWallpaper and isModalOpen state
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -40,17 +33,16 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     if (termToUse !== currentSearchTerm) {
         setCurrentSearchTerm(termToUse);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, initialQuery]);
+  }, [searchParams, initialQuery, currentSearchTerm]);
 
 
-  const fetchWallpapers = useCallback(async (query: string, deviceCategory: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
+  const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
-    const orientationFilter = deviceCategory === 'desktop' ? 'landscape' : 'portrait';
-    const finalQuery = query.trim() || 'Wallpaper';
+    const finalQuery = query.trim() || 'Wallpaper'; // Fallback search term
 
     try {
-      const data = await searchPhotosLib(finalQuery, pageNum, 30, orientationFilter);
+      // Fetch without orientation filter
+      const data = await searchPhotosLib(finalQuery, pageNum, 30);
       if (data && data.photos) {
         const newPhotos = data.photos;
         setWallpapers((prev: PexelsPhoto[]): PexelsPhoto[] => {
@@ -62,9 +54,12 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
       } else {
         setWallpapers(prev => append ? prev : []);
         setHasMore(false);
-        if (process.env.NODE_ENV === 'development') {
-             toast({ title: "API Issue (Search)", description: "Failed to fetch wallpapers or no results. Check API key and query.", variant: "default", duration: 7000 });
-        }
+        toast({
+          title: "API Fetch Issue (Search)",
+          description: `Failed to fetch wallpapers for "${finalQuery}" or no results. Check server logs for Pexels API key status or API errors.`,
+          variant: "default",
+          duration: 7000
+        });
       }
     } catch (error) {
       console.error("Error fetching wallpapers for search:", error);
@@ -74,21 +69,18 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
-    fetchWallpapers(currentSearchTerm, currentDeviceOrientation, 1, false);
-  }, [currentSearchTerm, currentDeviceOrientation, fetchWallpapers]);
-
-  const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
-    if (newCategory !== currentDeviceOrientation) {
-      setCurrentDeviceOrientation(newCategory);
+    // Fetch initial data when component mounts or when currentSearchTerm changes
+    if (currentSearchTerm) {
+      fetchWallpapers(currentSearchTerm, 1, false);
     }
-  };
+  }, [currentSearchTerm, fetchWallpapers]);
+
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
     router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
@@ -102,40 +94,34 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   };
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!loading && hasMore && currentSearchTerm) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchWallpapers(currentSearchTerm, currentDeviceOrientation, nextPage, true);
+      fetchWallpapers(currentSearchTerm, nextPage, true);
     }
   };
 
-  // openModal and closeModal are removed.
-  // StructuredData for selectedWallpaper is removed.
-
   return (
     <>
-      {/* Removed StructuredData for selectedWallpaper */}
       <GlobalHeader
-        currentDeviceOrientation={currentDeviceOrientation}
-        onDeviceOrientationChange={handleDeviceOrientationChange}
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        initialSearchTerm={currentSearchTerm} 
-        navigateToSearchPage={false} 
+        initialSearchTerm={currentSearchTerm}
+        navigateToSearchPage={false}
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">
-            {currentSearchTerm === "Wallpaper" ? "Search Wallpapers" : `Results for: "${currentSearchTerm}"`}
+            {currentSearchTerm === "Wallpaper" || !currentSearchTerm ? "Search Wallpapers" : `Results for: "${currentSearchTerm}"`}
           </h1>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-            Displaying {currentDeviceOrientation} optimized wallpapers.
+            Displaying wallpapers from Pexels.
           </p>
         </div>
 
         {loading && wallpapers.length === 0 ? (
-          <div 
+          <div
             className={cn(
               "p-1",
               "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
@@ -144,14 +130,13 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
             aria-busy="true"
             aria-live="polite"
           >
-            {[...Array(18)].map((_, i) => ( 
-              <Skeleton key={`search-content-skeleton-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
+            {[...Array(18)].map((_, i) => (
+              <Skeleton key={`search-content-skeleton-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
             ))}
           </div>
         ) : (
           <WallpaperGrid
             photos={wallpapers}
-            // onPhotoClick is removed
           />
         )}
 
@@ -164,7 +149,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         )}
 
         {loading && wallpapers.length > 0 && (
-          <div 
+          <div
             className={cn(
               "p-1 mt-4",
               "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
@@ -173,13 +158,12 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
             aria-busy="true"
             aria-live="polite"
           >
-            {[...Array(6)].map((_, i) => ( 
-              <Skeleton key={`search-content-loading-more-${i}`} className="w-full h-64 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={`search-content-loading-more-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
             ))}
           </div>
         )}
       </main>
-      {/* Removed PreviewDialog component usage */}
     </>
   );
 }

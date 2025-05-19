@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
+import type { PexelsPhoto } from '@/types/pexels';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { PhotoActions } from '@/components/photo-actions';
 import { RelatedWallpapersGrid } from '@/components/wallpaper/RelatedWallpapersGrid';
@@ -22,11 +22,7 @@ export function PhotoPageClientWrapper({
   initialSearchTerm
 }: PhotoPageClientWrapperProps) {
   const router = useRouter();
-  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('desktop');
-
-  const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
-    setCurrentDeviceOrientation(newCategory);
-  };
+  // Device orientation state is removed
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
     router.push(`/search?query=${encodeURIComponent(categoryValue)}`);
@@ -43,8 +39,6 @@ export function PhotoPageClientWrapper({
   return (
     <>
       <GlobalHeader
-        currentDeviceOrientation={currentDeviceOrientation}
-        onDeviceOrientationChange={handleDeviceOrientationChange}
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={initialSearchTerm}
@@ -105,8 +99,8 @@ export function PhotoPageClientWrapper({
         </div>
         <RelatedWallpapersGrid 
             initialQuery={relatedQuery} 
-            currentPhotoId={photo.id} 
-            orientation={currentDeviceOrientation} 
+            currentPhotoId={photo.id}
+            // orientation prop removed
         />
       </main>
     </>
