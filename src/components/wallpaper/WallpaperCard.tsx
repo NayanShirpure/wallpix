@@ -5,22 +5,19 @@ import type { PexelsPhoto } from '@/types/pexels';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2 } from 'lucide-react'; // Changed from Bookmark
+import { Share2, Download } from 'lucide-react'; // Added Download icon
 import { useToast } from '@/hooks/use-toast';
 
 interface WallpaperCardProps {
   photo: PexelsPhoto;
   onClick: () => void;
-  // Orientation prop removed for masonry layout
 }
 
 export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
   const { toast } = useToast();
-  // Prioritize larger sources for masonry cards to allow natural aspect ratio scaling
-  // Use 'large' as a good balance for preview quality and size in a grid.
   const imageSrc = photo.src.large || photo.src.medium || photo.src.original;
-  const imageWidth = photo.width;  // Use actual width for aspect ratio
-  const imageHeight = photo.height; // Use actual height for aspect ratio
+  const imageWidth = photo.width;
+  const imageHeight = photo.height;
 
   const imageAltText = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const cardAriaLabel = imageAltText;
@@ -51,7 +48,10 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
 
     const shareTitle = imageAltText;
     const shareText = `Check out this amazing wallpaper on Wallify: "${imageAltText}" by ${photo.photographer}.`;
-    const shareUrl = photo.url || window.location.href; // Fallback to current page if photo.url isn't available
+    
+    // Construct a Wallify search URL using the image's alt text
+    const query = encodeURIComponent(imageAltText);
+    const shareUrl = `${window.location.origin}/search?query=${query}`;
 
     const shareData = {
       title: shareTitle,
@@ -68,8 +68,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
         });
       } catch (error) {
         const err = error as Error;
-        if (err.name !== 'AbortError') { // User didn't cancel
-          // Check if it's a permission denied error specifically
+        if (err.name !== 'AbortError') { 
           if (err.message && err.message.toLowerCase().includes('permission denied')) {
             toast({
               title: "Share Permission Denied",
@@ -78,20 +77,18 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
               duration: 7000,
             });
           } else {
-            // Log other unexpected share errors
-            console.error("Error sharing:", err);
+            console.error("Error sharing:", err); // Log other unexpected share errors
             toast({
               title: "Sharing via App Failed",
               description: "An unexpected error occurred. Trying to copy link to clipboard instead...",
               variant: "default",
             });
           }
-          await copyToClipboard(shareData.url, shareTitle); // Attempt fallback
+          await copyToClipboard(shareData.url, shareTitle);
         }
         // If it is an AbortError, do nothing as the user cancelled.
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
       toast({
         title: "Web Share Not Supported",
         description: "Trying to copy link to clipboard instead...",
@@ -108,7 +105,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
       className={cn(
         "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
         "bg-card border-border shadow-sm hover:shadow-lg focus-within:shadow-lg",
-        "rounded-md md:rounded-lg break-inside-avoid-column mb-3 sm:mb-4" // Ensure cards don't break across columns & have margin
+        "rounded-md md:rounded-lg break-inside-avoid-column mb-3 sm:mb-4"
       )}
       onClick={onClick}
       role="button"
@@ -116,14 +113,14 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
       aria-label={`View wallpaper: ${cardAriaLabel}`}
     >
-      <CardContent className="p-0 relative w-full">
+      <CardContent className={cn('p-0 relative w-full')}>
         <Image
           src={imageSrc}
           alt={imageAltText}
-          width={imageWidth} // Provide actual width
-          height={imageHeight} // Provide actual height
+          width={imageWidth}
+          height={imageHeight}
           className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:brightness-75 group-focus-within:brightness-75"
-          priority={photo.id < 3000000} // Example priority logic, adjust as needed
+          priority={photo.id < 3000000} 
           placeholder="blur"
           blurDataURL={photo.src.tiny}
           data-ai-hint={dataAiHintForImage}
@@ -131,11 +128,10 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
         <div
           className={cn(
             "absolute inset-0 flex flex-col justify-between p-2 sm:p-3",
-            "bg-gradient-to-t from-black/70 via-black/30 to-transparent", // Overlay gradient
+            "bg-gradient-to-t from-black/70 via-black/30 to-transparent",
             "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out"
           )}
         >
-          {/* Top-right actions: Share button */}
           <div className="flex justify-end items-start gap-1.5">
             <button
               className="p-1.5 sm:p-2 bg-black/50 hover:bg-black/70 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -146,7 +142,6 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
             </button>
           </div>
 
-          {/* Bottom information: Title and Photographer */}
           <div className="text-white drop-shadow-md">
             <p className="text-xs xxs:text-sm sm:text-base font-semibold truncate leading-snug" title={overlayTitle}>
               {overlayTitle}
@@ -156,7 +151,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-200 text-[10px] xxs:text-xs hover:text-accent focus:text-accent focus:outline-none focus:underline truncate block mt-0.5 leading-snug"
-              onClick={(e) => e.stopPropagation()} // Prevent card click when clicking photographer link
+              onClick={(e) => e.stopPropagation()}
               aria-label={`View photographer ${photo.photographer} on Pexels (opens in new tab)`}
             >
               by {photo.photographer}
