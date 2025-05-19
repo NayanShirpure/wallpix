@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 
 interface WallpaperCardProps {
   photo: PexelsPhoto;
-  isPriority?: boolean; // New prop
+  isPriority?: boolean;
 }
 
 export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps) {
@@ -85,7 +85,7 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
             });
             await copyToClipboard(shareData.url, shareTitle);
           } else {
-            console.error("Web Share API error:", error); 
+            console.error("Web Share API error (card):", error); 
             toast({ title: "Sharing via App Failed", description: "Trying to copy link to clipboard instead...", variant: "default" });
             await copyToClipboard(shareData.url, shareTitle);
           }
@@ -116,9 +116,8 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
             src={imageSrc}
             alt={imageAltText}
             width={photo.width} 
-            height={photo.height}
-            sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+            height={photo.height} 
+            className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:scale-105 rounded-t-lg"
             priority={isPriority} 
             placeholder="blur"
             blurDataURL={photo.src.tiny}
@@ -129,7 +128,7 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
           className={cn(
             "absolute bottom-0 left-0 right-0 flex items-end justify-between p-2 sm:p-3",
             "bg-gradient-to-t from-black/70 via-black/50 to-transparent",
-            "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out"
+            "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out rounded-b-lg"
           )}
         >
           <div className="text-white drop-shadow-md flex-grow min-w-0">

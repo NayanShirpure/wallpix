@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,7 +30,7 @@
     --destructive: 354 70% 54%; /* Standard Red #DC3545 */
     --destructive-foreground: 0 0% 100%; /* White */
     
-    --border: 210 14% 80%; /* Gray, slightly darker for better Input border visibility */
+    --border: 210 14% 80%; /* Gray, slightly darker for Input border visibility */
     --input: 0 0% 100%; /* White #FFFFFF for input background */
     --ring: 190 88% 50%; /* Vibrant Cyan #0DCAF0 (Matches accent) */
     
@@ -238,3 +239,23 @@
     @apply text-foreground;
   }
 }
+
+/* Masonry grid styles (Removed react-masonry-css specific styles) */
+/* 
+.my-masonry-grid {
+  display: -webkit-box; 
+  display: -ms-flexbox;
+  display: flex;
+  margin-left: -12px; 
+  width: auto;
+}
+.my-masonry-grid_column {
+  padding-left: 12px; 
+  background-clip: padding-box;
+}
+
+.my-masonry-grid_column > div { 
+  margin-bottom: 12px; 
+}
+*/
+

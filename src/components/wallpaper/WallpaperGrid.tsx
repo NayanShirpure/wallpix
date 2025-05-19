@@ -3,16 +3,15 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import { WallpaperCard } from './WallpaperCard';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+// Removed import for Masonry from 'react-masonry-css';
 import { cn } from '@/lib/utils';
 
 interface WallpaperGridProps {
   photos: PexelsPhoto[];
 }
 
+// Reverted to Tailwind CSS multi-column approach
 export function WallpaperGrid({ photos }: WallpaperGridProps) {
-
   if (!photos || photos.length === 0) {
     return (
       <div className="text-center py-10">
@@ -21,23 +20,20 @@ export function WallpaperGrid({ photos }: WallpaperGridProps) {
     );
   }
 
-  const gridClasses = cn(
-    "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6", 
-    "gap-2 sm:gap-3 md:gap-4" 
-  );
-
   return (
-    <>
-      <div className={gridClasses}>
-        {photos.map((photo, index) => (
-          <div key={`${photo.id}-masonry`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
-            <WallpaperCard
-              photo={photo}
-              isPriority={index < 4} // Prioritize the first 4 images in the grid
-            />
-          </div>
-        ))}
-      </div>
-    </>
+    <div
+      className={cn(
+        'columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 sm:gap-4 [column-fill:auto]'
+      )}
+    >
+      {photos.map((photo, index) => (
+        <div key={`${photo.id}-grid-item-${index}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
+          <WallpaperCard
+            photo={photo}
+            isPriority={index < 8}
+          />
+        </div>
+      ))}
+    </div>
   );
 }

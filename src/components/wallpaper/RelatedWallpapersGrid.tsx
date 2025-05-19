@@ -7,6 +7,7 @@ import { WallpaperGrid } from './WallpaperGrid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { searchPhotos } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
+// Removed import for InfiniteScroll
 
 interface RelatedWallpapersGridProps {
   initialQuery: string;
@@ -19,6 +20,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  // Intersection Observer for infinite scrolling
   const observer = useRef<IntersectionObserver | null>(null);
   const lastWallpaperElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -31,8 +33,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       });
       if (node) observer.current.observe(node);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loading, hasMore] 
+    [loading, hasMore]
   );
 
   const fetchRelatedWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
@@ -59,7 +60,6 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       setHasMore(false);
     }
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery, currentPhotoId]);
 
   useEffect(() => {
@@ -82,9 +82,15 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
     }
   };
 
-  if (!initialQuery && !loading) {
-    return <p className="text-center text-muted-foreground py-4">Cannot load related wallpapers without a query.</p>;
-  }
+  const loadingSkeleton = (
+    <div className="text-center py-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+      {[...Array(6)].map((_, i) => (
+        <div key={`related-loading-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
+          <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+        </div>
+      ))}
+    </div>
+  );
   
   if (!initialQuery && !loading && relatedWallpapers.length === 0) {
     return null;
@@ -93,12 +99,9 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
   return (
     <div className="mt-10 pt-8 border-t border-border">
       <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-6 text-center">Related Wallpapers</h2>
-      {loading && relatedWallpapers.length === 0 ? (
+      {loading && relatedWallpapers.length === 0 && (
         <div
-          className={cn(
-            "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-            "gap-2 sm:gap-3 md:gap-4"
-          )}
+          className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 sm:gap-4 [column-fill:auto]"
           aria-busy="true"
           aria-live="polite"
         >
@@ -108,34 +111,22 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
             </div>
           ))}
         </div>
-      ) : relatedWallpapers.length > 0 ? (
-        <WallpaperGrid photos={relatedWallpapers} />
-      ) : !loading && initialQuery ? (
+      )}
+      
+      <WallpaperGrid photos={relatedWallpapers} />
+
+       {/* Sentinel for Intersection Observer */}
+       {hasMore && !loading && (
+          <div ref={lastWallpaperElementRef} style={{ height: '1px', marginTop: '1rem' }} />
+        )}
+
+      {loading && relatedWallpapers.length > 0 && loadingSkeleton}
+
+      {!loading && !hasMore && relatedWallpapers.length > 0 ? (
+         <p className="text-center text-muted-foreground py-4">No more related wallpapers found for "{initialQuery}".</p>
+      ) : !loading && !hasMore && relatedWallpapers.length === 0 && initialQuery ? (
          <p className="text-center text-muted-foreground py-4">No related wallpapers found for "{initialQuery}".</p>
-      ) : null}
-
-      {/* Sentinel for infinite scroll */}
-      {hasMore && !loading && relatedWallpapers.length > 0 && (
-          <div ref={lastWallpaperElementRef} style={{ height: '1px' }} />
-      )}
-
-      {loading && relatedWallpapers.length > 0 && (
-        <div
-          className={cn(
-            "mt-4",
-            "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-            "gap-2 sm:gap-3 md:gap-4"
-          )}
-          aria-busy="true"
-          aria-live="polite"
-        >
-          {[...Array(6)].map((_, i) => (
-            <div key={`loading-more-related-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
-                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-            </div>
-          ))}
-        </div>
-      )}
+      ): null}
     </div>
   );
 }

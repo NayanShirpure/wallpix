@@ -32,13 +32,15 @@ export default function Loading() {
         {/* Section Title Skeleton */}
         <Skeleton className="h-8 w-1/3 mt-4" />
         
-        {/* Grid of items Skeleton - Updated for masonry layout */}
-        <div className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-2 sm:gap-3 md:gap-4">
+        {/* Grid of items Skeleton - Updated for masonry-like layout */}
+        <div className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 sm:gap-4 [column-fill:auto]" aria-busy="true" aria-live="polite">
           {[...Array(12)].map((_, i) => (
-            <Skeleton 
-              key={`loading-page-grid-skeleton-${i}`} 
-              className="w-full h-72 mb-2 sm:mb-3 md:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" 
-            />
+            <div key={`loading-page-grid-skeleton-column-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
+                <Skeleton 
+                    key={`loading-page-grid-skeleton-item-${i}`} 
+                    className={`w-full rounded-lg bg-muted/70 ${i % 3 === 0 ? 'h-60' : i % 3 === 1 ? 'h-80' : 'h-72'}`} 
+                />
+            </div>
           ))}
         </div>
       </main>

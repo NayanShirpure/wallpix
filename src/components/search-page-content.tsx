@@ -10,18 +10,19 @@ import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
+// Removed import for InfiniteScroll
 
 interface SearchPageContentProps {
-  initialQueryFromServer?: string; // Renamed to clarify its origin
+  initialQueryFromServer?: string;
 }
 
 export function SearchPageContent({ initialQueryFromServer }: SearchPageContentProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParamsHook = useSearchParams();
   const { toast } = useToast();
 
   const [currentSearchTerm, setCurrentSearchTerm] = useState<string>(() => {
-    const queryFromUrl = searchParams.get('query');
+    const queryFromUrl = searchParamsHook.get('query');
     return queryFromUrl || initialQueryFromServer || 'Wallpaper';
   });
   
@@ -30,6 +31,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  // Intersection Observer for infinite scrolling
   const observer = useRef<IntersectionObserver | null>(null);
   const lastWallpaperElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -42,21 +44,8 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore] 
+    [loading, hasMore]
   );
-
-  // Effect to update currentSearchTerm when URL query param changes
-  useEffect(() => {
-    const queryFromUrl = searchParams.get('query');
-    const termToUse = queryFromUrl || 'Wallpaper';
-    if (termToUse !== currentSearchTerm) {
-      setCurrentSearchTerm(termToUse);
-      setPage(1); // Reset page when search term changes
-      setWallpapers([]); // Clear previous wallpapers
-      setHasMore(true); // Assume there's more data for the new term
-    }
-  }, [searchParams, currentSearchTerm]);
-
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -77,7 +66,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
         setHasMore(false);
         toast({
           title: "API Fetch Issue (Search)",
-          description: `Failed to fetch wallpapers for "${finalQuery}" or no results. Check server logs for Pexels API key status or API errors.`,
+          description: `Failed to fetch wallpapers for "${finalQuery}". Check server logs for Pexels API key status or API errors.`,
           variant: "default",
           duration: 7000
         });
@@ -92,12 +81,18 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     }
   }, [toast]);
 
-  // Effect to fetch wallpapers when currentSearchTerm changes (and it's the first page for that term)
   useEffect(() => {
-    if (currentSearchTerm && page === 1) { // Fetch only if page is 1 (new term or reset)
-      fetchWallpapers(currentSearchTerm, 1, false);
+    const queryFromUrl = searchParamsHook.get('query');
+    const termToUse = queryFromUrl || initialQueryFromServer || 'Wallpaper';
+    if (termToUse !== currentSearchTerm || (termToUse === currentSearchTerm && wallpapers.length === 0 && !loading)) {
+      setCurrentSearchTerm(termToUse);
+      setPage(1); 
+      setWallpapers([]); 
+      setHasMore(true); 
+      fetchWallpapers(termToUse, 1, false);
     }
-  }, [currentSearchTerm, page, fetchWallpapers]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsHook, initialQueryFromServer]); // currentSearchTerm and fetchWallpapers removed to prevent re-fetch loops
 
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -107,11 +102,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
   const handleSearchSubmit = (newSearchTerm: string) => {
     const trimmedNewSearchTerm = newSearchTerm.trim();
     if (trimmedNewSearchTerm) {
-      // setCurrentSearchTerm(trimmedNewSearchTerm); // This will trigger the useEffect to fetch
-      // setPage(1);
-      // setWallpapers([]);
-      // setHasMore(true);
-      router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`); // Let URL drive state
+      router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`); 
     }
   };
 
@@ -123,12 +114,21 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     }
   };
 
+  const loadingSkeleton = (
+    <div className="text-center py-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+      {[...Array(6)].map((_, i) => (
+        <div key={`search-loading-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
+          <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <>
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        // initialSearchTerm is no longer passed as GlobalHeader handles its display logic
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
@@ -141,48 +141,31 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
           </p>
         </div>
 
-        {loading && wallpapers.length === 0 ? (
+        {loading && wallpapers.length === 0 && (
           <div
-            className={cn(
-              "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-              "gap-2 sm:gap-3 md:gap-4"
-            )}
+            className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 sm:gap-4 [column-fill:auto]"
             aria-busy="true"
             aria-live="polite"
           >
             {[...Array(18)].map((_, i) => (
-               <div key={`search-content-skeleton-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+               <div key={`search-content-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
                 <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
               </div>
             ))}
           </div>
-        ) : (
-          <WallpaperGrid
-            photos={wallpapers}
-          />
+        )}
+        
+        <WallpaperGrid photos={wallpapers} />
+
+        {/* Sentinel for Intersection Observer */}
+        {hasMore && !loading && (
+          <div ref={lastWallpaperElementRef} style={{ height: '1px', marginTop: '1rem' }} />
         )}
 
-        {/* Sentinel for infinite scroll */}
-        {hasMore && !loading && wallpapers.length > 0 && (
-            <div ref={lastWallpaperElementRef} style={{ height: '1px' }} />
-        )}
-
-        {loading && wallpapers.length > 0 && (
-          <div
-            className={cn(
-              "mt-4",
-              "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-              "gap-2 sm:gap-3 md:gap-4"
-            )}
-            aria-busy="true"
-            aria-live="polite"
-          >
-            {[...Array(6)].map((_, i) => (
-              <div key={`search-content-loading-more-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
-                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-              </div>
-            ))}
-          </div>
+        {loading && wallpapers.length > 0 && loadingSkeleton}
+        
+        {!loading && !hasMore && wallpapers.length > 0 && (
+           <p className="text-center text-muted-foreground py-6">You've reached the end!</p>
         )}
       </main>
     </>

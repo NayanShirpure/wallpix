@@ -3,27 +3,29 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
+// Removed import for InfiniteScroll
 
 const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
 export default function Home() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  // currentSearchTerm is effectively always DEFAULT_HOME_SEARCH_TERM for this page now
   const currentSearchTerm = DEFAULT_HOME_SEARCH_TERM;
 
+  // Intersection Observer for infinite scrolling
   const observer = useRef<IntersectionObserver | null>(null);
   const lastWallpaperElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -36,7 +38,7 @@ export default function Home() {
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore] 
+    [loading, hasMore]
   );
 
   const fetchWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
@@ -59,7 +61,7 @@ export default function Home() {
       setHasMore(false);
       toast({
         title: "API Fetch Issue (Home)",
-        description: `Failed to fetch wallpapers for "${currentSearchTerm}" or no results. Check server logs for Pexels API key status or API errors.`,
+        description: `Failed to fetch wallpapers for "${currentSearchTerm}". Check server logs for Pexels API key status or API errors.`,
         variant: "default",
         duration: 7000
       });
@@ -69,12 +71,11 @@ export default function Home() {
 
 
   useEffect(() => {
-    // Initial fetch for the homepage
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(1, false);
-  }, [fetchWallpapers]); // Only depends on fetchWallpapers, which depends on currentSearchTerm (constant)
+  }, [fetchWallpapers]);
 
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -96,12 +97,21 @@ export default function Home() {
     }
   };
 
+  const loadingSkeleton = (
+    <div className="text-center py-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+      {[...Array(6)].map((_, i) => (
+        <div key={`loading-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
+          <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <>
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
-        // initialSearchTerm is no longer explicitly passed as GlobalHeader handles its display logic
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
@@ -116,49 +126,32 @@ export default function Home() {
             <h2 className="sr-only">Extensive Collection of High-Quality Wallpapers</h2>
         </div>
 
-        {loading && wallpapers.length === 0 ? (
+        {loading && wallpapers.length === 0 && (
              <div
-                className={cn(
-                  "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-                  "gap-2 sm:gap-3 md:gap-4"
-                )}
+                className="columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 sm:gap-4 [column-fill:auto]"
                 aria-busy="true"
                 aria-live="polite"
               >
                 {[...Array(12)].map((_, i) => (
-                  <div key={`initial-skeleton-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                  <div key={`initial-skeleton-wrapper-${i}`} className="mb-3 sm:mb-4 break-inside-avoid-column">
                     <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
                   </div>
                 ))}
             </div>
-        ) : (
-          <WallpaperGrid
-            photos={wallpapers}
-          />
         )}
 
-        {/* Sentinel for infinite scroll */}
-        {hasMore && !loading && wallpapers.length > 0 && (
-            <div ref={lastWallpaperElementRef} style={{ height: '1px' }} />
+        <WallpaperGrid photos={wallpapers} />
+        
+        {/* Sentinel for Intersection Observer */}
+        {hasMore && !loading && (
+          <div ref={lastWallpaperElementRef} style={{ height: '1px', marginTop: '1rem' }} />
         )}
 
-          {loading && wallpapers.length > 0 && (
-              <div
-                className={cn(
-                  "mt-4",
-                  "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
-                  "gap-2 sm:gap-3 md:gap-4"
-                )}
-                aria-busy="true"
-                aria-live="polite"
-              >
-                {[...Array(6)].map((_, i) => (
-                  <div key={`loading-skeleton-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
-                    <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-                  </div>
-                ))}
-            </div>
-          )}
+        {loading && wallpapers.length > 0 && loadingSkeleton}
+
+        {!loading && !hasMore && wallpapers.length > 0 && (
+          <p className="text-center text-muted-foreground py-6">You've reached the end!</p>
+        )}
       </main>
     </>
   );
