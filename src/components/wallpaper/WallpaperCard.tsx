@@ -86,8 +86,8 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
         await navigator.share(shareData);
         toast({ title: "Shared successfully!", description: "The wallpaper link has been shared." });
       } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          const errorMessage = (error.message || '').toLowerCase();
+        const errorMessage = (error.message || '').toLowerCase();
+        if (error.name !== 'AbortError') { 
           if (errorMessage.includes('permission denied')) {
             toast({
               title: "Share Permission Denied",
@@ -136,6 +136,7 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
             placeholder="blur"
             blurDataURL={photo.src.tiny || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8wNPvd7POQAAAABJRU5ErkJggg=='} // Fallback blurDataURL
             data-ai-hint={dataAiHintForImage}
+            unoptimized={false} // Ensure Next.js optimizes Pexels images
           />
         </div>
         <div

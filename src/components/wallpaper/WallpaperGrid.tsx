@@ -3,11 +3,20 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import { WallpaperCard } from './WallpaperCard';
-import { cn } from '@/lib/utils';
+import Masonry from 'react-masonry-css';
 
 interface WallpaperGridProps {
   photos: PexelsPhoto[];
 }
+
+const breakpointColumnsObj = {
+  default: 5, // Default to 5 columns
+  1280: 4,    // xl: 4 columns
+  1024: 3,    // lg: 3 columns
+  768: 3,     // md: 3 columns
+  640: 2,     // sm: 2 columns
+  480: 2,     // xs: 2 columns
+};
 
 export function WallpaperGrid({ photos }: WallpaperGridProps) {
   if (!photos || photos.length === 0) {
@@ -19,18 +28,21 @@ export function WallpaperGrid({ photos }: WallpaperGridProps) {
   }
 
   return (
-    <div className={cn(
-      "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
-      "gap-3 md:gap-4" // Adjusted gaps to match simplification
-    )}>
+    <Masonry
+      breakpointCols={breakpointColumnsObj}
+      className="my-masonry-grid" // Defined in globals.css
+      columnClassName="my-masonry-grid_column" // Defined in globals.css
+    >
       {photos.map((photo, index) => (
-        <div key={`${photo.id}-grid-item-${index}`} className="mb-3 md:mb-4 break-inside-avoid-column">
+        // The div wrapper is for react-masonry-css to apply its column styles
+        // Spacing (margin-bottom) is handled by .my-masonry-grid_column > div in globals.css
+        <div key={`${photo.id}-grid-item-${index}`}>
           <WallpaperCard
             photo={photo}
-            isPriority={index < 8} 
+            isPriority={index < 8} // Prioritize first few images
           />
         </div>
       ))}
-    </div>
+    </Masonry>
   );
 }

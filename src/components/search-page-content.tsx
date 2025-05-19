@@ -2,7 +2,7 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,7 @@ import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 interface SearchPageContentProps {
   initialQueryFromServer?: string;
@@ -29,21 +30,6 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
-  const observer = useRef<IntersectionObserver>();
-  const lastWallpaperElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (loading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          handleLoadMore();
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore] // handleLoadMore will be memoized by useCallback
-  );
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -100,16 +86,13 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     }
   }, [loading, hasMore, currentSearchTerm, page, fetchWallpapers]);
 
-
   const loadingSkeletons = (
-    <div className={cn(
-      "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
-      "gap-3 md:gap-4", // Adjusted gaps
-      "mt-4 w-full" 
-    )}>
+    <div className="my-masonry-grid mt-4 w-full">
       {[...Array(6)].map((_, i) => (
-        <div key={`search-loading-skeleton-column-wrapper-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
-          <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+        <div key={`search-loading-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
+          <div style={{ marginBottom: '1rem' }}>
+            <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+          </div>
         </div>
       ))}
     </div>
@@ -117,11 +100,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
 
   return (
     <>
-      <GlobalHeader
-        // onWallpaperCategorySelect is optional and defaults to noOp if not provided
-        // onSearchSubmit is optional and defaults to noOp if not provided
-      />
-
+      <GlobalHeader />
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">
@@ -134,29 +113,29 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
 
         {(loading && wallpapers.length === 0) && (
           <div
-             className={cn(
-                "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
-                "gap-3 md:gap-4", // Adjusted gaps
-                "[column-fill:auto]" 
-              )}
+            className="my-masonry-grid"
             aria-busy="true"
             aria-live="polite"
           >
             {[...Array(18)].map((_, i) => (
-               <div key={`search-content-skeleton-column-wrapper-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
-                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+              <div key={`search-content-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
+                <div style={{ marginBottom: '1rem' }}>
+                  <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+                </div>
               </div>
             ))}
           </div>
         )}
         
-        {wallpapers.length > 0 && <WallpaperGrid photos={wallpapers} />}
-
-        {loading && wallpapers.length > 0 && loadingSkeletons}
-
-        {!loading && hasMore && wallpapers.length > 0 && (
-           <div ref={lastWallpaperElementRef} className="h-10 w-full"></div>
-        )}
+        <InfiniteScroll
+          dataLength={wallpapers.length}
+          next={handleLoadMore}
+          hasMore={hasMore}
+          loader={loadingSkeletons}
+          className="w-full"
+        >
+          {wallpapers.length > 0 && <WallpaperGrid photos={wallpapers} />}
+        </InfiniteScroll>
         
         {!loading && !hasMore && wallpapers.length > 0 && (
            <p className="text-center text-muted-foreground py-6">You've reached the end!</p>

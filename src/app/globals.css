@@ -239,3 +239,17 @@
     @apply text-foreground;
   }
 }
+
+/* Styles for react-masonry-css */
+.my-masonry-grid {
+  display: flex;
+  margin-left: -1rem; /* Gutter size offset (e.g., -16px if gap-4) */
+  width: auto;
+}
+.my-masonry-grid_column {
+  padding-left: 1rem; /* Gutter size (e.g., 16px if gap-4) */
+  background-clip: padding-box;
+}
+.my-masonry-grid_column > div { /* Direct child (the item wrapper) */
+  margin-bottom: 1rem; /* Space between items in the same column (e.g., 16px if gap-4) */
+}

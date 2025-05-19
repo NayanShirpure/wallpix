@@ -24,26 +24,19 @@ export default function Loading() {
       </header>
 
       <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6 space-y-6 sm:space-y-8">
-        {/* Page Title Skeleton */}
         <Skeleton className="h-10 w-1/2 mx-auto" />
-        
-        {/* Featured Item Skeleton (e.g., Wallpaper of the Day) */}
         <Skeleton className="w-full aspect-video rounded-xl max-h-[350px] sm:max-h-[400px]" />
-
-        {/* Section Title Skeleton */}
         <Skeleton className="h-8 w-1/3 mt-4" />
         
-        {/* Grid of items Skeleton */}
-        <div className={cn(
-            "columns-2 md:columns-3 lg:columns-4 xl:columns-5", // Simplified responsive columns
-            "gap-3 md:gap-4" // Adjusted gaps
-          )} aria-busy="true" aria-live="polite">
+        <div className="my-masonry-grid" aria-busy="true" aria-live="polite">
           {[...Array(12)].map((_, i) => (
-            <div key={`loading-page-grid-skeleton-column-${i}`} className="mb-3 md:mb-4 break-inside-avoid-column">
-                <Skeleton 
-                    key={`loading-page-grid-skeleton-item-${i}`} 
-                    className={`w-full rounded-lg bg-muted/70 h-72`} 
-                />
+            <div key={`loading-page-grid-skeleton-column-${i}`} className="my-masonry-grid_column">
+                 <div style={{ marginBottom: '1rem' }}>
+                    <Skeleton 
+                        key={`loading-page-grid-skeleton-item-${i}`} 
+                        className={`w-full rounded-lg bg-muted/70 h-72`} 
+                    />
+                </div>
             </div>
           ))}
         </div>
@@ -51,17 +44,17 @@ export default function Loading() {
 
       <footer className="text-center text-muted-foreground text-sm mt-auto py-4 sm:py-6 border-t border-border bg-card/80 backdrop-blur-sm print:hidden">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-4">
-          <Skeleton className="h-4 w-full sm:w-1/3" /> {/* Credits/Copyright */}
+          <Skeleton className="h-4 w-full sm:w-1/3" /> 
           <div className="flex flex-col items-center md:items-end gap-3">
             <div className="flex items-center justify-center md:justify-end gap-x-4 sm:gap-x-5">
-              <Skeleton className="h-5 w-5 rounded-full" /> {/* Social Icon */}
-              <Skeleton className="h-5 w-5 rounded-full" /> {/* Social Icon */}
-              <Skeleton className="h-5 w-5 rounded-full" /> {/* Social Icon */}
+              <Skeleton className="h-5 w-5 rounded-full" /> 
+              <Skeleton className="h-5 w-5 rounded-full" /> 
+              <Skeleton className="h-5 w-5 rounded-full" /> 
             </div>
             <div className="flex gap-x-3 sm:gap-x-4 gap-y-1.5 flex-wrap justify-center md:justify-end">
-              <Skeleton className="h-4 w-10" /> {/* Nav Link */}
-              <Skeleton className="h-4 w-12" /> {/* Nav Link */}
-              <Skeleton className="h-4 w-16" /> {/* Nav Link */}
+              <Skeleton className="h-4 w-10" /> 
+              <Skeleton className="h-4 w-12" /> 
+              <Skeleton className="h-4 w-16" /> 
             </div>
           </div>
         </div>
