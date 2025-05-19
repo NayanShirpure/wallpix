@@ -3,24 +3,11 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import { WallpaperCard } from './WallpaperCard';
-import Masonry from 'react-masonry-css';
 import { cn } from '@/lib/utils';
 
 interface WallpaperGridProps {
   photos: PexelsPhoto[];
 }
-
-const breakpointColumnsObj = {
-  default: 6, // More columns for a denser Pinterest feel
-  1536: 5,    // 2xl
-  1280: 4,    // xl
-  1024: 3,    // lg
-  768: 3,     // md
-  640: 2,     // sm
-  480: 2,     // xs
-  380: 2,     // xxs
-};
-
 
 export function WallpaperGrid({ photos }: WallpaperGridProps) {
   if (!photos || photos.length === 0) {
@@ -32,19 +19,19 @@ export function WallpaperGrid({ photos }: WallpaperGridProps) {
   }
 
   return (
-    <Masonry
-      breakpointCols={breakpointColumnsObj}
-      className="my-masonry-grid" // Use the class for custom styles
-      columnClassName="my-masonry-grid_column" // Use the class for custom styles
-    >
+    <div className={cn(
+      "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
+      "gap-2 sm:gap-3 md:gap-4",
+      "[column-fill:auto]" // May help with reflow, can be removed if causing issues
+    )}>
       {photos.map((photo, index) => (
-        // The div wrapper with margin is handled by the masonry CSS
-        <WallpaperCard
-          key={`${photo.id}-grid-item-${index}`}
-          photo={photo}
-          isPriority={index < 8} // Prioritize first few images
-        />
+        <div key={`${photo.id}-grid-item-${index}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+          <WallpaperCard
+            photo={photo}
+            isPriority={index < 8} // Prioritize first few images
+          />
+        </div>
       ))}
-    </Masonry>
+    </div>
   );
 }

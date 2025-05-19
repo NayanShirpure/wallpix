@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2, Bookmark } from 'lucide-react'; 
+import { Share2 } from 'lucide-react'; 
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
@@ -19,7 +19,7 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
   const { toast } = useToast();
   const router = useRouter();
 
-  if (!photo || !photo.src || !photo.src.large || !photo.src.tiny || !photo.width || !photo.height) {
+  if (!photo || !photo.src || !photo.width || !photo.height) {
     console.warn('[WallpaperCard] Missing essential photo data, rendering placeholder or nothing.', photo);
     return (
         <Card className="overflow-hidden rounded-lg bg-muted/30 shadow-md">
@@ -30,7 +30,18 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
     );
   }
 
-  const imageSrc = photo.src.large || photo.src.medium || photo.src.original;
+  const imageSrc = photo.src.large || photo.src.medium || photo.src.original || photo.src.small || photo.src.tiny;
+  if (!imageSrc) {
+     console.warn('[WallpaperCard] No valid image source found for photo:', photo.id);
+     return (
+        <Card className="overflow-hidden rounded-lg bg-muted/30 shadow-md">
+            <CardContent className="p-0 relative aspect-[3/4] flex items-center justify-center">
+                <p className="text-xs text-muted-foreground p-2">Image source missing</p>
+            </CardContent>
+        </Card>
+    );
+  }
+  
   const imageAltText = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const cardAriaLabel = `View wallpaper: ${imageAltText}`;
   const overlayTitle = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
@@ -53,7 +64,7 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
       toast({
         title: "Manual Copy Needed",
         description: `Could not copy link automatically. Please copy this link: ${url}`,
-        duration: 9000,
+        duration: 7000,
         variant: "default",
       });
     }
@@ -65,7 +76,6 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
     const shareTitle = displayAlt;
     const shareText = `Check out this amazing wallpaper on Wallify: "${displayAlt}" by ${photo.photographer}.`;
     
-    // Always generate a search link to Wallify site
     const query = encodeURIComponent(displayAlt);
     const shareUrl = `${window.location.origin}/search?query=${query}`; 
 
@@ -87,9 +97,8 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
             });
             await copyToClipboard(shareData.url, shareTitle);
           } else {
-            // Avoid console.error for "Permission denied" as it's handled
             if (!errorMessage.includes('permission denied')) {
-              console.error("Web Share API error (card):", error); 
+              // console.error("Web Share API error (card):", error); 
             }
             toast({ title: "Sharing via App Failed", description: "Trying to copy link to clipboard instead...", variant: "default" });
             await copyToClipboard(shareData.url, shareTitle);
@@ -100,14 +109,6 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
       toast({ title: "Web Share Not Supported", description: "Trying to copy link to clipboard instead...", variant: "default" });
       await copyToClipboard(shareData.url, shareTitle);
     }
-  };
-
-  const handleSaveClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toast({
-      title: 'Save Feature Coming Soon!',
-      description: 'You\'ll soon be able to save your favorite wallpapers.',
-    });
   };
   
   return (
@@ -133,7 +134,7 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
             className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:scale-105 rounded-t-lg"
             priority={isPriority} 
             placeholder="blur"
-            blurDataURL={photo.src.tiny}
+            blurDataURL={photo.src.tiny || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8wNPvd7POQAAAABJRU5ErkJggg=='} // Fallback blurDataURL
             data-ai-hint={dataAiHintForImage}
           />
         </div>
@@ -170,16 +171,6 @@ export function WallpaperCard({ photo, isPriority = false }: WallpaperCardProps)
               aria-label="Share wallpaper"
             >
               <Share2 size={16} className="sm:size-[18px]" />
-            </Button>
-             {/* Save button is currently visual only */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="p-1.5 sm:p-2 bg-white/20 hover:bg-white/30 text-white rounded-full h-auto w-auto"
-              onClick={handleSaveClick}
-              aria-label="Save wallpaper (coming soon)"
-            >
-              <Bookmark size={16} className="sm:size-[18px]" />
             </Button>
           </div>
         </div>

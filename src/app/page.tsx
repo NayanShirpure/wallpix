@@ -2,15 +2,14 @@
 'use client';
 
 import type { PexelsPhoto } from '@/types/pexels';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { cn } from '@/lib/utils';
-import InfiniteScroll from 'react-infinite-scroll-component';
 
 const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
@@ -23,6 +22,21 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const currentSearchTerm = DEFAULT_HOME_SEARCH_TERM; 
+
+  const observer = useRef<IntersectionObserver>();
+  const lastWallpaperElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          handleLoadMore();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
 
   const fetchWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -50,7 +64,6 @@ export default function Home() {
       });
     }
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast, currentSearchTerm]); 
 
 
@@ -81,18 +94,6 @@ export default function Home() {
     }
   };
 
-  const loadingSkeletonItems = (
-    <div className="my-masonry-grid">
-      {[...Array(6)].map((_, i) => (
-        <div key={`loading-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-          <div className="mb-3"> {/* This div acts as the masonry item */}
-            <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <>
       <GlobalHeader
@@ -114,30 +115,41 @@ export default function Home() {
 
         {loading && wallpapers.length === 0 && (
              <div
-                className="my-masonry-grid"
+                className={cn(
+                    "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
+                    "gap-2 sm:gap-3 md:gap-4",
+                    "[column-fill:auto]"
+                  )}
                 aria-busy="true"
                 aria-live="polite"
               >
                 {[...Array(12)].map((_, i) => (
-                  <div key={`initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-                     <div className="mb-3"> {/* This div acts as the masonry item */}
-                        <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-                     </div>
+                  <div key={`initial-skeleton-column-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                    <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
                   </div>
                 ))}
             </div>
         )}
 
-        <InfiniteScroll
-          dataLength={wallpapers.length}
-          next={handleLoadMore}
-          hasMore={hasMore}
-          loader={loadingSkeletonItems}
-          scrollThreshold="200px" 
-          className="w-full"
-        >
-          <WallpaperGrid photos={wallpapers} />
-        </InfiniteScroll>
+        <WallpaperGrid photos={wallpapers} />
+        
+        {loading && wallpapers.length > 0 && (
+          <div className={cn(
+            "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
+            "gap-2 sm:gap-3 md:gap-4",
+            "mt-4 [column-fill:auto]"
+          )}>
+            {[...Array(6)].map((_, i) => (
+              <div key={`loading-skeleton-column-wrapper-${i}`} className="mb-2 sm:mb-3 md:mb-4 break-inside-avoid-column">
+                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {!loading && hasMore && wallpapers.length > 0 && (
+          <div ref={lastWallpaperElementRef} className="h-10"></div> // Sentinel for IntersectionObserver
+        )}
         
         {!loading && !hasMore && wallpapers.length > 0 && (
           <p className="text-center text-muted-foreground py-6">You've reached the end!</p>
