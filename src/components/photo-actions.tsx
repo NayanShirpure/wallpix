@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
 
 export function PhotoActions({ photo }: { photo: PexelsPhoto }) {
-  'use client'; // Redundant, but fine.
   const { toast } = useToast();
 
   const copyToClipboardLocal = async (url: string, title: string) => {
@@ -64,8 +63,7 @@ export function PhotoActions({ photo }: { photo: PexelsPhoto }) {
     const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
     const shareTitle = displayAlt;
     const shareText = `Check out this amazing wallpaper on Wallify: "${displayAlt}" by ${photo.photographer}.`;
-    const query = encodeURIComponent(displayAlt);
-    const shareUrl = `${window.location.origin}/search?query=${query}`;
+    const shareUrl = `${window.location.origin}/photo/${photo.id}`; // Link to the dedicated photo page
 
     const shareData = { title: shareTitle, text: shareText, url: shareUrl };
 
@@ -84,7 +82,7 @@ export function PhotoActions({ photo }: { photo: PexelsPhoto }) {
                 });
                 await copyToClipboardLocal(shareData.url, shareTitle);
             } else {
-                console.error("Error sharing via navigator.share:", err);
+                console.error("Error sharing via navigator.share:", err); // Log other errors
                 toast({ title: "Sharing via App Failed", description: "Trying to copy link instead.", variant: "default"});
                 await copyToClipboardLocal(shareData.url, shareTitle);
             }

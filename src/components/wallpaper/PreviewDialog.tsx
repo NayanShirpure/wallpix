@@ -125,6 +125,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     if (isAiGenerated) {
       shareUrl = `${window.location.origin}/generate`;
     } else {
+      // For Pexels images, share a link to the Wallify search page with the alt text as query
       const query = encodeURIComponent(displayAlt);
       shareUrl = `${window.location.origin}/search?query=${query}`;
     }
@@ -142,10 +143,9 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
           title: "Shared successfully!",
           description: "The wallpaper link has been shared.",
         });
-      } catch (error) {
-        const err = error as Error;
-        if (err.name !== 'AbortError') { 
-            if (err.message && err.message.toLowerCase().includes('permission denied')) {
+      } catch (error: any) {
+        if (error.name !== 'AbortError') { 
+            if (error.message && error.message.toLowerCase().includes('permission denied')) {
                  toast({
                     title: "Share Permission Denied",
                     description: "Browser prevented sharing. Trying to copy link instead. Check site permissions if this persists.",
@@ -154,7 +154,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                 });
                 await copyToClipboard(shareData.url, shareTitle);
             } else {
-                console.error("Error sharing:", err);
+                console.error("Error sharing:", error);
                 toast({
                     title: "Sharing via App Failed",
                     description: "An unexpected error occurred. Trying to copy link to clipboard instead...",
@@ -188,7 +188,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
         "p-0 border-none !rounded-lg shadow-2xl bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[90vh] lg:w-[70vw] xl:w-[60vw]"
       )}>
-        <DialogHeader className="sr-only">
+        <DialogHeader className="sr-only"> {/* Visually hidden header for accessibility */}
           <DialogTitle>{displayAlt}</DialogTitle>
           <DialogDescription>
             Full-size preview of the selected wallpaper: {displayAlt}. Actions to download, share, or view source are available.
@@ -305,7 +305,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     </Button>
                  )}
                  {isAiGenerated && !downloadOptions.length && ( 
-                    <div className="hidden sm:block w-px h-8 sm:h-9"></div>
+                    <div className="hidden sm:block w-px h-8 sm:h-9"></div> // Placeholder for alignment if only Download button is shown for AI images
                  )}
               </div>
             </div>
