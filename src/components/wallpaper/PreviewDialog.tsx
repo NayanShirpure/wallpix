@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Download, ExternalLink, User, X, Share2, Bookmark } from 'lucide-react';
+import { Download, ExternalLink, User, X, Share2 } from 'lucide-react'; // Removed Bookmark
 import {
   Select,
   SelectContent,
@@ -125,7 +125,6 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     if (isAiGenerated) {
       shareUrl = `${window.location.origin}/generate`;
     } else {
-      // For Pexels images, share a link to the Wallify search page with the alt text as query
       const query = encodeURIComponent(displayAlt);
       shareUrl = `${window.location.origin}/search?query=${query}`;
     }
@@ -174,21 +173,13 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     }
   };
 
-  const handleSave = () => {
-    toast({
-      title: "Save Feature",
-      description: "Saving wallpapers will be available soon!",
-    });
-  };
-
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={cn(
         "p-0 border-none !rounded-lg shadow-2xl bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[90vh] lg:w-[70vw] xl:w-[60vw]"
       )}>
-        <DialogHeader className="sr-only"> {/* Visually hidden header for accessibility */}
+        <DialogHeader className="sr-only">
           <DialogTitle>{displayAlt}</DialogTitle>
           <DialogDescription>
             Full-size preview of the selected wallpaper: {displayAlt}. Actions to download, share, or view source are available.
@@ -241,7 +232,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0 flex-wrap justify-end">
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap justify-end">
                  <Button
                     variant="outline"
                     size="sm"
@@ -251,15 +242,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                   >
                     <Share2 className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" /> Share
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSave}
-                  className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm px-2.5 sm:px-3"
-                  aria-label="Save wallpaper (feature coming soon)"
-                >
-                  <Bookmark className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" /> Save
-                </Button>
+                {/* Save button removed */}
 
                 {!isAiGenerated && (
                   <Button variant="outline" size="sm" asChild className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm px-2.5 sm:px-3">
@@ -305,7 +288,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     </Button>
                  )}
                  {isAiGenerated && !downloadOptions.length && ( 
-                    <div className="hidden sm:block w-px h-8 sm:h-9"></div> // Placeholder for alignment if only Download button is shown for AI images
+                    <div className="hidden sm:block w-px h-8 sm:h-9"></div> 
                  )}
               </div>
             </div>
