@@ -55,7 +55,6 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     { label: 'Large (2x)', url: photo.src.large2x, resolution: 'Approx 1920px wide' },
     { label: 'Large', url: photo.src.large, resolution: 'Approx 1280px wide' },
     { label: 'Medium', url: photo.src.medium, resolution: 'Approx 640px wide' },
-    // { label: 'Small', url: photo.src.small, resolution: 'Approx 320px wide' }, // Often too small for wallpaper
     { label: 'Portrait Optimized', url: photo.src.portrait, resolution: 'Optimized for Portrait' },
     { label: 'Landscape Optimized', url: photo.src.landscape, resolution: 'Optimized for Landscape' },
   ].filter(opt => opt.url);
@@ -101,8 +100,8 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={cn(
-        "p-0 border-none !rounded-lg shadow-2xl bg-background/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-        "w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[90vh] lg:w-[70vw] xl:w-[60vw]" // Responsive sizing
+        "p-0 border-none !rounded-lg shadow-2xl bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95", // Changed to bg-card for solid background
+        "w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[90vh] md:w-[80vw] md:h-[90vh] lg:w-[70vw] xl:w-[60vw]"
       )}>
         <DialogHeader className="sr-only">
           <DialogTitle>{displayAlt}</DialogTitle>
@@ -114,20 +113,20 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
           {/* Close Button - Top Right Overlay */}
           <DialogClose
             onClick={onClose}
-            className="absolute top-2 right-2 z-20 text-white bg-black/40 hover:bg-black/60 rounded-full p-1.5 sm:p-2 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors"
+            className="absolute top-2.5 right-2.5 z-20 text-white bg-black/40 hover:bg-black/60 rounded-full p-1.5 sm:p-2 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors"
             aria-label="Close preview"
           >
             <X size={18} className="sm:size-5" />
           </DialogClose>
 
           {/* Image Display Area */}
-          <div className="relative flex-grow w-full h-full bg-black/30 flex items-center justify-center overflow-hidden rounded-t-lg">
+          <div className="relative flex-grow w-full h-full bg-black/40 flex items-center justify-center overflow-hidden rounded-t-lg"> {/* Slightly darker bg for image area */}
             <Image
-              src={photo.src.large2x || photo.src.original} // Prefer higher res for preview
+              src={photo.src.large2x || photo.src.original}
               alt={imageAlt}
               fill
               sizes="(max-width: 768px) 90vw, (max-width: 1280px) 80vw, 70vw"
-              className="object-contain" // Ensure image fits without cropping
+              className="object-contain"
               priority
               placeholder="blur"
               blurDataURL={photo.src.tiny}
@@ -136,11 +135,11 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
           </div>
 
           {/* Information and Actions Overlay - Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10 rounded-b-lg">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent z-10 rounded-b-lg">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
               {/* Left side: Title and Photographer */}
               <div className="text-white overflow-hidden flex-shrink min-w-0">
-                <h2 className="text-sm sm:text-base font-semibold truncate" title={displayAlt}>
+                <h2 className="text-base sm:text-lg font-semibold truncate" title={displayAlt}> {/* Slightly larger title */}
                   {displayAlt}
                 </h2>
                 {!isAiGenerated && (
@@ -148,23 +147,23 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     href={photo.photographer_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-gray-300 hover:text-accent focus:text-accent focus:outline-none focus:underline flex items-center gap-1 truncate"
+                    className="text-xs sm:text-sm text-gray-200 hover:text-accent focus:text-accent focus:outline-none focus:underline flex items-center gap-1.5 truncate"
                     aria-label={`View profile of photographer ${photo.photographer} (opens in new tab)`}
                   >
-                    <User size={12} /> {photo.photographer}
+                    <User size={14} className="sm:size-3.5" /> {photo.photographer}
                   </a>
                 )}
                  {isAiGenerated && (
-                  <p className="text-xs text-gray-300 flex items-center gap-1">
-                    <User size={12} /> AI Generator (Wallify)
+                  <p className="text-xs sm:text-sm text-gray-200 flex items-center gap-1.5">
+                    <User size={14} className="sm:size-3.5" /> AI Generator (Wallify)
                   </p>
                 )}
               </div>
 
               {/* Right side: Actions */}
-              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0"> {/* Reduced gap slightly */}
                 {!isAiGenerated && (
-                  <Button variant="outline" size="sm" asChild className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm px-2 sm:px-3">
+                  <Button variant="outline" size="sm" asChild className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm px-2.5 sm:px-3">
                     <a
                       href={photo.url}
                       target="_blank"
@@ -178,15 +177,14 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
 
                 {!isAiGenerated && downloadOptions.length > 0 && (
                   <Select value={selectedDownloadUrl} onValueChange={handleSelectChange}>
-                    <SelectTrigger 
-                      className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white focus:ring-accent focus:ring-offset-black/30 focus:border-accent backdrop-blur-sm w-auto min-w-[120px] sm:min-w-[150px] pr-2"
+                    <SelectTrigger
+                      className="h-8 sm:h-9 text-xs sm:text-sm bg-white/10 hover:bg-white/20 border-white/30 text-white focus:ring-accent focus:ring-offset-black/30 focus:border-accent backdrop-blur-sm w-auto min-w-[110px] sm:min-w-[130px] pr-2"
                       aria-label="Select download resolution"
                     >
                       <span className="truncate mr-1">
                         <Download className="inline mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         {selectedResolutionLabel.split(' ')[0]}
                       </span>
-                      {/* Custom chevron, default is hidden via SelectTrigger style */}
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border text-foreground">
                       {downloadOptions.map(opt => (
@@ -197,7 +195,7 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                     </SelectContent>
                   </Select>
                 )}
-                 {(isAiGenerated || (!isAiGenerated && downloadOptions.length === 0) || (!isAiGenerated && selectedDownloadUrl)) && ( // Show download button for AI, or if Pexels image and options are available/selected
+                 {(isAiGenerated || (!isAiGenerated && downloadOptions.length === 0) || (!isAiGenerated && selectedDownloadUrl)) && (
                     <Button
                         onClick={handleDownload}
                         className="h-8 sm:h-9 bg-accent text-accent-foreground hover:bg-accent/90 shadow-md text-xs sm:text-sm px-3"
@@ -207,6 +205,9 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
                         <Download className="mr-1.5 h-3.5 w-3.5" /> {isAiGenerated ? "Download" : "Download"}
                     </Button>
                  )}
+                 {isAiGenerated && ( /* Placeholder for alignment if Pexels/Select hidden */
+                    <div className="hidden sm:block w-px"></div> /* Adjust width if needed */
+                 )}
               </div>
             </div>
           </div>
@@ -215,4 +216,3 @@ export function PreviewDialog({ photo, isOpen, onClose }: PreviewDialogProps) {
     </Dialog>
   );
 }
-
