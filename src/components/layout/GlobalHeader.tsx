@@ -61,36 +61,7 @@ export function GlobalHeader({
         <nav className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
-                  <Menu className="mr-1 h-3.5 w-3.5" />
-                  Browse
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href="/discover" className="flex items-center">
-                    <Compass className="mr-2 h-4 w-4" />
-                    Discover
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/what-we-offer" className="flex items-center">
-                    <Info className="mr-2 h-4 w-4" />
-                    What We Offer
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/generate" className="flex items-center">
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    AI Generate
-                  </Link>
-                </DropdownMenuItem>
-                {/* Removed AI Background Remover link from here */}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
+            {/* "Categories" button remains separate */}
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
@@ -125,6 +96,7 @@ export function GlobalHeader({
               </SheetContent>
             </Sheet>
 
+            {/* "More Options" Dropdown Menu (3 dots) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -133,6 +105,27 @@ export function GlobalHeader({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {/* Items previously under "Browse" are now here */}
+                <DropdownMenuItem asChild>
+                  <Link href="/discover" className="flex items-center">
+                    <Compass className="mr-2 h-4 w-4" />
+                    Discover
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/what-we-offer" className="flex items-center">
+                    <Info className="mr-2 h-4 w-4" />
+                    What We Offer
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/generate" className="flex items-center">
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    AI Generate
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {/* Existing "More Options" items */}
                 <DropdownMenuItem asChild>
                   <Link href="/about" className="flex items-center">
                     <Users className="mr-2 h-4 w-4" /> About
