@@ -26,8 +26,6 @@ export function PhotoPageClientWrapper({
 
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
     setCurrentDeviceOrientation(newCategory);
-    // Note: Device orientation change here won't reload the main photo,
-    // but could affect how GlobalHeader or future child components behave.
   };
 
   const handleWallpaperCategorySelect = (categoryValue: string) => {
@@ -105,7 +103,11 @@ export function PhotoPageClientWrapper({
             </div>
           )}
         </div>
-        <RelatedWallpapersGrid initialQuery={relatedQuery} currentPhotoId={photo.id} />
+        <RelatedWallpapersGrid 
+            initialQuery={relatedQuery} 
+            currentPhotoId={photo.id} 
+            orientation={currentDeviceOrientation} 
+        />
       </main>
     </>
   );

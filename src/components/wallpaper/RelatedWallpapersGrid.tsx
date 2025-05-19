@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { PexelsPhoto } from '@/types/pexels';
+import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
 import { WallpaperGrid } from './WallpaperGrid';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,10 @@ import { cn } from '@/lib/utils';
 interface RelatedWallpapersGridProps {
   initialQuery: string;
   currentPhotoId: number; // To exclude the current photo from related results
+  orientation: DeviceOrientationCategory; // New prop for device orientation
 }
 
-export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedWallpapersGridProps) {
+export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, orientation }: RelatedWallpapersGridProps) {
   const [relatedWallpapers, setRelatedWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -27,18 +28,16 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       return;
     }
     setLoading(true);
-    // Fetching landscape by default for related, could be dynamic
-    const response = await searchPhotos(initialQuery, pageNum, 15, 'landscape');
+    const pexelsOrientation = orientation === 'desktop' ? 'landscape' : 'portrait';
+    const response = await searchPhotos(initialQuery, pageNum, 15, pexelsOrientation);
 
     if (response && response.photos && response.photos.length > 0) {
-      // Filter out the current photo from the related results
       const newPhotos = response.photos.filter(photo => photo.id !== currentPhotoId);
       setRelatedWallpapers(prev => {
         const combined = append ? [...prev, ...newPhotos] : newPhotos;
         const uniqueMap = new Map(combined.map(item => [item.id, item]));
         return Array.from(uniqueMap.values());
       });
-      // Adjust per_page for hasMore check if newPhotos length might be less due to filtering
       setHasMore(!!response.next_page && response.photos.length === 15);
     } else {
       if (!append) {
@@ -47,7 +46,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       setHasMore(false);
     }
     setLoading(false);
-  }, [initialQuery, currentPhotoId]);
+  }, [initialQuery, currentPhotoId, orientation]); // Added orientation to dependencies
 
   useEffect(() => {
     setPage(1);
@@ -59,7 +58,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       setLoading(false);
       setHasMore(false);
     }
-  }, [initialQuery, fetchRelatedWallpapers]);
+  }, [initialQuery, orientation, fetchRelatedWallpapers]); // Added orientation to dependencies
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
@@ -70,16 +69,12 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
   };
 
   if (!initialQuery && !loading) {
-    // This case should ideally not be hit if page.tsx provides a fallback query
     return <p className="text-center text-muted-foreground py-4">Cannot load related wallpapers without a query.</p>;
   }
   
-  // Don't render the section if there's no query (e.g. main photo has no alt text)
-  // and we are not in an initial loading state for a valid query.
   if (!initialQuery && !loading && relatedWallpapers.length === 0) {
     return null;
   }
-
 
   return (
     <div className="mt-10 pt-8 border-t border-border">
@@ -91,6 +86,8 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
             "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
             "gap-2 sm:gap-3 md:gap-4"
           )}
+          aria-busy="true"
+          aria-live="polite"
         >
           {[...Array(12)].map((_, i) => (
             <Skeleton key={`related-skeleton-${i}`} className="w-full h-72 mb-3 sm:mb-4 rounded-lg bg-muted/70" />
@@ -101,7 +98,6 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       ) : !loading && initialQuery ? (
          <p className="text-center text-muted-foreground py-4">No related wallpapers found for "{initialQuery}".</p>
       ) : null}
-
 
       {hasMore && !loading && relatedWallpapers.length > 0 && (
         <div className="flex justify-center mt-6 sm:mt-8 mb-4">
