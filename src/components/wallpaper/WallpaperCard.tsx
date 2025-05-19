@@ -5,19 +5,22 @@ import type { PexelsPhoto } from '@/types/pexels';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2 } from 'lucide-react';
+import { Share2 } from 'lucide-react'; // Changed from Bookmark
 import { useToast } from '@/hooks/use-toast';
 
 interface WallpaperCardProps {
   photo: PexelsPhoto;
   onClick: () => void;
+  // Orientation prop removed for masonry layout
 }
 
 export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
   const { toast } = useToast();
+  // Prioritize larger sources for masonry cards to allow natural aspect ratio scaling
+  // Use 'large' as a good balance for preview quality and size in a grid.
   const imageSrc = photo.src.large || photo.src.medium || photo.src.original;
-  const imageWidth = photo.width;
-  const imageHeight = photo.height;
+  const imageWidth = photo.width;  // Use actual width for aspect ratio
+  const imageHeight = photo.height; // Use actual height for aspect ratio
 
   const imageAltText = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const cardAriaLabel = imageAltText;
@@ -36,7 +39,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
         title: "Manual Copy Needed",
         description: `Could not copy link automatically. Please copy this link: ${url}`,
         duration: 9000,
-        variant: "default", // Changed from destructive
+        variant: "default",
       });
     }
   };
@@ -48,8 +51,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
 
     const shareTitle = imageAltText;
     const shareText = `Check out this amazing wallpaper on Wallify: "${imageAltText}" by ${photo.photographer}.`;
-    // Use the photo's Pexels URL for sharing if available, otherwise current page
-    const shareUrl = photo.url || window.location.href;
+    const shareUrl = photo.url || window.location.href; // Fallback to current page if photo.url isn't available
 
     const shareData = {
       title: shareTitle,
@@ -67,8 +69,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
       } catch (error) {
         const err = error as Error;
         if (err.name !== 'AbortError') { // User didn't cancel
-          console.error("Error sharing:", err); // Log the actual error
-
+          // Check if it's a permission denied error specifically
           if (err.message && err.message.toLowerCase().includes('permission denied')) {
             toast({
               title: "Share Permission Denied",
@@ -77,6 +78,8 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
               duration: 7000,
             });
           } else {
+            // Log other unexpected share errors
+            console.error("Error sharing:", err);
             toast({
               title: "Sharing via App Failed",
               description: "An unexpected error occurred. Trying to copy link to clipboard instead...",
@@ -105,7 +108,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
       className={cn(
         "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
         "bg-card border-border shadow-sm hover:shadow-lg focus-within:shadow-lg",
-        "rounded-md md:rounded-lg break-inside-avoid-column mb-3 sm:mb-4"
+        "rounded-md md:rounded-lg break-inside-avoid-column mb-3 sm:mb-4" // Ensure cards don't break across columns & have margin
       )}
       onClick={onClick}
       role="button"
@@ -117,10 +120,10 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
         <Image
           src={imageSrc}
           alt={imageAltText}
-          width={imageWidth}
-          height={imageHeight}
+          width={imageWidth} // Provide actual width
+          height={imageHeight} // Provide actual height
           className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:brightness-75 group-focus-within:brightness-75"
-          priority={photo.id < 3000000}
+          priority={photo.id < 3000000} // Example priority logic, adjust as needed
           placeholder="blur"
           blurDataURL={photo.src.tiny}
           data-ai-hint={dataAiHintForImage}
@@ -128,10 +131,11 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
         <div
           className={cn(
             "absolute inset-0 flex flex-col justify-between p-2 sm:p-3",
-            "bg-gradient-to-t from-black/70 via-black/30 to-transparent",
+            "bg-gradient-to-t from-black/70 via-black/30 to-transparent", // Overlay gradient
             "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out"
           )}
         >
+          {/* Top-right actions: Share button */}
           <div className="flex justify-end items-start gap-1.5">
             <button
               className="p-1.5 sm:p-2 bg-black/50 hover:bg-black/70 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -142,6 +146,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
             </button>
           </div>
 
+          {/* Bottom information: Title and Photographer */}
           <div className="text-white drop-shadow-md">
             <p className="text-xs xxs:text-sm sm:text-base font-semibold truncate leading-snug" title={overlayTitle}>
               {overlayTitle}
@@ -151,7 +156,7 @@ export function WallpaperCard({ photo, onClick }: WallpaperCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-200 text-[10px] xxs:text-xs hover:text-accent focus:text-accent focus:outline-none focus:underline truncate block mt-0.5 leading-snug"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()} // Prevent card click when clicking photographer link
               aria-label={`View photographer ${photo.photographer} on Pexels (opens in new tab)`}
             >
               by {photo.photographer}
