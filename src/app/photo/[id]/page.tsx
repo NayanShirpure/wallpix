@@ -1,16 +1,16 @@
 
 import Image from 'next/image';
-import Link from 'next/link';
+// Link removed as it's no longer used for back button in this component
 import { notFound } from 'next/navigation';
 import { getPhotoById } from '@/lib/pexels';
-import type { PexelsPhoto } from '@/types/pexels';
-import { Button } from '@/components/ui/button';
-import { User, Home } from 'lucide-react'; // Removed Download, ExternalLink, Share2, Bookmark as they are in PhotoActions
+// type PexelsPhoto removed as it's inferred
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization, MinimalWithContext } from '@/types/schema-dts';
-import { PhotoActions } from '@/components/photo-actions'; // Import PhotoActions
+import { PhotoActions } from '@/components/photo-actions';
+import { RelatedWallpapersGrid } from '@/components/wallpaper/RelatedWallpapersGrid'; // New import
+import { User } from 'lucide-react'; // Kept User icon
 
 type PhotoPageProps = {
   params: { id: string };
@@ -18,6 +18,7 @@ type PhotoPageProps = {
 
 export default async function PhotoPage({ params }: PhotoPageProps) {
   const id = params.id;
+  // Basic validation for ID format
   if (isNaN(Number(id))) {
     notFound();
   }
@@ -37,26 +38,40 @@ export default async function PhotoPage({ params }: PhotoPageProps) {
     description: `High-resolution wallpaper by ${photo.photographer}. Dimensions: ${photo.width}x${photo.height}.`,
     contentUrl: photo.src.original,
     thumbnailUrl: photo.src.medium,
-    width: { '@type': 'Distance', value: photo.width.toString(), unitCode: 'E37' }, // E37 is for pixel, common unit for schema
+    width: { '@type': 'Distance', value: photo.width.toString(), unitCode: 'E37' },
     height: { '@type': 'Distance', value: photo.height.toString(), unitCode: 'E37' },
     author: {
       '@type': 'Person',
       name: photo.photographer,
-      url: photo.photographer_url || undefined, // Fallback for schema
+      url: photo.photographer_url || undefined,
     } as SchemaPerson,
     copyrightHolder: {
       '@type': 'Person',
       name: photo.photographer,
-      url: photo.photographer_url || undefined, // Fallback for schema
+      url: photo.photographer_url || undefined,
     } as SchemaPerson,
     license: 'https://www.pexels.com/license/',
-    acquireLicensePage: photo.url || undefined, // Fallback for schema
+    acquireLicensePage: photo.url || undefined,
     provider: {
       '@type': 'Organization',
       name: 'Pexels',
       url: 'https://www.pexels.com',
     } as SchemaOrganization,
   };
+
+  // Process alt text for related query - take first 2-3 significant words.
+  // Provide a generic fallback if alt is empty to ensure related content can still be fetched.
+  let relatedQuery = 'abstract nature wallpaper'; // Generic fallback
+  if (photo.alt && photo.alt.trim() !== '') {
+    relatedQuery = photo.alt.split(' ').slice(0, 3).join(' ');
+    // If the processed query is too short or generic, use a broader default.
+    if (relatedQuery.length < 5 && photo.alt.split(' ').length <= 2) {
+        relatedQuery = photo.alt + ' wallpaper background';
+    }
+  } else if (photo.photographer) {
+      relatedQuery = photo.photographer + ' photography style';
+  }
+
 
   return (
     <>
@@ -123,13 +138,9 @@ export default async function PhotoPage({ params }: PhotoPageProps) {
           )}
         </div>
 
-        <div className="mt-8 text-center">
-          <Button variant="outline" asChild>
-            <Link href="/">
-              <Home className="mr-2 h-4 w-4" /> Explore More Wallpapers
-            </Link>
-          </Button>
-        </div>
+        {/* Removed "Explore More Wallpapers" button */}
+        {/* Add RelatedWallpapersGrid component */}
+        <RelatedWallpapersGrid initialQuery={relatedQuery} currentPhotoId={photo.id} />
       </main>
     </>
   );
