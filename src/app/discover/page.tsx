@@ -10,23 +10,23 @@ import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import type { DeviceOrientationCategory, PexelsPhoto, PexelsResponse } from '@/types/pexels';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { WallpaperSection } from '@/components/wallpaper-section';
-import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
+// PreviewDialog is removed
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
 import { getCuratedPhotos, searchPhotos as pexelsSearchPhotosLib } from '@/lib/pexels';
-import { Skeleton } from '@/components/ui/skeleton'; // Added Skeleton import
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DiscoverCategory {
   id: string;
   title: string;
   description: string;
   query: string;
-  imageUrl: string; // Fallback placeholder
+  imageUrl: string; 
   dataAiHint: string;
   imageWidth: number;
   imageHeight: number;
-  fetchedImageUrl?: string | null; // To store API fetched image
-  imageLoading?: boolean; // To track loading state for this specific category image
+  fetchedImageUrl?: string | null; 
+  imageLoading?: boolean; 
 }
 
 const initialDiscoverPageCategories: DiscoverCategory[] = [
@@ -63,9 +63,7 @@ export default function DiscoverPage() {
   const [themeCollectionVintage, setThemeCollectionVintage] = useState<PexelsPhoto[]>([]);
   const [loadingThemeVintage, setLoadingThemeVintage] = useState(true);
 
-  const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+  // selectedWallpaper and isModalOpen state removed
   const [categories, setCategories] = useState<DiscoverCategory[]>(
     initialDiscoverPageCategories.map(cat => ({ ...cat, imageLoading: true, fetchedImageUrl: null }))
   );
@@ -112,11 +110,11 @@ export default function DiscoverPage() {
 
   useEffect(() => {
     initialDiscoverPageCategories.forEach(catDefinition => {
-      pexelsSearchPhotosLib(catDefinition.query, 1, 1, 'landscape') // Fetch landscape for cards
+      pexelsSearchPhotosLib(catDefinition.query, 1, 1, 'landscape') 
         .then(response => {
           let imageUrl: string | null = null;
           if (response && response.photos && response.photos.length > 0) {
-            imageUrl = response.photos[0].src.medium; // Use medium size for cards
+            imageUrl = response.photos[0].src.medium; 
           }
           setCategories(prevCategories =>
             prevCategories.map(c =>
@@ -136,7 +134,7 @@ export default function DiscoverPage() {
         });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, []); 
 
   const handleDeviceOrientationChange = (newCategory: DeviceOrientationCategory) => {
     setCurrentDeviceOrientation(newCategory);
@@ -153,13 +151,12 @@ export default function DiscoverPage() {
   };
 
   const handleViewWallpaper = (photo: PexelsPhoto) => {
-    setSelectedWallpaper(photo);
-    setIsModalOpen(true);
+    router.push(`/photo/${photo.id}`); // Navigate to dedicated page
   };
 
   const handleDownloadWallpaper = async (photo: PexelsPhoto | null) => {
     if (!photo) return;
-    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
+    const photographerName = photo.photographer.replace(/[^a-zA-Z0-9_-\\s]/g, '').replace(/\\s+/g, '_');
     const filename = `wallify_${photographerName}_${photo.id}_original.jpg`;
     
     toast({
@@ -182,10 +179,7 @@ export default function DiscoverPage() {
     }
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedWallpaper(null), 300);
-  };
+  // closeModal is removed
 
   return (
     <>
@@ -203,7 +197,7 @@ export default function DiscoverPage() {
           wallpaper={wallpaperOfTheDay}
           loading={loadingWOTD}
           orientation={currentDeviceOrientation}
-          onViewClick={handleViewWallpaper}
+          // onViewClick prop removed
           onDownloadClick={handleDownloadWallpaper}
         />
 
@@ -293,14 +287,7 @@ export default function DiscoverPage() {
           </div>
         </div>
       </main>
-      <PreviewDialog
-        photo={selectedWallpaper}
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      />
+      {/* Removed PreviewDialog component usage */}
     </>
   );
 }
-
-
-    

@@ -3,6 +3,7 @@
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Download, Eye } from 'lucide-react';
@@ -11,7 +12,7 @@ interface WallpaperOfTheDayProps {
   wallpaper: PexelsPhoto | null;
   loading: boolean;
   orientation: DeviceOrientationCategory;
-  onViewClick: (wallpaper: PexelsPhoto) => void;
+  // onViewClick prop is removed
   onDownloadClick: (wallpaper: PexelsPhoto) => Promise<void>;
 }
 
@@ -19,9 +20,9 @@ export function WallpaperOfTheDay({
   wallpaper,
   loading,
   orientation,
-  onViewClick,
   onDownloadClick,
 }: WallpaperOfTheDayProps) {
+  const router = useRouter(); // Initialize router
   const aspectRatio = orientation === 'desktop'
     ? 'aspect-video sm:aspect-[18/9] md:aspect-[21/9] lg:aspect-[24/9]'
     : 'aspect-[9/16] xs:aspect-[9/15] sm:aspect-[9/14]';
@@ -33,6 +34,12 @@ export function WallpaperOfTheDay({
   const getSrc = (photo: PexelsPhoto) => {
     if (orientation === 'desktop') return photo.src.original || photo.src.large2x;
     return photo.src.large2x || photo.src.original || photo.src.portrait;
+  };
+
+  const handleViewClick = () => {
+    if (wallpaper) {
+      router.push(`/photo/${wallpaper.id}`);
+    }
   };
 
   if (loading) {
@@ -95,7 +102,7 @@ export function WallpaperOfTheDay({
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => onViewClick(wallpaper)}
+              onClick={handleViewClick} // Updated onClick
               className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm border border-white/30 shadow-md text-xs sm:text-sm px-3 py-1.5 h-auto sm:h-9"
               aria-label="Preview wallpaper of the day"
             >

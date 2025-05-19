@@ -3,12 +3,12 @@
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
+import { useRouter } from 'next/navigation'; // Keep useRouter for other navigation if needed
+// PreviewDialog is removed
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { StructuredData } from '@/components/structured-data';
-import type { ImageObject as SchemaImageObject, MinimalWithContext, Person as SchemaPerson, Organization as SchemaOrganization } from '@/types/schema-dts';
+// MinimalWithContext and other schema types are no longer needed here as preview is on a new page
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { Button } from '@/components/ui/button';
@@ -22,11 +22,10 @@ export default function Home() {
   const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Removed selectedWallpaper and isModalOpen state
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const { toast } = useToast();
+  const { toast } = useToast(); // Keep toast if used for other notifications
 
   const fetchWallpapers = useCallback(async (query: string, deviceCategory: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -39,7 +38,6 @@ export default function Home() {
       const newPhotos = response.photos;
       setWallpapers(prev => {
         const combined = append ? [...prev, ...newPhotos] : newPhotos;
-        // Deduplication based on ID only, as orientation is now handled by card's aspect ratio
         const uniqueMap = new Map(combined.map(item => [item.id, item]));
         return Array.from(uniqueMap.values());
       });
@@ -51,12 +49,9 @@ export default function Home() {
       setHasMore(false);
 
       if (process.env.NODE_ENV === 'development') {
-        console.warn(`[Home Page] Failed to fetch wallpapers for "${finalQuery}" or no results returned from Pexels. Attempting to display mock data.`);
-        // Mock data generation can be removed or simplified if API key handling is robust server-side
-        // For now, ensure Pexels API key (server-side) is correctly set for real data.
+        console.warn(`[Home Page] Failed to fetch wallpapers for "${finalQuery}" or no results returned from Pexels.`);
         const mockPhotos: PexelsPhoto[] = Array.from({ length: 15 }).map((_, i) => {
           const photoId = parseInt(`${pageNum}${i}${Date.now() % 10000}`);
-          // Generic placeholder sizes, actual image aspect ratio will determine display
           const mockWidth = 1000 + Math.floor(Math.random() * 500); 
           const mockHeight = 1200 + Math.floor(Math.random() * 800); 
           const placeholderUrl = (w: number, h: number) => `https://placehold.co/${w}x${h}.png`;
@@ -72,7 +67,7 @@ export default function Home() {
             avg_color: '#7F7F7F',
             src: { 
               original: placeholderUrl(mockWidth, mockHeight),
-              large2x: placeholderUrl(mockWidth, mockHeight), // Keep consistent for simplicity
+              large2x: placeholderUrl(mockWidth, mockHeight),
               large: placeholderUrl(Math.round(mockWidth * 0.75), Math.round(mockHeight * 0.75)),
               medium: placeholderUrl(Math.round(mockWidth * 0.5), Math.round(mockHeight * 0.5)),
               small: placeholderUrl(Math.round(mockWidth * 0.25), Math.round(mockHeight * 0.25)),
@@ -131,49 +126,12 @@ export default function Home() {
     }
   };
 
-
-  const openModal = (wallpaper: PexelsPhoto) => {
-    setSelectedWallpaper(wallpaper);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedWallpaper(null), 300); 
-  };
-
-   const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
-    '@context': 'https://schema.org',
-    '@type': 'ImageObject',
-    name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
-    description: selectedWallpaper.alt || `High-resolution wallpaper by ${selectedWallpaper.photographer}. Dimensions: ${selectedWallpaper.width}x${selectedWallpaper.height}.`,
-    contentUrl: selectedWallpaper.src.original,
-    thumbnailUrl: selectedWallpaper.src.medium,
-    width: { '@type': 'Distance', value: selectedWallpaper.width.toString(), unitCode: 'E37' },
-    height: { '@type': 'Distance', value: selectedWallpaper.height.toString(), unitCode: 'E37' },
-    author: {
-      '@type': 'Person',
-      name: selectedWallpaper.photographer,
-      url: selectedWallpaper.photographer_url,
-    } as SchemaPerson,
-    copyrightHolder: {
-      '@type': 'Person',
-      name: selectedWallpaper.photographer,
-      url: selectedWallpaper.photographer_url,
-    } as SchemaPerson,
-    license: 'https://www.pexels.com/license/',
-    acquireLicensePage: selectedWallpaper.url,
-    provider: {
-      '@type': 'Organization',
-      name: 'Pexels',
-      url: 'https://www.pexels.com',
-    } as SchemaOrganization,
-  } : null;
-
+  // openModal and closeModal are removed as PreviewDialog is no longer used here.
+  // StructuredData for selectedWallpaper is removed as it's handled on the dedicated photo page.
 
   return (
     <>
-      {imageSchema && <StructuredData data={imageSchema} />}
+      {/* Removed StructuredData for selectedWallpaper */}
       <GlobalHeader
         currentDeviceOrientation={currentDeviceOrientation}
         onDeviceOrientationChange={handleDeviceOrientationChange}
@@ -212,7 +170,7 @@ export default function Home() {
         ) : (
           <WallpaperGrid
             photos={wallpapers}
-            onPhotoClick={openModal}
+            // onPhotoClick is removed as WallpaperCard now handles navigation
           />
         )}
 
@@ -240,12 +198,7 @@ export default function Home() {
             </div>
           )}
       </main>
-
-      <PreviewDialog
-        photo={selectedWallpaper}
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      />
+      {/* Removed PreviewDialog component usage */}
     </>
   );
 }

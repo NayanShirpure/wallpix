@@ -4,7 +4,7 @@
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PreviewDialog } from '@/components/wallpaper/PreviewDialog';
+// PreviewDialog is removed
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
@@ -12,7 +12,7 @@ import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { Button } from '@/components/ui/button';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import { StructuredData } from '@/components/structured-data';
-import type { ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization, MinimalWithContext } from '@/types/schema-dts';
+// MinimalWithContext and other schema types are no longer needed here as preview is on a new page
 import { cn } from '@/lib/utils';
 
 interface SearchPageContentProps {
@@ -30,8 +30,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Removed selectedWallpaper and isModalOpen state
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -56,7 +55,6 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         const newPhotos = data.photos;
         setWallpapers((prev: PexelsPhoto[]): PexelsPhoto[] => {
           const combined = append ? [...prev, ...newPhotos] : newPhotos;
-          // Deduplication based on ID only
           const uniqueMap = new Map(combined.map((item: PexelsPhoto) => [item.id, item]));
           return Array.from(uniqueMap.values()) as PexelsPhoto[];
         });
@@ -99,9 +97,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
   const handleSearchSubmit = (newSearchTerm: string) => {
     const trimmedNewSearchTerm = newSearchTerm.trim();
     if (trimmedNewSearchTerm) {
-      // Update URL to reflect new search term
       router.push(`/search?query=${encodeURIComponent(trimmedNewSearchTerm)}`);
-      // No need to set currentSearchTerm here as useEffect on searchParams will handle it
     }
   };
 
@@ -113,48 +109,12 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     }
   };
 
-  const openModal = (wallpaper: PexelsPhoto) => {
-    setSelectedWallpaper(wallpaper);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedWallpaper(null), 300);
-  };
-
-  const imageSchema: MinimalWithContext<SchemaImageObject> | null = selectedWallpaper ? {
-    '@context': 'https://schema.org',
-    '@type': 'ImageObject',
-    name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
-    description: selectedWallpaper.alt || `High-resolution wallpaper by ${selectedWallpaper.photographer}. Dimensions: ${selectedWallpaper.width}x${selectedWallpaper.height}.`,
-    contentUrl: selectedWallpaper.src.original,
-    thumbnailUrl: selectedWallpaper.src.medium,
-    width: { '@type': 'Distance', value: selectedWallpaper.width.toString(), unitCode: 'E37' },
-    height: { '@type': 'Distance', value: selectedWallpaper.height.toString(), unitCode: 'E37' },
-    author: {
-      '@type': 'Person',
-      name: selectedWallpaper.photographer,
-      url: selectedWallpaper.photographer_url,
-    } as SchemaPerson,
-    copyrightHolder: {
-      '@type': 'Person',
-      name: selectedWallpaper.photographer,
-      url: selectedWallpaper.photographer_url,
-    } as SchemaPerson,
-    license: 'https://www.pexels.com/license/',
-    acquireLicensePage: selectedWallpaper.url,
-    provider: {
-      '@type': 'Organization',
-      name: 'Pexels',
-      url: 'https://www.pexels.com',
-    } as SchemaOrganization,
-  } : null;
+  // openModal and closeModal are removed.
+  // StructuredData for selectedWallpaper is removed.
 
   return (
     <>
-      {imageSchema && isModalOpen && <StructuredData data={imageSchema} />}
-      
+      {/* Removed StructuredData for selectedWallpaper */}
       <GlobalHeader
         currentDeviceOrientation={currentDeviceOrientation}
         onDeviceOrientationChange={handleDeviceOrientationChange}
@@ -191,7 +151,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         ) : (
           <WallpaperGrid
             photos={wallpapers}
-            onPhotoClick={openModal}
+            // onPhotoClick is removed
           />
         )}
 
@@ -219,12 +179,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
           </div>
         )}
       </main>
-
-      <PreviewDialog
-        photo={selectedWallpaper}
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      />
+      {/* Removed PreviewDialog component usage */}
     </>
   );
 }

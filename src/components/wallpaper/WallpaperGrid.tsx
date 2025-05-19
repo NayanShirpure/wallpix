@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels'; // DeviceOrientationCategory might not be needed here anymore
+import type { PexelsPhoto } from '@/types/pexels';
 import { WallpaperCard } from './WallpaperCard';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
@@ -9,18 +9,16 @@ import { cn } from '@/lib/utils';
 
 interface WallpaperGridProps {
   photos: PexelsPhoto[];
-  // orientation prop is removed as card adapts to image aspect ratio for masonry
-  onPhotoClick: (photo: PexelsPhoto) => void;
+  // onPhotoClick prop is removed as WallpaperCard now handles navigation
 }
 
-export function WallpaperGrid({ photos, onPhotoClick }: WallpaperGridProps) {
+export function WallpaperGrid({ photos }: WallpaperGridProps) {
 
   const isLikelyUsingMockData =
     photos &&
     photos.length > 0 &&
     photos.every(p => p.photographer === 'Mock Photographer');
 
-  // NEXT_PUBLIC_PEXELS_API_KEY is removed, so this check is simplified
   const isApiKeyMissingOrPlaceholder = !process.env.PEXELS_API_KEY || /your_actual_pexels_api_key/i.test(process.env.PEXELS_API_KEY || "");
 
 
@@ -51,12 +49,10 @@ export function WallpaperGrid({ photos, onPhotoClick }: WallpaperGridProps) {
     );
   }
 
-  // Use CSS multi-column layout for masonry effect
   const gridClasses = cn(
-    "p-1", // Basic padding
-    // Responsive columns for masonry layout
+    "p-1", 
     "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6", 
-    "gap-2 sm:gap-3 md:gap-4" // Gap between columns
+    "gap-2 sm:gap-3 md:gap-4" 
   );
 
   return (
@@ -64,10 +60,9 @@ export function WallpaperGrid({ photos, onPhotoClick }: WallpaperGridProps) {
       <div className={gridClasses}>
         {photos.map((photo) => (
           <WallpaperCard
-            key={`${photo.id}-masonry`} // Ensure unique key
+            key={`${photo.id}-masonry`} 
             photo={photo}
-            onClick={() => onPhotoClick(photo)}
-            // No orientation prop passed as card handles its own aspect ratio
+            // onClick is removed
           />
         ))}
       </div>
