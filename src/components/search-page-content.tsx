@@ -38,10 +38,9 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
-    const finalQuery = query.trim() || 'Wallpaper'; // Fallback search term
+    const finalQuery = query.trim() || 'Wallpaper'; 
 
     try {
-      // Fetch without orientation filter
       const data = await searchPhotosLib(finalQuery, pageNum, 30);
       if (data && data.photos) {
         const newPhotos = data.photos;
@@ -75,7 +74,6 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
-    // Fetch initial data when component mounts or when currentSearchTerm changes
     if (currentSearchTerm) {
       fetchWallpapers(currentSearchTerm, 1, false);
     }
@@ -107,7 +105,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
         initialSearchTerm={currentSearchTerm}
-        navigateToSearchPage={false}
+        navigateToSearchPage={false} 
       />
 
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
@@ -123,7 +121,6 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         {loading && wallpapers.length === 0 ? (
           <div
             className={cn(
-              "p-1",
               "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
               "gap-2 sm:gap-3 md:gap-4"
             )}
@@ -131,7 +128,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
             aria-live="polite"
           >
             {[...Array(18)].map((_, i) => (
-              <Skeleton key={`search-content-skeleton-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+              <Skeleton key={`search-content-skeleton-${i}`} className="w-full h-72 mb-2 sm:mb-3 md:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
             ))}
           </div>
         ) : (
@@ -151,7 +148,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
         {loading && wallpapers.length > 0 && (
           <div
             className={cn(
-              "p-1 mt-4",
+              "mt-4",
               "columns-2 xs:columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6",
               "gap-2 sm:gap-3 md:gap-4"
             )}
@@ -159,7 +156,7 @@ export function SearchPageContent({ initialQuery }: SearchPageContentProps) {
             aria-live="polite"
           >
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={`search-content-loading-more-${i}`} className="w-full aspect-[3/4] mb-3 sm:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
+              <Skeleton key={`search-content-loading-more-${i}`} className="w-full h-72 mb-2 sm:mb-3 md:mb-4 rounded-lg bg-muted/70 break-inside-avoid-column" />
             ))}
           </div>
         )}

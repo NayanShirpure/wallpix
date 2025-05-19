@@ -3,29 +3,39 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Share2, Bookmark } from 'lucide-react'; // Changed Download to Bookmark
+import { Share2, Bookmark } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
 interface WallpaperCardProps {
   photo: PexelsPhoto;
-  // onClick prop is removed, navigation will be handled directly
 }
 
 export function WallpaperCard({ photo }: WallpaperCardProps) {
   const { toast } = useToast();
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
+
+  if (!photo || !photo.src || !photo.src.large || !photo.src.tiny || !photo.width || !photo.height) {
+    console.warn('[WallpaperCard] Missing essential photo data, rendering placeholder or nothing.', photo);
+    // Optionally render a placeholder or null
+    return (
+        <Card className="overflow-hidden rounded-lg bg-muted/30 shadow-md break-inside-avoid-column">
+            <CardContent className="p-0 relative aspect-[3/4] flex items-center justify-center">
+                <p className="text-xs text-muted-foreground p-2">Image data unavailable</p>
+            </CardContent>
+        </Card>
+    );
+  }
 
   const imageSrc = photo.src.large || photo.src.medium || photo.src.original;
-  const imageWidth = photo.width;
-  const imageHeight = photo.height;
-
   const imageAltText = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const cardAriaLabel = `View wallpaper: ${imageAltText}`;
   const overlayTitle = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
+  
+  const dataAiHintForImage = (photo.alt || "wallpaper abstract").split(' ').slice(0,2).join(' ');
 
   const handleCardClick = () => {
     router.push(`/photo/${photo.id}`);
@@ -50,13 +60,13 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
   }
 
   const handleShareClick = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click event
+    e.stopPropagation(); 
     const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
     const shareTitle = displayAlt;
     const shareText = `Check out this amazing wallpaper on Wallify: "${displayAlt}" by ${photo.photographer}.`;
     
     const query = encodeURIComponent(displayAlt);
-    const shareUrl = `${window.location.origin}/search?query=${query}`; // Share link to search on Wallify
+    const shareUrl = `${window.location.origin}/search?query=${query}`; 
 
     const shareData = { title: shareTitle, text: shareText, url: shareUrl };
 
@@ -64,10 +74,9 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
       try {
         await navigator.share(shareData);
         toast({ title: "Shared successfully!", description: "The wallpaper link has been shared." });
-      } catch (error) {
-        const err = error as Error;
-        if (err.name !== 'AbortError') {
-          if (err.message && err.message.toLowerCase().includes('permission denied')) {
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          if (error.message && error.message.toLowerCase().includes('permission denied')) {
             toast({
               title: "Share Permission Denied",
               description: "Browser prevented sharing. Trying to copy link instead. Check site permissions if this persists.",
@@ -88,45 +97,42 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
   };
   
   const handleSaveClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click event
+    e.stopPropagation(); 
     toast({
       title: "Save Feature",
       description: "Saving wallpapers will be available soon!",
     });
   };
-  
-  const dataAiHintForImage = (photo.alt || "wallpaper abstract").split(' ').slice(0,2).join(' ');
 
   return (
     <Card
       className={cn(
         "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
         "bg-card border-border shadow-md hover:shadow-xl focus-within:shadow-xl",
-        "rounded-lg break-inside-avoid-column mb-4"
+        "rounded-lg" // break-inside-avoid-column is handled by the wrapper in WallpaperGrid
       )}
-      onClick={handleCardClick} // Updated onClick
-      role="link" // Changed role to link as it navigates
+      onClick={handleCardClick}
+      role="link"
       tabIndex={0}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCardClick()}
       aria-label={cardAriaLabel}
     >
-      <CardContent className={cn('p-0 relative w-full')}>
-        <div className="overflow-hidden rounded-lg">
-          <Image
-            src={imageSrc}
-            alt={imageAltText}
-            width={imageWidth}
-            height={imageHeight}
-            className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:scale-105 group-focus-within:scale-105"
-            priority={photo.id < 3000000} 
-            placeholder="blur"
-            blurDataURL={photo.src.tiny}
-            data-ai-hint={dataAiHintForImage}
-          />
-        </div>
+      <CardContent className="p-0 relative">
+        <Image
+          src={imageSrc}
+          alt={imageAltText}
+          width={photo.width}
+          height={photo.height}
+          sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          className="w-full h-auto object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+          priority={photo.id < 3000000}
+          placeholder="blur"
+          blurDataURL={photo.src.tiny}
+          data-ai-hint={dataAiHintForImage}
+        />
         <div
           className={cn(
-            "absolute bottom-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3",
+            "absolute bottom-0 left-0 right-0 flex items-end justify-between p-2 sm:p-3", // items-end to align content at bottom
             "bg-gradient-to-t from-black/70 via-black/50 to-transparent",
             "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 ease-in-out"
           )}
@@ -135,16 +141,18 @@ export function WallpaperCard({ photo }: WallpaperCardProps) {
             <p className="text-xs xxs:text-sm font-semibold truncate leading-snug" title={overlayTitle}>
               {overlayTitle}
             </p>
-            <a
-              href={photo.photographer_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-200 text-[10px] xxs:text-xs hover:text-accent focus:text-accent focus:outline-none focus:underline truncate block mt-0.5 leading-snug"
-              onClick={(e) => e.stopPropagation()}
-              aria-label={`View photographer ${photo.photographer} on Pexels (opens in new tab)`}
-            >
-              by {photo.photographer}
-            </a>
+            {photo.photographer && (
+              <a
+                href={photo.photographer_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-200 text-[10px] xxs:text-xs hover:text-accent focus:text-accent focus:outline-none focus:underline truncate block mt-0.5 leading-snug"
+                onClick={(e) => e.stopPropagation()}
+                aria-label={`View photographer ${photo.photographer} on Pexels (opens in new tab)`}
+              >
+                by {photo.photographer}
+              </a>
+            )}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
             <Button
