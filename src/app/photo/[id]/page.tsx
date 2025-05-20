@@ -4,9 +4,8 @@ import { notFound } from 'next/navigation';
 import { getPhotoById } from '@/lib/pexels';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization, MinimalWithContext } from '@/types/schema-dts';
-import { User } from 'lucide-react';
 import type { PexelsPhoto } from '@/types/pexels';
-import { PhotoPageClientWrapper } from '@/components/photo-page-client-wrapper'; // Import the new client component
+import { PhotoPageClientWrapper } from '@/components/photo-page-client-wrapper';
 
 type PhotoPageProps = {
   params: { id: string };
@@ -15,11 +14,13 @@ type PhotoPageProps = {
 export default async function PhotoPage({ params }: PhotoPageProps) {
   const id = params.id;
   if (isNaN(Number(id))) {
+    console.log(`[PhotoPage Server] Invalid photo ID (NaN): ${id}. Rendering 404.`);
     notFound();
   }
   const photo = await getPhotoById(id);
 
   if (!photo) {
+    console.log(`[PhotoPage Server] Photo with ID ${id} not found or API call failed. Rendering 404. Check PEXELS_API_KEY in deployment environment.`); // Added log
     notFound();
   }
 
@@ -33,20 +34,20 @@ export default async function PhotoPage({ params }: PhotoPageProps) {
     description: `High-resolution wallpaper by ${photo.photographer}. Dimensions: ${photo.width}x${photo.height}.`,
     contentUrl: photo.src.original,
     thumbnailUrl: photo.src.medium,
-    width: { '@type': 'Distance', value: photo.width.toString(), unitCode: 'E37' },
+    width: { '@type': 'Distance', value: photo.width.toString(), unitCode: 'E37' }, // E37 is not standard, but often used as placeholder for px
     height: { '@type': 'Distance', value: photo.height.toString(), unitCode: 'E37' },
     author: {
       '@type': 'Person',
       name: photo.photographer,
-      url: photo.photographer_url || undefined,
+      url: photo.photographer_url || undefined, // Ensure URL is not null
     } as SchemaPerson,
     copyrightHolder: {
       '@type': 'Person',
       name: photo.photographer,
-      url: photo.photographer_url || undefined,
+      url: photo.photographer_url || undefined, // Ensure URL is not null
     } as SchemaPerson,
     license: 'https://www.pexels.com/license/',
-    acquireLicensePage: photo.url || undefined,
+    acquireLicensePage: photo.url || undefined, // Ensure URL is not null
     provider: {
       '@type': 'Organization',
       name: 'Pexels',
@@ -54,11 +55,13 @@ export default async function PhotoPage({ params }: PhotoPageProps) {
     } as SchemaOrganization,
   };
 
-  let relatedQuery = 'abstract nature wallpaper';
+  let relatedQuery = 'abstract nature wallpaper'; // Default fallback
   if (photo.alt && photo.alt.trim() !== '') {
-    relatedQuery = photo.alt.split(' ').slice(0, 3).join(' ');
-    if (relatedQuery.length < 5 && photo.alt.split(' ').length <= 2) {
-        relatedQuery = photo.alt + ' wallpaper background';
+    const altWords = photo.alt.split(' ');
+    if (altWords.length >= 3) {
+      relatedQuery = altWords.slice(0, 3).join(' ');
+    } else {
+      relatedQuery = photo.alt + ' wallpaper background'; // For shorter alt texts
     }
   } else if (photo.photographer) {
       relatedQuery = photo.photographer + ' photography style';
