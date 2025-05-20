@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, InfoIcon as Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone } from 'lucide-react';
+import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { wallpaperFilterCategoryGroups, deviceOrientationTabs, type DeviceOrientationCategory } from '@/config/categories';
+import { wallpaperFilterCategoryGroups, type DeviceOrientationCategory } from '@/config/categories';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchBar } from '@/components/wallpaper/SearchBar';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,14 +31,13 @@ interface GlobalHeaderProps {
   currentDeviceOrientation: DeviceOrientationCategory;
   onDeviceOrientationChange: (orientation: DeviceOrientationCategory) => void;
   onWallpaperCategorySelect: (categoryValue: string) => void;
-  onSearchSubmit: (searchTerm: string) => void;
+  // onSearchSubmit is no longer passed as SearchBar handles navigation
 }
 
 export function GlobalHeader({
   currentDeviceOrientation,
   onDeviceOrientationChange,
   onWallpaperCategorySelect,
-  onSearchSubmit,
 }: GlobalHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -63,9 +62,8 @@ export function GlobalHeader({
         <div className="flex-1 flex justify-center items-center px-2 sm:px-4">
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
             <SearchBar
-              onSubmitSearch={onSearchSubmit}
               initialValue={displaySearchTerm}
-              navigateToSearchPage={true} 
+              navigateToSearchPage={true}
             />
           </div>
         </div>
@@ -75,12 +73,21 @@ export function GlobalHeader({
           <div className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
             <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="hidden md:block">
               <TabsList className="h-9">
-                {deviceOrientationTabs.map((tab) => (
-                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs px-2.5 py-1.5 h-auto">
-                    {tab.value === 'desktop' ? <Monitor className="mr-1.5 h-3.5 w-3.5" /> : <Smartphone className="mr-1.5 h-3.5 w-3.5" />}
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
+                {/* Updated TabsTrigger for desktop */}
+                <TabsTrigger
+                  value="desktop"
+                  className="p-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+                  aria-label="Desktop View"
+                >
+                  <Monitor className="h-4 w-4" />
+                </TabsTrigger>
+                <TabsTrigger
+                  value="smartphone"
+                  className="p-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+                  aria-label="Smartphone View"
+                >
+                  <Smartphone className="h-4 w-4" />
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -192,12 +199,21 @@ export function GlobalHeader({
                     <span className="text-sm font-medium text-muted-foreground">Orientation</span>
                     <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="mt-1.5">
                       <TabsList className="grid w-full grid-cols-2 h-9">
-                        {deviceOrientationTabs.map((tab) => (
-                          <TabsTrigger key={tab.value} value={tab.value} className="text-xs px-2 py-1.5 h-auto">
-                             {tab.value === 'desktop' ? <Monitor className="mr-1.5 h-3.5 w-3.5" /> : <Smartphone className="mr-1.5 h-3.5 w-3.5" />}
-                             {tab.label}
-                          </TabsTrigger>
-                        ))}
+                        {/* Mobile TabsTrigger remains unchanged with icon and label */}
+                        <TabsTrigger
+                          value="desktop"
+                          className="text-xs px-2 py-1.5 h-auto"
+                        >
+                           <Monitor className="mr-1.5 h-3.5 w-3.5" />
+                           Desktop
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="smartphone"
+                          className="text-xs px-2 py-1.5 h-auto"
+                        >
+                           <Smartphone className="mr-1.5 h-3.5 w-3.5" />
+                           Smartphone
+                        </TabsTrigger>
                       </TabsList>
                     </Tabs>
                   </div>
