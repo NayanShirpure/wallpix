@@ -16,25 +16,25 @@ export async function GET(request: NextRequest, context: Context) {
 
   if (!id) {
     console.error(`[API/PEXELS/PHOTOS] Error: Photo ID is missing in the request context.`);
-    return new Response(
-      JSON.stringify({ error: 'Photo ID is required' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    return NextResponse.json(
+      { error: 'Photo ID is required' },
+      { status: 400 }
     );
   }
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;
   const maskedApiKey = pexelsApiKey 
     ? `${pexelsApiKey.substring(0, 4)}...${pexelsApiKey.substring(pexelsApiKey.length - 4)}` 
-    : 'NOT SET';
+    : 'NOT SET OR MISSING';
   
   console.log(`[API/PEXELS/PHOTOS/${id}] Using Pexels API Key (masked): ${maskedApiKey}`);
 
   if (!pexelsApiKey) {
     const errorMessage = `[API/PEXELS/PHOTOS/${id}] PEXELS_API_KEY IS MISSING ON THE SERVER. CRITICAL: Check deployment environment variables. The application cannot function without a valid Pexels API Key.`;
     console.error(errorMessage);
-    return new Response(
-      `Server configuration error: Pexels API Key is not configured in the deployment environment. Photo ID: ${id}.`,
-      { status: 500, headers: { 'Content-Type': 'text/plain' } }
+    return NextResponse.json(
+      { error: 'Server configuration error: Pexels API Key missing.' },
+      { status: 500 }
     );
   }
 
@@ -56,9 +56,9 @@ export async function GET(request: NextRequest, context: Context) {
       const pexelsErrorBody = await pexelsResponse.text().catch(() => 'Could not read Pexels error body.');
       const errorMessage = `[API/PEXELS/PHOTOS/${id}] Pexels API error: ${pexelsResponse.status} ${pexelsResponse.statusText}. Body: ${pexelsErrorBody.substring(0, 500)}`;
       console.error(errorMessage);
-      return new Response(
-        `Pexels API error: ${pexelsResponse.status}. Photo ID: ${id}. Pexels response: ${pexelsErrorBody.substring(0, 200)}`,
-        { status: pexelsResponse.status, headers: { 'Content-Type': 'text/plain' } }
+      return NextResponse.json(
+        { error: 'Pexels API error', status: pexelsResponse.status, details: pexelsErrorBody.substring(0, 200) },
+        { status: pexelsResponse.status }
       );
     }
 
@@ -68,9 +68,9 @@ export async function GET(request: NextRequest, context: Context) {
   } catch (error) {
     const errorMessage = `[API/PEXELS/PHOTOS/${id}] Error fetching from Pexels API: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
-    return new Response(
-      `Failed to fetch photo details from Pexels for ID ${id}. Check server logs. Error: ${error instanceof Error ? error.message : String(error)}`,
-      { status: 500, headers: { 'Content-Type': 'text/plain' } }
+    return NextResponse.json(
+      { error: `Failed to fetch photo details from Pexels for ID ${id}.`, details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
     );
   }
 }

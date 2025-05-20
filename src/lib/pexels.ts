@@ -22,34 +22,41 @@ async function fetchFromInternalAPI<T>(endpoint: string, params?: URLSearchParam
     requestUrl += `?${params.toString()}`;
   }
   
+  // Note: A 429 error from Pexels API indicates rate limiting.
+  // This function handles responses from our *internal* API routes.
   try {
     const response = await fetch(requestUrl, {
       cache: 'default', 
     });
 
     if (!response.ok) {
-      let errorBody = `Status: ${response.status} ${response.statusText}. URL: ${requestUrl}.`;
+      let errorDetails = `Status: ${response.status} ${response.statusText}. URL: ${requestUrl}.`;
       try {
-        // Try to parse as JSON first
+        // Attempt to parse as JSON first, as our internal routes should return JSON errors
         const jsonError = await response.json();
-        errorBody += ` Body: ${JSON.stringify(jsonError)}`;
+        errorDetails += ` Body: ${JSON.stringify(jsonError)}`;
       } catch (jsonParseError) {
         // If JSON parsing fails, try to get text
         try {
           const textError = await response.text();
-          errorBody += ` Body (text): ${textError.substring(0, 500)}`;
+          errorDetails += ` Body (text): ${textError.substring(0, 500)}`;
         } catch (textParseError) {
-          errorBody += ' Could not read error response body.';
+          errorDetails += ' Could not read error response body.';
         }
       }
-      // Note: A 401/403 error from this log, when your internal API tries to hit Pexels, means PEXELS_API_KEY is likely invalid/missing on the server.
-      // A 429 error from this log means Pexels API rate limiting.
-      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Error fetching from internal API ${requestUrl}. Response: ${errorBody}`);
+      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Error fetching from internal API ${requestUrl}. Response: ${errorDetails}`);
       return null;
     }
     
-    const data = await response.json();
-    return data as T;
+    // If response is OK, attempt to parse as JSON
+    try {
+      const data = await response.json();
+      return data as T;
+    } catch (e) {
+      // Handle cases where response is OK but body is not valid JSON (should not happen with our API routes)
+      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Failed to parse JSON response from ${requestUrl}:`, e);
+      return null;
+    }
 
   } catch (error) {
     console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Network error or other issue fetching from internal API ${requestUrl}:`, error);
