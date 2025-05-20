@@ -30,21 +30,21 @@ async function fetchFromInternalAPI<T>(endpoint: string, params?: URLSearchParam
     });
 
     if (!response.ok) {
-      let errorDetails = `Status: ${response.status} ${response.statusText}. URL: ${requestUrl}.`;
+      let errorBodyContent = `Status: ${response.status} ${response.statusText}. URL: ${requestUrl}.`;
       try {
-        // Attempt to parse as JSON first, as our internal routes should return JSON errors
+        // Try to parse as JSON first, as our internal routes should now consistently return JSON errors
         const jsonError = await response.json();
-        errorDetails += ` Body: ${JSON.stringify(jsonError)}`;
+        errorBodyContent += ` Body: ${JSON.stringify(jsonError)}`;
       } catch (jsonParseError) {
         // If JSON parsing fails, try to get text
         try {
           const textError = await response.text();
-          errorDetails += ` Body (text): ${textError.substring(0, 500)}`;
+          errorBodyContent += ` Body (text): ${textError}`;
         } catch (textParseError) {
-          errorDetails += ' Could not read error response body.';
+          errorBodyContent += ' Could not read error response body (text or json).';
         }
       }
-      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Error fetching from internal API ${requestUrl}. Response: ${errorDetails}`);
+      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Error fetching from internal API ${requestUrl}. Response: ${errorBodyContent.substring(0, 1000)}`);
       return null;
     }
     
@@ -53,8 +53,9 @@ async function fetchFromInternalAPI<T>(endpoint: string, params?: URLSearchParam
       const data = await response.json();
       return data as T;
     } catch (e) {
-      // Handle cases where response is OK but body is not valid JSON (should not happen with our API routes)
-      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Failed to parse JSON response from ${requestUrl}:`, e);
+      // Handle cases where response is OK but body is not valid JSON
+      const responseText = await response.text().catch(() => "Could not read response text.");
+      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Failed to parse JSON response from ${requestUrl}. Response text: ${responseText.substring(0,500)}`, e);
       return null;
     }
 

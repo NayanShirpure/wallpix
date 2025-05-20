@@ -54,8 +54,15 @@ export async function GET(request: NextRequest, context: Context) {
     // console.log(`[API/PEXELS/PHOTOS/${id}] Pexels API response status: ${pexelsResponse.status}`);
 
     if (!pexelsResponse.ok) {
-      const pexelsErrorBody = await pexelsResponse.text().catch(() => 'Could not read Pexels error body.');
+      let pexelsErrorBody = 'Could not read Pexels error body.';
+      try {
+        // Attempt to get text, as Pexels might not always return JSON for errors
+        pexelsErrorBody = await pexelsResponse.text();
+      } catch (e) {
+        console.error(`[API/PEXELS/PHOTOS/${id}] Failed to parse Pexels error body as text:`, e);
+      }
       console.error(`[API/PEXELS/PHOTOS/${id}] Pexels API error: ${pexelsResponse.status} ${pexelsResponse.statusText}. Raw Body: ${pexelsErrorBody.substring(0, 500)}`);
+      // Ensure the response from this internal API route is always valid JSON
       return NextResponse.json(
         { error: 'Pexels API error', pexels_status: pexelsResponse.status, pexels_details: pexelsErrorBody.substring(0, 200) },
         { status: pexelsResponse.status } 
@@ -68,6 +75,7 @@ export async function GET(request: NextRequest, context: Context) {
   } catch (error) {
     const errorMessage = `[API/PEXELS/PHOTOS/${id}] Error fetching from Pexels API: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
+    // Ensure the response from this internal API route is always valid JSON
     return NextResponse.json(
       { error: `Failed to fetch photo details from Pexels for ID ${id}.`, details: error instanceof Error ? error.message : String(error) },
       { status: 503 } // Service Unavailable
