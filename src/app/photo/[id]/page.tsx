@@ -1,11 +1,12 @@
 
-import Image from 'next/image';
+// This is now a simple Server Component that passes the ID to the client wrapper.
+// Data fetching for the photo will happen client-side.
+
 import { notFound } from 'next/navigation';
-import { getPhotoById } from '@/lib/pexels';
-import { StructuredData } from '@/components/structured-data';
-import type { ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization, MinimalWithContext } from '@/types/schema-dts';
-import type { PexelsPhoto } from '@/types/pexels';
 import { PhotoPageClientWrapper } from '@/components/photo-page-client-wrapper';
+import { StructuredData } from '@/components/structured-data';
+// For a generic page schema, not image specific as data is client-fetched
+import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
 
 type PhotoPageProps = {
   params: { id: string };
@@ -13,67 +14,32 @@ type PhotoPageProps = {
 
 export default async function PhotoPage({ params }: PhotoPageProps) {
   const id = params.id;
+
   if (isNaN(Number(id))) {
-    console.log(`[PhotoPage Server] Invalid photo ID (NaN): ${id}. Rendering 404.`);
-    notFound();
-  }
-  const photo = await getPhotoById(id);
-
-  if (!photo) {
-    console.log(`[PhotoPage Server] Photo with ID ${id} not found or API call failed. Rendering 404. Check PEXELS_API_KEY in deployment environment.`); // Added log
-    notFound();
-  }
-
-  const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
-  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
-
-  const imageSchema: MinimalWithContext<SchemaImageObject> = {
-    '@context': 'https://schema.org',
-    '@type': 'ImageObject',
-    name: displayAlt,
-    description: `High-resolution wallpaper by ${photo.photographer}. Dimensions: ${photo.width}x${photo.height}.`,
-    contentUrl: photo.src.original,
-    thumbnailUrl: photo.src.medium,
-    width: { '@type': 'Distance', value: photo.width.toString(), unitCode: 'E37' }, // E37 is not standard, but often used as placeholder for px
-    height: { '@type': 'Distance', value: photo.height.toString(), unitCode: 'E37' },
-    author: {
-      '@type': 'Person',
-      name: photo.photographer,
-      url: photo.photographer_url || undefined, // Ensure URL is not null
-    } as SchemaPerson,
-    copyrightHolder: {
-      '@type': 'Person',
-      name: photo.photographer,
-      url: photo.photographer_url || undefined, // Ensure URL is not null
-    } as SchemaPerson,
-    license: 'https://www.pexels.com/license/',
-    acquireLicensePage: photo.url || undefined, // Ensure URL is not null
-    provider: {
-      '@type': 'Organization',
-      name: 'Pexels',
-      url: 'https://www.pexels.com',
-    } as SchemaOrganization,
-  };
-
-  let relatedQuery = 'abstract nature wallpaper'; // Default fallback
-  if (photo.alt && photo.alt.trim() !== '') {
-    const altWords = photo.alt.split(' ');
-    if (altWords.length >= 3) {
-      relatedQuery = altWords.slice(0, 3).join(' ');
-    } else {
-      relatedQuery = photo.alt + ' wallpaper background'; // For shorter alt texts
-    }
-  } else if (photo.photographer) {
-      relatedQuery = photo.photographer + ' photography style';
+    // console.log(`[PhotoPage Server] Invalid photo ID (NaN): ${id}. Rendering 404.`);
+    notFound(); // Still good to validate ID format server-side
   }
   
-  const initialSearchTermForHeader = photo.alt || "Wallpaper";
+  // No server-side data fetching for the photo here.
+  // The client wrapper will handle it.
 
+  // Generic schema for the photo page container.
+  // Specific ImageObject schema would need to be client-rendered or omitted
+  // if critical SEO for the image itself is impacted by client-side fetching.
+  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+  const pageSchema: MinimalWithContext<SchemaWebPage> = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage', // Could be 'ItemPage' or a more specific type
+    name: `Photo ${id} on Wallify`,
+    url: `${BASE_URL}photo/${id}`,
+    description: `View photo with ID ${id} on Wallify. Discover stunning wallpapers.`,
+  };
 
   return (
     <>
-      <StructuredData data={imageSchema} />
-      <PhotoPageClientWrapper photo={photo} relatedQuery={relatedQuery} initialSearchTerm={initialSearchTermForHeader} />
+      <StructuredData data={pageSchema} />
+      {/* Pass only the photoId to the client wrapper */}
+      <PhotoPageClientWrapper photoId={id} />
     </>
   );
 }

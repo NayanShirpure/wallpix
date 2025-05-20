@@ -1,70 +1,57 @@
 
 import type { Metadata, ResolvingMetadata } from 'next';
-import { getPhotoById } from '@/lib/pexels';
-import type { PexelsPhoto } from '@/types/pexels';
+// Removed getPhotoById import as we can't fetch specific photo details here anymore
+// import type { PexelsPhoto } from '@/types/pexels'; // Keep if needed for other layout elements, but not for dynamic metadata
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
-type PhotoPageProps = {
+type PhotoPageLayoutProps = {
   params: { id: string };
 };
 
 export async function generateMetadata(
-  { params }: PhotoPageProps,
-  parent: ResolvingMetadata
+  { params }: PhotoPageLayoutProps,
+  parent: ResolvingMetadata // Keep parent for potentially inheriting other metadata
 ): Promise<Metadata> {
   const id = params.id;
-  let photo: PexelsPhoto | null = null;
+  // Since data is fetched client-side, we generate more generic metadata here.
+  // Specific photo details won't be available for server-rendered meta tags.
 
-  if (id && !isNaN(Number(id))) { // Ensure ID is a number for Pexels
-    photo = await getPhotoById(id);
-  }
-
-  if (!photo) {
-    return {
-      title: 'Wallpaper Not Found | Wallify',
-      description: 'The wallpaper you are looking for could not be found.',
-       alternates: {
-        canonical: `${BASE_URL}photo/${id}`,
-      },
-    };
-  }
+  const title = id ? `View Photo ${id} | Wallify` : 'View Photo | Wallify';
+  const description = `View and explore wallpapers on Wallify. Photo ID: ${id}.`;
+  const imageUrl = `${BASE_URL}opengraph-image.png`; // Generic fallback image
 
   const parentOpenGraph = await parent;
   const previousImages = parentOpenGraph?.openGraph?.images || [];
-  const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
 
   return {
-    title: `${displayAlt} | Wallify`,
-    description: `View and download this stunning wallpaper: ${displayAlt}. Dimensions: ${photo.width}x${photo.height}.`,
-    keywords: (photo.alt ? photo.alt.split(' ').concat(['wallpaper', 'background', photo.photographer]) : ['wallpaper', 'background', photo.photographer]),
+    title,
+    description,
+    keywords: ['wallpaper', 'background', 'photo', 'image', `photo ${id}`, 'Wallify'],
     alternates: {
       canonical: `${BASE_URL}photo/${id}`,
     },
     openGraph: {
-      title: `${displayAlt} | Wallify`,
-      description: `High-quality wallpaper by ${photo.photographer}.`,
+      title,
+      description,
       url: `${BASE_URL}photo/${id}`,
-      type: 'article', // More specific than 'website' for a single item view
+      type: 'article',
       images: [
         {
-          url: photo.src.large2x || photo.src.original,
-          width: photo.width,
-          height: photo.height,
-          alt: displayAlt,
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
         },
-        ...previousImages,
+        ...previousImages
       ],
-      tags: photo.alt ? photo.alt.split(' ').slice(0, 5) : [], // Use some alt words as tags
-      section: 'Wallpapers',
-      publishedTime: new Date().toISOString(), // Placeholder, Pexels API doesn't provide upload date for photo
-      authors: [photo.photographer_url],
+      // section and publishedTime might be too generic without photo data
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${displayAlt} | Wallify`,
-      description: `Wallpaper by ${photo.photographer}.`,
-      images: [photo.src.large || photo.src.original],
+      title,
+      description,
+      images: [imageUrl],
     },
   };
 }
