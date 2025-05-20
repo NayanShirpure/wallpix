@@ -21,11 +21,11 @@ export async function GET(request: NextRequest, context: Context) {
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;
   if (!pexelsApiKey) {
-    const errorMessage = `[API/PEXELS/PHOTOS/${id}] PEXELS_API_KEY is not set or accessible on the server. CRITICAL: Check deployment environment variables.`;
+    const errorMessage = `[API/PEXELS/PHOTOS/${id}] PEXELS_API_KEY IS MISSING ON THE SERVER. CRITICAL: Check deployment environment variables. The application cannot function without a valid Pexels API Key.`;
     console.error(errorMessage);
     return new Response(
-      JSON.stringify({ error: 'Server configuration error: Pexels API Key missing or not configured in the deployment environment.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      `Server configuration error: Pexels API Key is not configured in the deployment environment. Photo ID: ${id}.`,
+      { status: 500, headers: { 'Content-Type': 'text/plain' } }
     );
   }
 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, context: Context) {
       console.error(errorMessage);
       // Return a plain text error for easier debugging by fetchFromInternalAPI
       return new Response(
-        `Pexels API error: ${pexelsResponse.status}. Check server logs for details. Pexels response: ${pexelsErrorBody.substring(0, 200)}`,
+        `Pexels API error: ${pexelsResponse.status}. Photo ID: ${id}. Pexels response: ${pexelsErrorBody.substring(0, 200)}`,
         { status: pexelsResponse.status, headers: { 'Content-Type': 'text/plain' } }
       );
     }
@@ -56,8 +56,8 @@ export async function GET(request: NextRequest, context: Context) {
     const errorMessage = `[API/PEXELS/PHOTOS/${id}] Error fetching from Pexels API: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch photo details from Pexels. Check server logs.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      `Failed to fetch photo details from Pexels for ID ${id}. Check server logs.`,
+      { status: 500, headers: { 'Content-Type': 'text/plain' } }
     );
   }
 }
