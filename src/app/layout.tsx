@@ -27,14 +27,14 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
+  keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization', 'ai wallpaper generator'],
   manifest: '/manifest.json',
   alternates: {
     canonical: '/',
   },
   icons: {
-    icon: '/favicon.ico', // Assuming your favicon is at this path
-    apple: '/apple-touch-icon.png', // Added Apple Touch Icon
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
   openGraph: {
     title: SITE_NAME,
@@ -78,6 +78,8 @@ export const viewport: Viewport = {
     { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' },
     { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' },
   ],
+  // Ensure viewport matches manifest.json settings
+  // No specific 'viewport' property in manifest, but theme_color is handled
 };
 
 
@@ -111,6 +113,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
          <StructuredData data={webSiteSchema} />
+         {/* The manifest link is already handled by Next.js via the metadata object */}
       </head>
       <body className={cn(
         inter.className,
@@ -123,7 +126,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClientProgressBar
-            color="hsl(var(--accent))" // Vibrant Professional: #0DCAF0 (or #27D2F5 for dark)
+            color="hsl(var(--accent))"
             startPosition={0.3}
             stopDelayMs={200}
             height={3}
