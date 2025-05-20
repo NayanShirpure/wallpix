@@ -23,14 +23,14 @@ const SITE_DESCRIPTION = 'Discover and download stunning, high-quality wallpaper
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: SITE_NAME,
-    template: `%s | ${SITE_NAME}`,
+    default: SITE_NAME, // Title for the homepage
+    template: `%s | ${SITE_NAME}`, // Template for other pages
   },
   description: SITE_DESCRIPTION,
   keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization', 'ai wallpaper generator'],
   manifest: '/manifest.json',
   alternates: {
-    canonical: '/',
+    canonical: '/', // Canonical URL for the homepage
   },
   icons: {
     icon: '/favicon.ico',
@@ -39,14 +39,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    url: BASE_URL,
+    url: BASE_URL, // Base URL for the site, canonical for homepage
     siteName: SITE_NAME,
     images: [
       {
-        url: `/opengraph-image.png`,
+        url: `/opengraph-image.png`, // Relative to metadataBase
         width: 1200,
         height: 630,
-        alt: `Wallify - Stunning Wallpapers for Desktop and Smartphone`,
+        alt: `Wallify - Your Destination for Stunning Wallpapers`, // More descriptive alt
       },
     ],
     locale: 'en_US',
@@ -56,9 +56,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-     images: [`/twitter-image.png`],
-    site: '@NayanShirpure',
-    creator: '@NayanShirpure',
+     images: [`/twitter-image.png`], // Relative to metadataBase
+    site: '@NayanShirpure', // Replace with your actual Twitter handle if different
+    creator: '@NayanShirpure', // Replace with your actual Twitter handle if different
   },
   robots: {
     index: true,
@@ -78,8 +78,6 @@ export const viewport: Viewport = {
     { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' },
     { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' },
   ],
-  // Ensure viewport matches manifest.json settings
-  // No specific 'viewport' property in manifest, but theme_color is handled
 };
 
 
@@ -113,7 +111,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
          <StructuredData data={webSiteSchema} />
-         {/* The manifest link is already handled by Next.js via the metadata object */}
+         {/* Next.js automatically handles the <title> tag from metadata, manifest link, and canonical link */}
       </head>
       <body className={cn(
         inter.className,

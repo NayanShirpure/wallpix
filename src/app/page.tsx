@@ -3,7 +3,7 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation'; // Removed useSearchParams as it's not directly used here for query changes
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
@@ -16,13 +16,14 @@ const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
 export default function Home() {
   const router = useRouter();
+  const searchParams = useSearchParams(); // To read URL params if needed for other logic, but not for driving homepage content
   const { toast } = useToast();
 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM; // Homepage always fetches this term
+  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM; // Homepage always fetches this default term
 
   const fetchWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -32,7 +33,6 @@ export default function Home() {
       const newPhotos = response.photos;
       setWallpapers(prev => {
         const combined = append ? [...prev, ...newPhotos] : newPhotos;
-        // Prevent duplicates if API somehow returns same items on pagination
         const uniqueMap = new Map(combined.map(item => [item.id, item]));
         return Array.from(uniqueMap.values());
       });
@@ -52,7 +52,7 @@ export default function Home() {
       }
     }
     setLoading(false);
-  }, [toast, currentFetchTerm]); // Removed initialQueryFromServer as it's fixed for home
+  }, [toast, currentFetchTerm]);
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
@@ -63,11 +63,12 @@ export default function Home() {
   }, [loading, hasMore, page, fetchWallpapers]);
 
   useEffect(() => {
+    // Initial fetch for the homepage's default content
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(1, false);
-  }, [fetchWallpapers]); // Effect now only depends on fetchWallpapers (which depends on currentFetchTerm)
+  }, [fetchWallpapers]); // Effect now only depends on fetchWallpapers
 
   const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
     if (categoryValue.trim()) {
@@ -77,16 +78,15 @@ export default function Home() {
 
   const handleSearchSubmit = useCallback((newSearchTerm: string) => {
     // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
-    // This handler can be used for other side-effects if needed, e.g., analytics.
-    console.log("Search submitted on Home page:", newSearchTerm);
+    console.log("Search submitted on Home page, navigating to /search:", newSearchTerm);
   }, []);
 
 
   const loadingSkeletons = (
     <div className="my-masonry-grid mt-4 w-full">
       {[...Array(6)].map((_, i) => (
-        <div key={`loading-skeleton-column-${i}`} className="my-masonry-grid_column">
-           <div style={{ marginBottom: '1rem' }}> {/* Mimic masonry item wrapper margin */}
+        <div key={`loading-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
+          <div style={{ marginBottom: '1rem' }} className="break-inside-avoid-column">
             <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
           </div>
         </div>
@@ -96,10 +96,7 @@ export default function Home() {
 
   return (
     <>
-      <GlobalHeader
-        onWallpaperCategorySelect={handleWallpaperCategorySelect}
-        onSearchSubmit={handleSearchSubmit}
-      />
+      <GlobalHeader />
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">
@@ -120,7 +117,7 @@ export default function Home() {
           >
             {[...Array(12)].map((_, i) => (
               <div key={`initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1rem' }} className="break-inside-avoid-column">
                   <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
                 </div>
               </div>
