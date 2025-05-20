@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;
   if (!pexelsApiKey) {
-    console.error('[API/PEXELS/SEARCH] PEXELS_API_KEY is not set on the server.');
-    return NextResponse.json({ error: 'Server configuration error: Pexels API Key missing.' }, { status: 500 });
+    console.error('[API/PEXELS/SEARCH] PEXELS_API_KEY is not set or accessible on the server. CRITICAL: Check deployment environment variables.');
+    return NextResponse.json({ error: 'Server configuration error: Pexels API Key missing or not configured in the deployment environment.' }, { status: 500 });
   }
 
   let pexelsApiUrl = `${PEXELS_API_BASE_URL}/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${per_page}`;
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     if (!pexelsResponse.ok) {
       const errorBody = await pexelsResponse.text().catch(() => 'Could not read Pexels error body.');
-      console.error(`[API/PEXELS/SEARCH] Pexels API error: ${pexelsResponse.status}`, errorBody.substring(0, 500));
+      console.error(`[API/PEXELS/SEARCH] Pexels API error: ${pexelsResponse.status} ${pexelsResponse.statusText}`, errorBody.substring(0, 500));
       return NextResponse.json({ error: `Pexels API error: ${pexelsResponse.status}` }, { status: pexelsResponse.status });
     }
 
