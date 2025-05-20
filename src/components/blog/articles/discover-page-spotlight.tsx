@@ -17,7 +17,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="discover page interface"
+        data-ai-hint="discover interface"
       />
     </div>
 
@@ -32,7 +32,7 @@ const ArticleContent = (): ReactNode => (
         width={700}
         height={400}
         className="rounded-lg shadow-md"
-        data-ai-hint="daily wallpaper feature"
+        data-ai-hint="daily wallpaper"
       />
     </div>
 
@@ -68,7 +68,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={400}
         className="rounded-lg shadow-md"
-        data-ai-hint="theme collections examples"
+        data-ai-hint="theme collage"
       />
     </div>
 

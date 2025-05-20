@@ -1,7 +1,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; // Added Link import
+import Link from 'next/link'; 
 
 const ArticleContent = (): ReactNode => (
   <>
@@ -27,7 +27,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="diverse styles moodboard"
+        data-ai-hint="styles moodboard"
       />
     </div>
 
@@ -63,7 +63,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="phone desktop comparison"
+        data-ai-hint="devices comparison"
       />
     </div>
 
@@ -83,7 +83,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="choosing background device"
+        data-ai-hint="browsing device"
       />
     </div>
 
@@ -98,7 +98,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={400}
         className="rounded-lg shadow-md"
-        data-ai-hint="ai generator interface"
+        data-ai-hint="ai interface"
       />
     </div>
     

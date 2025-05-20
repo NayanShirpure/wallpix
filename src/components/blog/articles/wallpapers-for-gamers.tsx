@@ -1,7 +1,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; // Added Link import
+import Link from 'next/link'; 
 
 const ArticleContent = (): ReactNode => (
   <>
@@ -20,7 +20,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="fantasy game landscape"
+        data-ai-hint="fantasy landscape"
       />
     </div>
 
@@ -35,7 +35,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="character art gaming"
+        data-ai-hint="gaming character"
       />
     </div>
 
@@ -50,7 +50,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="cyberpunk game city"
+        data-ai-hint="cyberpunk sci-fi"
       />
     </div>
 
@@ -65,7 +65,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="minimalist gaming controller"
+        data-ai-hint="gaming minimalist"
       />
     </div>
 
@@ -85,7 +85,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={400}
         className="rounded-lg shadow-md"
-        data-ai-hint="ai gaming prompt"
+        data-ai-hint="ai gaming"
       />
     </div>
 

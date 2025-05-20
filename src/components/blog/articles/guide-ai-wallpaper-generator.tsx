@@ -21,7 +21,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={450}
         className="rounded-lg shadow-md"
-        data-ai-hint="ai art creation"
+        data-ai-hint="ai concept"
       />
     </div>
 
@@ -55,7 +55,7 @@ const ArticleContent = (): ReactNode => (
             width={700}
             height={350}
             className="rounded-lg shadow-md"
-            data-ai-hint="art styles comparison"
+            data-ai-hint="art comparison"
           />
         </div>
       </li>
@@ -87,7 +87,7 @@ const ArticleContent = (): ReactNode => (
         width={800}
         height={400}
         className="rounded-lg shadow-md"
-        data-ai-hint="ai examples collage"
+        data-ai-hint="ai collage"
       />
     </div>
 

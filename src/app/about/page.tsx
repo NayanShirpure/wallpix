@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2, Wand2, ImageIcon } from 'lucide-react'; // Added ImageIcon
+import { Info, Users, Target, Award, Palette, Smartphone, Monitor, Heart, Tv2, Wand2, ImageIcon, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
@@ -53,7 +53,7 @@ export default function AboutUsPage() {
               width={300}
               height={150}
               className="mx-auto mb-6 rounded-lg shadow-xl"
-              data-ai-hint="app concept visual"
+              data-ai-hint="app showcase abstract"
               priority
             />
             <h1 className="text-3xl font-bold text-primary mb-4">Welcome to Wallify</h1>
@@ -115,16 +115,17 @@ export default function AboutUsPage() {
                   </div>
                 </div>
                 <div className="flex items-start">
-                   <Smartphone className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
+                   <Search className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
                   <div>
-                    <h3 className="font-semibold text-primary text-lg">Intuitive Interface</h3>
+                    <h3 className="font-semibold text-primary text-lg">Intuitive Interface & Search</h3>
                     <p className="text-muted-foreground leading-relaxed">
-                       Designed with simplicity in mind, Wallify’s clean and modern UI makes browsing and downloading wallpapers fast and frustration-free.
+                       Designed with simplicity in mind, Wallify’s clean and modern UI, powerful search, and category filters make browsing and downloading wallpapers fast and frustration-free.
                     </p>
                   </div>
                 </div>
                  <div className="flex items-start">
-                   <Monitor className="mr-4 h-6 w-6 text-accent flex-shrink-0 mt-1" />
+                   <Monitor className="mr-2 h-6 w-6 text-accent inline-block flex-shrink-0 mt-1" />
+                   <Smartphone className="mr-4 h-6 w-6 text-accent inline-block flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-semibold text-primary text-lg">Optimized for All Devices</h3>
                     <p className="text-muted-foreground leading-relaxed">

@@ -1,7 +1,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; // Added Link import
+import Link from 'next/link'; 
 
 const ArticleContent = (): ReactNode => (
   <>
@@ -20,7 +20,7 @@ const ArticleContent = (): ReactNode => (
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="phone nature vertical"
+        data-ai-hint="phone vertical"
       />
     </div>
 
@@ -35,7 +35,7 @@ const ArticleContent = (): ReactNode => (
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="clear display highres"
+        data-ai-hint="phone highres"
       />
     </div>
 
@@ -50,7 +50,7 @@ const ArticleContent = (): ReactNode => (
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="minimalist phone ui"
+        data-ai-hint="phone minimalist"
       />
     </div>
 
@@ -65,7 +65,7 @@ const ArticleContent = (): ReactNode => (
         width={300}
         height={600}
         className="rounded-lg shadow-md"
-        data-ai-hint="dark amoled phone"
+        data-ai-hint="phone amoled"
       />
     </div>
 
