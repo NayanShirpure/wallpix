@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, context: Context) {
   const pexelsApiKey = process.env.PEXELS_API_KEY;
   const maskedApiKey = pexelsApiKey
     ? `${pexelsApiKey.substring(0, 4)}...${pexelsApiKey.substring(pexelsApiKey.length - 4)}`
-    : 'NOT SET OR MISSING';
+    : 'NOT SET OR MISSING - CRITICAL FOR DEPLOYMENT';
   // console.log(`[API/PEXELS/PHOTOS/${id}] Using Pexels API Key (masked): ${maskedApiKey}`);
 
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, context: Context) {
     // console.log(`[API/PEXELS/PHOTOS/${id}] Attempting to fetch from Pexels API.`);
     const pexelsResponse = await fetch(pexelsApiUrl, {
       headers,
-      cache: 'default', // Using default cache for Pexels API (can be 'no-store' for always fresh)
+      cache: 'default', 
     });
 
     // console.log(`[API/PEXELS/PHOTOS/${id}] Pexels API response status: ${pexelsResponse.status}`);

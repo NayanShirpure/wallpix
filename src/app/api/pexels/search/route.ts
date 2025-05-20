@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get('query');
   const page = searchParams.get('page') || '1';
   const per_page = searchParams.get('per_page') || '20';
-  // const orientation = searchParams.get('orientation'); // Orientation filter removed globally
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;
   const maskedApiKey = pexelsApiKey
@@ -33,9 +32,6 @@ export async function GET(request: NextRequest) {
   }
 
   let pexelsApiUrl = `${PEXELS_API_BASE_URL}/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${per_page}`;
-  // if (orientation) { // Orientation filter removed
-  //   pexelsApiUrl += `&orientation=${orientation}`;
-  // }
   // console.log(`[API/PEXELS/SEARCH] Fetching from Pexels URL: ${pexelsApiUrl}`);
   
   const headers = {
