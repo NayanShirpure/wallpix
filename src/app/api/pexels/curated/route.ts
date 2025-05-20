@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   try {
     const pexelsResponse = await fetch(pexelsApiUrl, {
       headers,
-      cache: 'default',
+      next: { revalidate: 3600 }, // Cache Pexels API response for 1 hour
     });
 
     // console.log(`[API/PEXELS/CURATED] Pexels API response status: ${pexelsResponse.status}`);

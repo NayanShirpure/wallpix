@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, context: Context) {
     // console.log(`[API/PEXELS/PHOTOS/${id}] Attempting to fetch from Pexels API.`);
     const pexelsResponse = await fetch(pexelsApiUrl, {
       headers,
-      cache: 'default', 
+      next: { revalidate: 86400 }, // Cache individual photo details for 24 hours
     });
 
     // console.log(`[API/PEXELS/PHOTOS/${id}] Pexels API response status: ${pexelsResponse.status}`);
