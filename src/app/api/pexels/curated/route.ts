@@ -9,6 +9,12 @@ export async function GET(request: NextRequest) {
   const per_page = searchParams.get('per_page') || '20';
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;
+  const maskedApiKey = pexelsApiKey
+    ? `${pexelsApiKey.substring(0, 4)}...${pexelsApiKey.substring(pexelsApiKey.length - 4)}`
+    : 'NOT SET OR MISSING';
+
+  console.log(`[API/PEXELS/CURATED] Handler invoked. Using Pexels API Key (masked): ${maskedApiKey}`);
+
   if (!pexelsApiKey) {
     const errorMessage = '[API/PEXELS/CURATED] PEXELS_API_KEY IS MISSING ON THE SERVER. CRITICAL: Check deployment environment variables.';
     console.error(errorMessage);
@@ -19,18 +25,24 @@ export async function GET(request: NextRequest) {
   }
 
   const pexelsApiUrl = `${PEXELS_API_BASE_URL}/curated?page=${page}&per_page=${per_page}`;
+  console.log(`[API/PEXELS/CURATED] Fetching from Pexels URL: ${pexelsApiUrl}`);
+
+  const headers = {
+    Authorization: pexelsApiKey,
+  };
+  console.log(`[API/PEXELS/CURATED] Request Headers (Authorization masked): Authorization: ${maskedApiKey}`);
 
   try {
     const pexelsResponse = await fetch(pexelsApiUrl, {
-      headers: {
-        Authorization: pexelsApiKey,
-      },
+      headers,
       cache: 'default',
     });
 
+    console.log(`[API/PEXELS/CURATED] Pexels API response status: ${pexelsResponse.status}`);
+
     if (!pexelsResponse.ok) {
       const pexelsErrorBody = await pexelsResponse.text().catch(() => 'Could not read Pexels error body.');
-      const errorMessage = `[API/PEXELS/CURATED] Pexels API error: ${pexelsResponse.status} ${pexelsResponse.statusText}. Body: ${pexelsErrorBody.substring(0, 500)}`;
+      const errorMessage = `[API/PEXELS/CURATED] Pexels API error: ${pexelsResponse.status} ${pexelsResponse.statusText}. Raw Body: ${pexelsErrorBody.substring(0, 500)}`;
       console.error(errorMessage);
       return NextResponse.json(
         { error: 'Pexels API error', status: pexelsResponse.status, details: pexelsErrorBody.substring(0, 200) },

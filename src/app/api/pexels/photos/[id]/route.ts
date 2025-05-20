@@ -12,7 +12,12 @@ interface Context {
 export async function GET(request: NextRequest, context: Context) {
   const { id } = context.params;
 
-  console.log(`[API/PEXELS/PHOTOS/${id}] Route handler invoked. Photo ID from context: ${id}`);
+  const pexelsApiKey = process.env.PEXELS_API_KEY;
+  const maskedApiKey = pexelsApiKey
+    ? `${pexelsApiKey.substring(0, 4)}...${pexelsApiKey.substring(pexelsApiKey.length - 4)}`
+    : 'NOT SET OR MISSING';
+
+  console.log(`[API/PEXELS/PHOTOS/${id}] Handler invoked. Photo ID: ${id}. Using Pexels API Key (masked): ${maskedApiKey}`);
 
   if (!id) {
     console.error(`[API/PEXELS/PHOTOS] Error: Photo ID is missing in the request context.`);
@@ -22,15 +27,8 @@ export async function GET(request: NextRequest, context: Context) {
     );
   }
 
-  const pexelsApiKey = process.env.PEXELS_API_KEY;
-  const maskedApiKey = pexelsApiKey 
-    ? `${pexelsApiKey.substring(0, 4)}...${pexelsApiKey.substring(pexelsApiKey.length - 4)}` 
-    : 'NOT SET OR MISSING';
-  
-  console.log(`[API/PEXELS/PHOTOS/${id}] Using Pexels API Key (masked): ${maskedApiKey}`);
-
   if (!pexelsApiKey) {
-    const errorMessage = `[API/PEXELS/PHOTOS/${id}] PEXELS_API_KEY IS MISSING ON THE SERVER. CRITICAL: Check deployment environment variables. The application cannot function without a valid Pexels API Key.`;
+    const errorMessage = `[API/PEXELS/PHOTOS/${id}] PEXELS_API_KEY IS MISSING ON THE SERVER. CRITICAL: Check deployment environment variables.`;
     console.error(errorMessage);
     return NextResponse.json(
       { error: 'Server configuration error: Pexels API Key missing.' },
@@ -41,12 +39,15 @@ export async function GET(request: NextRequest, context: Context) {
   const pexelsApiUrl = `${PEXELS_API_BASE_URL}/photos/${id}`;
   console.log(`[API/PEXELS/PHOTOS/${id}] Constructed Pexels API URL: ${pexelsApiUrl}`);
 
+  const headers = {
+    Authorization: pexelsApiKey,
+  };
+  console.log(`[API/PEXELS/PHOTOS/${id}] Request Headers (Authorization masked): Authorization: ${maskedApiKey}`);
+
   try {
     console.log(`[API/PEXELS/PHOTOS/${id}] Attempting to fetch from Pexels API.`);
     const pexelsResponse = await fetch(pexelsApiUrl, {
-      headers: {
-        Authorization: pexelsApiKey,
-      },
+      headers,
       cache: 'default',
     });
 
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest, context: Context) {
 
     if (!pexelsResponse.ok) {
       const pexelsErrorBody = await pexelsResponse.text().catch(() => 'Could not read Pexels error body.');
-      const errorMessage = `[API/PEXELS/PHOTOS/${id}] Pexels API error: ${pexelsResponse.status} ${pexelsResponse.statusText}. Body: ${pexelsErrorBody.substring(0, 500)}`;
+      const errorMessage = `[API/PEXELS/PHOTOS/${id}] Pexels API error: ${pexelsResponse.status} ${pexelsResponse.statusText}. Raw Body: ${pexelsErrorBody.substring(0, 500)}`;
       console.error(errorMessage);
       return NextResponse.json(
         { error: 'Pexels API error', status: pexelsResponse.status, details: pexelsErrorBody.substring(0, 200) },
