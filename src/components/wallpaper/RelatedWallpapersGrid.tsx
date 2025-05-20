@@ -69,11 +69,11 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
     return null;
   }
 
-  const loadingSkeletons = (
-    <div className="my-masonry-grid mt-4 w-full">
-      {[...Array(5)].map((_, i) => ( 
-        <div key={`related-loading-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-           <div style={{ marginBottom: '1rem' }}>
+  const initialLoadingSkeletons = (
+    <div className="my-masonry-grid">
+      {[...Array(10)].map((_, i) => ( 
+        <div key={`related-initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
+          <div style={{ marginBottom: '1rem' }}> {/* Matches masonry item margin */}
             <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
           </div>
         </div>
@@ -81,34 +81,29 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
     </div>
   );
 
+  const infiniteScrollLoader = (
+    <div className="text-center py-4 col-span-full">
+      <p className="text-muted-foreground">Loading more related...</p>
+    </div>
+  );
+
+
   return (
     <div className="mt-10 pt-8 border-t border-border">
       <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-6 text-center">Related Wallpapers</h2>
-      {(loading && relatedWallpapers.length === 0) && (
-        <div
-          className="my-masonry-grid"
-          aria-busy="true"
-          aria-live="polite"
-        >
-          {[...Array(10)].map((_, i) => ( 
-            <div key={`related-initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-              <div style={{ marginBottom: '1rem' }}>
-                <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {(loading && relatedWallpapers.length === 0) && initialLoadingSkeletons}
       
-      <InfiniteScroll
-        dataLength={relatedWallpapers.length}
-        next={handleLoadMore}
-        hasMore={hasMore}
-        loader={loadingSkeletons}
-        className="w-full"
-      >
-        {relatedWallpapers.length > 0 && <WallpaperGrid photos={relatedWallpapers} />}
-      </InfiniteScroll>
+      {relatedWallpapers.length > 0 && (
+        <InfiniteScroll
+          dataLength={relatedWallpapers.length}
+          next={handleLoadMore}
+          hasMore={hasMore}
+          loader={infiniteScrollLoader}
+          className="w-full"
+        >
+          <WallpaperGrid photos={relatedWallpapers} />
+        </InfiniteScroll>
+      )}
 
       {!loading && !hasMore && relatedWallpapers.length > 0 ? (
          <p className="text-center text-muted-foreground py-4">No more related wallpapers found for "{initialQuery}".</p>

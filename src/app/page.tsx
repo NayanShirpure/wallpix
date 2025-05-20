@@ -9,21 +9,20 @@ import { useToast } from '@/hooks/use-toast';
 import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
-import { cn } from '@/lib/utils';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
 export default function Home() {
   const router = useRouter();
-  const searchParams = useSearchParams(); // To read URL params if needed for other logic, but not for driving homepage content
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM; // Homepage always fetches this default term
+  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM;
 
   const fetchWallpapers = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
@@ -42,7 +41,7 @@ export default function Home() {
         setWallpapers([]);
       }
       setHasMore(false);
-      if (response === null) { // Indicates a fetch failure from lib/pexels
+      if (response === null) {
         toast({
           title: "API Fetch Issue (Home)",
           description: `Failed to fetch wallpapers for "${currentFetchTerm}". Check server logs for Pexels API key status or API errors.`,
@@ -63,12 +62,11 @@ export default function Home() {
   }, [loading, hasMore, page, fetchWallpapers]);
 
   useEffect(() => {
-    // Initial fetch for the homepage's default content
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(1, false);
-  }, [fetchWallpapers]); // Effect now only depends on fetchWallpapers
+  }, [fetchWallpapers]);
 
   const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
     if (categoryValue.trim()) {
@@ -77,20 +75,25 @@ export default function Home() {
   }, [router]);
 
   const handleSearchSubmit = useCallback((newSearchTerm: string) => {
-    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
     console.log("Search submitted on Home page, navigating to /search:", newSearchTerm);
+    // Navigation is handled by SearchBar component itself
   }, []);
 
-
-  const loadingSkeletons = (
-    <div className="my-masonry-grid mt-4 w-full">
-      {[...Array(6)].map((_, i) => (
-        <div key={`loading-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-          <div style={{ marginBottom: '1rem' }} className="break-inside-avoid-column">
+  const initialLoadingSkeletons = (
+    <div className="my-masonry-grid">
+      {[...Array(12)].map((_, i) => (
+        <div key={`initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
+          <div style={{ marginBottom: '1rem' }}> {/* Matches masonry item margin */}
             <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
           </div>
         </div>
       ))}
+    </div>
+  );
+
+  const infiniteScrollLoader = (
+    <div className="text-center py-4 col-span-full"> {/* Ensure loader spans all columns if it were inside a grid */}
+      <p className="text-muted-foreground">Loading more wallpapers...</p>
     </div>
   );
 
@@ -109,31 +112,19 @@ export default function Home() {
           <h2 className="sr-only">Extensive Collection of High-Quality Wallpapers</h2>
         </div>
 
-        {(loading && wallpapers.length === 0) && (
-           <div
-            className="my-masonry-grid"
-            aria-busy="true"
-            aria-live="polite"
-          >
-            {[...Array(12)].map((_, i) => (
-              <div key={`initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-                <div style={{ marginBottom: '1rem' }} className="break-inside-avoid-column">
-                  <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {(loading && wallpapers.length === 0) && initialLoadingSkeletons}
 
-        <InfiniteScroll
-          dataLength={wallpapers.length}
-          next={handleLoadMore}
-          hasMore={hasMore}
-          loader={loadingSkeletons}
-          className="w-full"
-        >
-          {wallpapers.length > 0 && <WallpaperGrid photos={wallpapers} />}
-        </InfiniteScroll>
+        {wallpapers.length > 0 && (
+          <InfiniteScroll
+            dataLength={wallpapers.length}
+            next={handleLoadMore}
+            hasMore={hasMore}
+            loader={infiniteScrollLoader}
+            className="w-full"
+          >
+            <WallpaperGrid photos={wallpapers} />
+          </InfiniteScroll>
+        )}
         
         {!loading && !hasMore && wallpapers.length > 0 && (
           <p className="text-center text-muted-foreground py-6">You've reached the end!</p>
