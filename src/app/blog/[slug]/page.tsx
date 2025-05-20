@@ -49,7 +49,6 @@ export default async function BlogPostPage({
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
-    description: post.summary,
     image: post.opengraphImage
       ? `${BASE_URL}${post.opengraphImage.replace(/^\//, '')}`
       : `${BASE_URL}blog/og-blog-main.png`,
@@ -89,7 +88,7 @@ export default async function BlogPostPage({
           <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-3">{post.title}</h1>
           <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             <div className="flex items-center">
-              <CalendarDays className="h-4 w-4 mr-1.5" />
+              <CalendarDays className="mr-1.5 h-4 w-4" />
               {new Date(post.date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -98,7 +97,7 @@ export default async function BlogPostPage({
             </div>
             {post.author && (
               <div className="flex items-center">
-                <UserCircle className="h-4 w-4 mr-1.5" />
+                <UserCircle className="mr-1.5 h-4 w-4" />
                 By {post.author}
               </div>
             )}
@@ -120,7 +119,7 @@ export default async function BlogPostPage({
               src={post.opengraphImage}
               alt={`Cover image for ${post.title}`}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 768px, 1000px"
+              sizes="(max-width: 768px) 100vw, 768px"
               className="object-cover"
               priority
               data-ai-hint="blog cover"
@@ -152,7 +151,7 @@ export default async function BlogPostPage({
                 className="group flex-1 block p-4 sm:p-5 rounded-lg border bg-card hover:border-accent transition-colors duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
               >
                 <div className="flex items-center text-sm text-accent mb-1.5">
-                  <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
+                  <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
                   Previous Article
                 </div>
                 <h3 className="text-base sm:text-lg font-medium text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
@@ -170,7 +169,7 @@ export default async function BlogPostPage({
               >
                 <div className="flex items-center sm:justify-end text-sm text-accent mb-1.5">
                   Next Article
-                  <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
                 <h3 className="text-base sm:text-lg font-medium text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
                   {newerPost.title}

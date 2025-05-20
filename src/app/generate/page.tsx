@@ -197,7 +197,7 @@ export default function GeneratePage() {
                     src={generatedImageUri}
                     alt={aiWallpaperForPreview?.alt || `AI generated wallpaper for prompt: ${prompt}`}
                     fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 640px) 100vw, 640px"
                     className="object-contain"
                     data-ai-hint="generated ai art"
                   />

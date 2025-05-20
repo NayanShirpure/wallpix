@@ -26,6 +26,7 @@ export default function WhatWeOfferPage() {
               height={300}
               className="mx-auto mb-6 rounded-lg shadow-xl"
               data-ai-hint="features collage abstract"
+              sizes="(max-width: 768px) 90vw, 600px"
               priority
             />
             <h1 className="text-3xl font-bold text-primary mb-4">Everything You Need for a Stunning Digital Space</h1>
@@ -140,4 +141,3 @@ export default function WhatWeOfferPage() {
     </>
   );
 }
-

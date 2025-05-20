@@ -30,8 +30,7 @@ export function WallpaperOfTheDay({
 
   const handleViewClick = () => {
     if (wallpaper) {
-      const currentOrientation = searchParams.get('orientation') || 'desktop';
-      router.push(`/photo/${wallpaper.id}?orientation=${currentOrientation}`);
+      router.push(`/photo/${wallpaper.id}`);
     }
   };
 
@@ -68,7 +67,7 @@ export function WallpaperOfTheDay({
           src={getSrc(wallpaper)}
           alt={imageAlt}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1000px"
+          sizes="(max-width: 1280px) 100vw, 1280px"
           className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 group-focus-within:scale-105"
           priority
           placeholder="blur"

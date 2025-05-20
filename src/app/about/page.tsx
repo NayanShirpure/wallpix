@@ -54,6 +54,7 @@ export default function AboutUsPage() {
               height={150}
               className="mx-auto mb-6 rounded-lg shadow-xl"
               data-ai-hint="app showcase abstract"
+              sizes="(max-width: 768px) 90vw, 300px"
               priority
             />
             <h1 className="text-3xl font-bold text-primary mb-4">Welcome to Wallify</h1>
