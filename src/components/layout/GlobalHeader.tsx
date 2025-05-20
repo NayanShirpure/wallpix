@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, Award, MessageSquare, Home, ShoppingBag, FileText, Shield, InfoIcon } from 'lucide-react';
+import { Menu, Palette, ListFilter, MoreVertical, Compass, InfoIcon as Info, Wand2, Users, FileText, Shield, Home, MessageSquare } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
@@ -62,7 +62,7 @@ export function GlobalHeader({
             <SearchBar
               onSubmitSearch={onSearchSubmit}
               initialValue={displaySearchTerm}
-              navigateToSearchPage={true}
+              navigateToSearchPage={true} 
             />
           </div>
         </div>
@@ -117,9 +117,9 @@ export function GlobalHeader({
                     Discover
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                 <DropdownMenuItem asChild>
                   <Link href="/what-we-offer" className="flex items-center">
-                    <InfoIcon className="mr-2 h-4 w-4" />
+                    <Info className="mr-2 h-4 w-4" />
                     What We Offer
                   </Link>
                 </DropdownMenuItem>
@@ -186,7 +186,7 @@ export function GlobalHeader({
                   </SheetClose>
                    <SheetClose asChild>
                     <Link href="/what-we-offer" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><InfoIcon className="mr-2 h-4 w-4" /> What We Offer</Button>
+                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button>
                     </Link>
                   </SheetClose>
                   <SheetClose asChild>

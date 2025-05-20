@@ -15,7 +15,6 @@ const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
 export default function Home() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
@@ -41,7 +40,7 @@ export default function Home() {
         setWallpapers([]);
       }
       setHasMore(false);
-      if (response === null) {
+      if (response === null) { // Only toast if the API call itself failed (e.g. key issue)
         toast({
           title: "API Fetch Issue (Home)",
           description: `Failed to fetch wallpapers for "${currentFetchTerm}". Check server logs for Pexels API key status or API errors.`,
@@ -75,12 +74,13 @@ export default function Home() {
   }, [router]);
 
   const handleSearchSubmit = useCallback((newSearchTerm: string) => {
-    console.log("Search submitted on Home page, navigating to /search:", newSearchTerm);
-    // Navigation is handled by SearchBar component itself
+    console.log("Search submitted on Home page, SearchBar component will handle navigation:", newSearchTerm);
+    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
   }, []);
 
+
   const initialLoadingSkeletons = (
-    <div className="my-masonry-grid">
+    <div className="my-masonry-grid" aria-busy="true" aria-live="polite">
       {[...Array(12)].map((_, i) => (
         <div key={`initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
           <div style={{ marginBottom: '1rem' }}> {/* Matches masonry item margin */}
@@ -90,16 +90,19 @@ export default function Home() {
       ))}
     </div>
   );
-
+  
   const infiniteScrollLoader = (
-    <div className="text-center py-4 col-span-full"> {/* Ensure loader spans all columns if it were inside a grid */}
+    <div className="text-center py-4 col-span-full">
       <p className="text-muted-foreground">Loading more wallpapers...</p>
     </div>
   );
 
   return (
     <>
-      <GlobalHeader />
+      <GlobalHeader 
+        onWallpaperCategorySelect={handleWallpaperCategorySelect}
+        onSearchSubmit={handleSearchSubmit}
+      />
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">
@@ -120,7 +123,7 @@ export default function Home() {
             next={handleLoadMore}
             hasMore={hasMore}
             loader={infiniteScrollLoader}
-            className="w-full"
+            className="w-full" 
           >
             <WallpaperGrid photos={wallpapers} />
           </InfiniteScroll>

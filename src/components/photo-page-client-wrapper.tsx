@@ -11,7 +11,7 @@ import { RelatedWallpapersGrid } from '@/components/wallpaper/RelatedWallpapersG
 import { User } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { getPhotoById } from '@/lib/pexels'; // For client-side fetching
+import { getPhotoById } from '@/lib/pexels';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject as SchemaImageObject, Person as SchemaPerson, Organization as SchemaOrganization, MinimalWithContext } from '@/types/schema-dts';
 
@@ -27,8 +27,7 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Client-side initial search term for GlobalHeader (can be general)
-  const [initialSearchTermForHeader, setInitialSearchTermForHeader] = useState<string>("Wallpaper");
+  const [initialSearchTermForHeader, setInitialSearchTermForHeader] = useState<string>("");
 
 
   useEffect(() => {
@@ -40,11 +39,8 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     if (isNaN(Number(photoId))) {
         setError("Invalid Photo ID format.");
         setLoading(false);
-        // Optionally, redirect to a 404 or error page
-        // router.push('/not-found'); // Or a custom error page
         return;
     }
-
 
     const fetchPhotoData = async () => {
       setLoading(true);
@@ -52,10 +48,9 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
       const fetchedPhoto = await getPhotoById(photoId);
       if (fetchedPhoto) {
         setPhoto(fetchedPhoto);
-        setInitialSearchTermForHeader(fetchedPhoto.alt || "Wallpaper"); // Update search header term based on photo
+        setInitialSearchTermForHeader(fetchedPhoto.alt || "Wallpaper");
       } else {
         setError(`Photo with ID ${photoId} not found or API call failed.`);
-        // console.error(`[PhotoPageClient] Photo with ID ${photoId} not found or API call failed. Check PEXELS_API_KEY in deployment or network issues.`);
         toast({
           title: "Error Loading Photo",
           description: `Could not load details for photo ID ${photoId}. It might not exist or there was an API issue.`,
@@ -76,8 +71,7 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
   }, [router]);
 
   const handleSearchSubmit = useCallback((searchTerm: string) => {
-    // Navigation is handled by SearchBar component itself
-    console.log("Search submitted on Photo page:", searchTerm);
+    console.log("Search submitted on Photo page, SearchBar component will handle navigation:", searchTerm);
   }, []);
 
   if (loading) {
@@ -106,7 +100,6 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
           </div>
           <div className="mt-10 pt-8 border-t border-border">
              <Skeleton className="h-8 w-1/3 mx-auto mb-6" />
-             {/* Skeletons for related grid could go here if desired */}
           </div>
         </main>
       </>
@@ -114,7 +107,6 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
   }
 
   if (error || !photo) {
-    // If there was an error or photo is still null after loading is false
     return (
       <>
         <GlobalHeader
@@ -132,11 +124,10 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     );
   }
 
-  // If photo is successfully loaded:
   const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const relatedQuery = photo.alt ? photo.alt.split(' ').slice(0, 3).join(' ') || 'abstract nature wallpaper' : 'abstract nature wallpaper';
 
-  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+  const BASE_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/');
   const imageSchema: MinimalWithContext<SchemaImageObject> = {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
@@ -165,10 +156,8 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     } as SchemaOrganization,
   };
 
-
   return (
     <>
-      {/* Client-side rendering of structured data if needed, or rely on server page's generic schema */}
       {photo && <StructuredData data={imageSchema} />}
       <GlobalHeader
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
@@ -235,4 +224,3 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     </>
   );
 }
-

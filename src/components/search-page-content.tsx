@@ -29,13 +29,23 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
 
   useEffect(() => {
     const queryFromUrl = searchParamsHook.get('query');
-    const newEffectiveSearchTerm = queryFromUrl?.trim() || initialQueryFromServer?.trim() || 'Wallpaper';
-    setCurrentSearchTerm(newEffectiveSearchTerm);
-  }, [searchParamsHook, initialQueryFromServer]);
+    const newEffectiveSearchTerm = queryFromUrl?.trim() || initialQueryFromServer?.trim() || '';
+    
+    if (newEffectiveSearchTerm !== currentSearchTerm) {
+      setCurrentSearchTerm(newEffectiveSearchTerm);
+    }
+  }, [searchParamsHook, initialQueryFromServer, currentSearchTerm]);
 
   const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
     setLoading(true);
-    const finalQuery = query.trim() || 'Wallpaper'; 
+    const finalQuery = query.trim(); 
+
+    if (!finalQuery) {
+      setWallpapers([]);
+      setHasMore(false);
+      setLoading(false);
+      return;
+    }
 
     try {
       const data = await searchPhotosLib(finalQuery, pageNum, 30);
@@ -50,7 +60,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       } else {
         setWallpapers(prev => append ? prev : []);
         setHasMore(false);
-        if (data === null) {
+        if (data === null) { // Only toast if the API call itself failed (e.g. key issue)
             toast({
                 title: "API Fetch Issue (Search)",
                 description: `Failed to fetch wallpapers for "${finalQuery}". Check server logs for Pexels API key status or API errors.`,
@@ -76,6 +86,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       setHasMore(true);
       fetchWallpapers(currentSearchTerm, 1, false);
     } else {
+      // If currentSearchTerm becomes empty (e.g. user clears search from URL or navigates to /search directly)
       setWallpapers([]);
       setHasMore(false);
       setLoading(false);
@@ -98,12 +109,12 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
   }, [router]);
 
   const handleSearchSubmit = useCallback((newSearchTerm: string) => {
-    console.log("Search submitted from SearchPageContent header, navigating to /search:", newSearchTerm);
+    console.log("Search submitted from SearchPageContent header, SearchBar component will handle navigation:", newSearchTerm);
     // Navigation is handled by SearchBar component itself
   }, []);
 
   const initialLoadingSkeletons = (
-    <div className="my-masonry-grid">
+    <div className="my-masonry-grid" aria-busy="true" aria-live="polite">
       {[...Array(12)].map((_, i) => (
         <div key={`search-content-initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
           <div style={{ marginBottom: '1rem' }}> {/* Matches masonry item margin */}
@@ -129,7 +140,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       <main className="flex-grow container mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6" aria-busy={loading && wallpapers.length === 0} aria-live="polite">
         <div className="my-4 sm:my-6 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">
-            {currentSearchTerm === "Wallpaper" || !currentSearchTerm ? "Search Wallpapers" : `Results for: "${currentSearchTerm}"`}
+            {currentSearchTerm ? `Results for: "${currentSearchTerm}"` : "Search Wallpapers"}
           </h1>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Displaying wallpapers from Pexels.
