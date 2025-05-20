@@ -1,7 +1,8 @@
 
 'use client';
 
-import type { PexelsPhoto } from '@/types/pexels';
+import type { PexelsPhoto, PexelsPhotoOrientation } from '@/types/pexels';
+import type { DeviceOrientationCategory } from '@/config/categories';
 import React, { useState, useEffect, useCallback } from 'react';
 import { WallpaperGrid } from './WallpaperGrid';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,9 +12,10 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 interface RelatedWallpapersGridProps {
   initialQuery: string;
   currentPhotoId: number; 
+  currentDeviceOrientation: DeviceOrientationCategory;
 }
 
-export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedWallpapersGridProps) {
+export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, currentDeviceOrientation }: RelatedWallpapersGridProps) {
   const [relatedWallpapers, setRelatedWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -26,7 +28,8 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       return;
     }
     setLoading(true);
-    const response = await searchPhotos(initialQuery, pageNum, 15); 
+    const pexelsOrientation: PexelsPhotoOrientation = currentDeviceOrientation === 'smartphone' ? 'portrait' : 'landscape';
+    const response = await searchPhotos(initialQuery, pageNum, 15, pexelsOrientation); 
 
     if (response && response.photos && response.photos.length > 0) {
       const newPhotos = response.photos.filter(photo => photo.id !== currentPhotoId);
@@ -43,7 +46,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       setHasMore(false);
     }
     setLoading(false);
-  }, [initialQuery, currentPhotoId]);
+  }, [initialQuery, currentPhotoId, currentDeviceOrientation]);
 
   useEffect(() => {
     setPage(1);
@@ -55,7 +58,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
       setLoading(false);
       setHasMore(false);
     }
-  }, [initialQuery, fetchRelatedWallpapers]);
+  }, [initialQuery, fetchRelatedWallpapers, currentDeviceOrientation]); // Add currentDeviceOrientation to dependencies
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
@@ -69,11 +72,11 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
     return null;
   }
 
-  const initialLoadingSkeletons = (
+  const loadingSkeletons = (
     <div className="my-masonry-grid">
-      {[...Array(10)].map((_, i) => ( 
+      {[...Array(6)].map((_, i) => ( 
         <div key={`related-initial-skeleton-column-wrapper-${i}`} className="my-masonry-grid_column">
-          <div style={{ marginBottom: '1rem' }}> {/* Matches masonry item margin */}
+          <div style={{ marginBottom: '1rem' }}> 
             <Skeleton className="w-full h-72 rounded-lg bg-muted/70" />
           </div>
         </div>
@@ -82,7 +85,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
   );
 
   const infiniteScrollLoader = (
-    <div className="text-center py-4 col-span-full">
+     <div className="text-center py-4 col-span-full">
       <p className="text-muted-foreground">Loading more related...</p>
     </div>
   );
@@ -91,7 +94,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId }: RelatedW
   return (
     <div className="mt-10 pt-8 border-t border-border">
       <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-6 text-center">Related Wallpapers</h2>
-      {(loading && relatedWallpapers.length === 0) && initialLoadingSkeletons}
+      {(loading && relatedWallpapers.length === 0) && loadingSkeletons}
       
       {relatedWallpapers.length > 0 && (
         <InfiniteScroll

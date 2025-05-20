@@ -8,13 +8,14 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get('query');
   const page = searchParams.get('page') || '1';
   const per_page = searchParams.get('per_page') || '20';
+  const orientation = searchParams.get('orientation'); // Get orientation
 
   const pexelsApiKey = process.env.PEXELS_API_KEY;
   const maskedApiKey = pexelsApiKey
     ? `${pexelsApiKey.substring(0, 4)}...${pexelsApiKey.substring(pexelsApiKey.length - 4)}`
     : 'NOT SET OR MISSING';
   
-  // console.log(`[API/PEXELS/SEARCH] Handler invoked. Query: ${query}. Using Pexels API Key (masked): ${maskedApiKey}`);
+  // console.log(`[API/PEXELS/SEARCH] Handler invoked. Query: ${query}, Orientation: ${orientation}. Using Pexels API Key (masked): ${maskedApiKey}`);
 
   if (!query) {
      return NextResponse.json(
@@ -31,7 +32,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  let pexelsApiUrl = `${PEXELS_API_BASE_URL}/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${per_page}`;
+  const pexelsApiParams = new URLSearchParams({
+    query: encodeURIComponent(query),
+    page: page,
+    per_page: per_page,
+  });
+  if (orientation) {
+    pexelsApiParams.append('orientation', orientation);
+  }
+
+  const pexelsApiUrl = `${PEXELS_API_BASE_URL}/search?${pexelsApiParams.toString()}`;
   // console.log(`[API/PEXELS/SEARCH] Fetching from Pexels URL: ${pexelsApiUrl}`);
   
   const headers = {

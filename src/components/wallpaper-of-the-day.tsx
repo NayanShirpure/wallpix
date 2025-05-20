@@ -3,7 +3,7 @@
 
 import type { PexelsPhoto } from '@/types/pexels';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Download, Eye } from 'lucide-react';
@@ -20,19 +20,18 @@ export function WallpaperOfTheDay({
   onDownloadClick,
 }: WallpaperOfTheDayProps) {
   const router = useRouter();
-  // General aspect ratio for WOTD, more desktop-like
+  const searchParams = useSearchParams();
   const aspectRatio = 'aspect-video sm:aspect-[18/9] md:aspect-[21/9] lg:aspect-[24/9]';
   const containerHeight = 'max-h-[280px] xs:max-h-[320px] sm:max-h-[380px] md:max-h-[420px] lg:max-h-[450px]';
 
-
   const getSrc = (photo: PexelsPhoto) => {
-    // Prioritize larger sources for better quality
     return photo.src.large2x || photo.src.original || photo.src.landscape;
   };
 
   const handleViewClick = () => {
     if (wallpaper) {
-      router.push(`/photo/${wallpaper.id}`);
+      const currentOrientation = searchParams.get('orientation') || 'desktop';
+      router.push(`/photo/${wallpaper.id}?orientation=${currentOrientation}`);
     }
   };
 

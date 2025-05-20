@@ -2,9 +2,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation'; // Import useSearchParams
 import Image from 'next/image';
-import type { PexelsPhoto } from '@/types/pexels';
+import type { PexelsPhoto, PexelsPhotoOrientation } from '@/types/pexels';
+import type { DeviceOrientationCategory } from '@/config/categories';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { PhotoActions } from '@/components/photo-actions';
 import { RelatedWallpapersGrid } from '@/components/wallpaper/RelatedWallpapersGrid';
@@ -21,13 +22,20 @@ interface PhotoPageClientWrapperProps {
 
 export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps) {
   const router = useRouter();
+  const searchParams = useSearchParams(); // Use searchParams hook
   const { toast } = useToast();
 
   const [photo, setPhoto] = useState<PexelsPhoto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('desktop');
   
-  const [initialSearchTermForHeader, setInitialSearchTermForHeader] = useState<string>("");
+  useEffect(() => {
+    const orientationFromUrl = searchParams.get('orientation') as DeviceOrientationCategory;
+    if (orientationFromUrl && (orientationFromUrl === 'smartphone' || orientationFromUrl === 'desktop')) {
+      setCurrentDeviceOrientation(orientationFromUrl);
+    }
+  }, [searchParams]);
 
 
   useEffect(() => {
@@ -48,7 +56,6 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
       const fetchedPhoto = await getPhotoById(photoId);
       if (fetchedPhoto) {
         setPhoto(fetchedPhoto);
-        setInitialSearchTermForHeader(fetchedPhoto.alt || "Wallpaper");
       } else {
         setError(`Photo with ID ${photoId} not found or API call failed.`);
         toast({
@@ -64,11 +71,21 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     fetchPhotoData();
   }, [photoId, toast]);
 
+  const handleDeviceOrientationChange = useCallback((newOrientation: DeviceOrientationCategory) => {
+    setCurrentDeviceOrientation(newOrientation);
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    newSearchParams.set('orientation', newOrientation);
+    router.replace(`/photo/${photoId}?${newSearchParams.toString()}`, { scroll: false });
+  }, [router, searchParams, photoId]);
+
   const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
     if (categoryValue.trim()) {
-      router.push(`/search?query=${encodeURIComponent(categoryValue.trim())}`);
+      const newSearchParams = new URLSearchParams();
+      newSearchParams.set('query', categoryValue.trim());
+      newSearchParams.set('orientation', currentDeviceOrientation);
+      router.push(`/search?${newSearchParams.toString()}`);
     }
-  }, [router]);
+  }, [router, currentDeviceOrientation]);
 
   const handleSearchSubmit = useCallback((searchTerm: string) => {
     console.log("Search submitted on Photo page, SearchBar component will handle navigation:", searchTerm);
@@ -78,6 +95,8 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     return (
       <>
         <GlobalHeader
+          currentDeviceOrientation={currentDeviceOrientation}
+          onDeviceOrientationChange={handleDeviceOrientationChange}
           onWallpaperCategorySelect={handleWallpaperCategorySelect}
           onSearchSubmit={handleSearchSubmit}
         />
@@ -110,6 +129,8 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     return (
       <>
         <GlobalHeader
+          currentDeviceOrientation={currentDeviceOrientation}
+          onDeviceOrientationChange={handleDeviceOrientationChange}
           onWallpaperCategorySelect={handleWallpaperCategorySelect}
           onSearchSubmit={handleSearchSubmit}
         />
@@ -160,6 +181,8 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
     <>
       {photo && <StructuredData data={imageSchema} />}
       <GlobalHeader
+        currentDeviceOrientation={currentDeviceOrientation}
+        onDeviceOrientationChange={handleDeviceOrientationChange}
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
       />
@@ -219,6 +242,7 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
         <RelatedWallpapersGrid 
             initialQuery={relatedQuery} 
             currentPhotoId={photo.id}
+            currentDeviceOrientation={currentDeviceOrientation} // Pass orientation
         />
       </main>
     </>

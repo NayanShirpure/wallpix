@@ -1,5 +1,5 @@
 
-import type { PexelsResponse, PexelsPhoto } from '@/types/pexels';
+import type { PexelsResponse, PexelsPhoto, PexelsPhotoOrientation } from '@/types/pexels';
 
 // Helper function to fetch data from our internal Pexels API proxy routes
 async function fetchFromInternalAPI<T>(endpoint: string, params?: URLSearchParams): Promise<T | null> {
@@ -22,45 +22,41 @@ async function fetchFromInternalAPI<T>(endpoint: string, params?: URLSearchParam
     requestUrl += `?${params.toString()}`;
   }
   
-  // Note: A 429 error from Pexels API indicates rate limiting.
-  // This function handles responses from our *internal* API routes.
+  // Note: A 429 error from this log means Pexels API rate limiting.
   try {
     const response = await fetch(requestUrl, {
       cache: 'default', 
     });
 
     if (!response.ok) {
-      let errorBodyContent = `Status: ${response.status} ${response.statusText}. URL: ${requestUrl}.`;
+      let errorBody = `Status: ${response.status} ${response.statusText}. URL: ${requestUrl}.`;
       try {
-        // Try to parse as JSON first, as our internal routes should now consistently return JSON errors
         const jsonError = await response.json();
-        errorBodyContent += ` Body: ${JSON.stringify(jsonError)}`;
+        errorBody += ` Body: ${JSON.stringify(jsonError)}`;
       } catch (jsonParseError) {
-        // If JSON parsing fails, try to get text
         try {
           const textError = await response.text();
-          errorBodyContent += ` Body (text): ${textError}`;
+          errorBody += ` Body (text): ${textError.substring(0, 200)}`; // Limit length
         } catch (textParseError) {
-          errorBodyContent += ' Could not read error response body (text or json).';
+          errorBody += ' Could not read error response body (text or json).';
         }
       }
-      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Error fetching from internal API ${requestUrl}. Response: ${errorBodyContent.substring(0, 1000)}`);
+      console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Error fetching from internal API ${requestUrl}. Response: ${errorBody.substring(0, 1000)}`);
       return null;
     }
     
-    // If response is OK, attempt to parse as JSON
     try {
       const data = await response.json();
       return data as T;
     } catch (e) {
-      // Handle cases where response is OK but body is not valid JSON
       const responseText = await response.text().catch(() => "Could not read response text.");
       console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Failed to parse JSON response from ${requestUrl}. Response text: ${responseText.substring(0,500)}`, e);
       return null;
     }
 
   } catch (error) {
-    console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Network error or other issue fetching from internal API ${requestUrl}:`, error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`[fetchFromInternalAPI ${isClientSide ? 'Client' : 'Server'}] Network error or other issue fetching from internal API ${requestUrl}:`, errorMessage);
     return null;
   }
 }
@@ -77,6 +73,7 @@ export async function searchPhotos(
   query: string,
   page: number = 1,
   perPage: number = 20,
+  orientation?: PexelsPhotoOrientation, // Added orientation parameter
 ): Promise<PexelsResponse | null> {
   if (!query || query.trim() === "") {
     console.warn("[Pexels Lib] searchPhotos called with an empty query. Returning null.");
@@ -87,6 +84,9 @@ export async function searchPhotos(
     page: page.toString(),
     per_page: perPage.toString(),
   });
+  if (orientation) {
+    params.append('orientation', orientation);
+  }
   return fetchFromInternalAPI<PexelsResponse>('/api/pexels/search', params);
 }
 

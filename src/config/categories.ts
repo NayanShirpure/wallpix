@@ -1,4 +1,6 @@
 
+import type { DeviceOrientationCategory } from '@/types/pexels';
+
 export const popularSearchQueries: string[] = [
   'Wallpaper',
   'Nature',
@@ -86,3 +88,11 @@ export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
     ],
   },
 ];
+
+export const deviceOrientationTabs: { label: string; value: DeviceOrientationCategory }[] = [
+  { label: 'Desktop', value: 'desktop' },
+  { label: 'Smartphone', value: 'smartphone' },
+];
+
+// Re-exporting for convenience if needed elsewhere
+export type { DeviceOrientationCategory };

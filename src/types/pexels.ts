@@ -1,4 +1,7 @@
 
+export type DeviceOrientationCategory = 'smartphone' | 'desktop';
+export type PexelsPhotoOrientation = 'landscape' | 'portrait' | 'square';
+
 export interface PexelsPhoto {
   id: number;
   width: number;

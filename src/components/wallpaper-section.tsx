@@ -22,7 +22,7 @@ export function WallpaperSection({
   wallpapers,
   loading,
   onWallpaperClick, 
-  itemCount = 6, // Updated default itemCount
+  itemCount = 6, 
 }: WallpaperSectionProps) {
 
   const displayedWallpapers = wallpapers.slice(0, itemCount);
@@ -51,7 +51,7 @@ export function WallpaperSection({
             >
               <WallpaperCard
                 photo={wallpaper}
-                isPriority={index < 3} // Prioritize the first 3 images in horizontal scroll
+                isPriority={index < 3} 
               />
             </div>
           ))}

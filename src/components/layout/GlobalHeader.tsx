@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, InfoIcon as Info, Wand2, Users, FileText, Shield, Home, MessageSquare } from 'lucide-react';
+import { Menu, Palette, ListFilter, MoreVertical, Compass, InfoIcon as Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone } from 'lucide-react';
 import {
   Sheet,
   SheetClose,
@@ -22,20 +22,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { wallpaperFilterCategoryGroups } from '@/config/categories';
+import { wallpaperFilterCategoryGroups, deviceOrientationTabs, type DeviceOrientationCategory } from '@/config/categories';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchBar } from '@/components/wallpaper/SearchBar';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GlobalHeaderProps {
-  onWallpaperCategorySelect?: (categoryValue: string) => void;
-  onSearchSubmit?: (searchTerm: string) => void;
+  currentDeviceOrientation: DeviceOrientationCategory;
+  onDeviceOrientationChange: (orientation: DeviceOrientationCategory) => void;
+  onWallpaperCategorySelect: (categoryValue: string) => void;
+  onSearchSubmit: (searchTerm: string) => void;
 }
 
-const noOp = () => {};
-
 export function GlobalHeader({
-  onWallpaperCategorySelect = noOp,
-  onSearchSubmit = noOp,
+  currentDeviceOrientation,
+  onDeviceOrientationChange,
+  onWallpaperCategorySelect,
+  onSearchSubmit,
 }: GlobalHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -70,6 +73,17 @@ export function GlobalHeader({
         <nav className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
+            <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="hidden md:block">
+              <TabsList className="h-9">
+                {deviceOrientationTabs.map((tab) => (
+                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs px-2.5 py-1.5 h-auto">
+                    {tab.value === 'desktop' ? <Monitor className="mr-1.5 h-3.5 w-3.5" /> : <Smartphone className="mr-1.5 h-3.5 w-3.5" />}
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
@@ -174,53 +188,31 @@ export function GlobalHeader({
                   <SheetTitle>Navigation</SheetTitle>
                 </SheetHeader>
                 <div className="py-2 px-2 h-[calc(100%-57px)] overflow-y-auto">
-                  <SheetClose asChild>
-                    <Link href="/" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Home className="mr-2 h-4 w-4" /> Home</Button>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/discover" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button>
-                    </Link>
-                  </SheetClose>
-                   <SheetClose asChild>
-                    <Link href="/what-we-offer" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/generate" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button>
-                    </Link>
-                  </SheetClose>
+                  <div className="px-2 py-1 mb-1">
+                    <span className="text-sm font-medium text-muted-foreground">Orientation</span>
+                    <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="mt-1.5">
+                      <TabsList className="grid w-full grid-cols-2 h-9">
+                        {deviceOrientationTabs.map((tab) => (
+                          <TabsTrigger key={tab.value} value={tab.value} className="text-xs px-2 py-1.5 h-auto">
+                             {tab.value === 'desktop' ? <Monitor className="mr-1.5 h-3.5 w-3.5" /> : <Smartphone className="mr-1.5 h-3.5 w-3.5" />}
+                             {tab.label}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                    </Tabs>
+                  </div>
                   <Separator className="my-1.5" />
-                  <SheetClose asChild>
-                    <Link href="/about" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/blog" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><FileText className="mr-2 h-4 w-4" /> Blog</Button>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/contact" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><MessageSquare className="mr-2 h-4 w-4" /> Contact</Button>
-                    </Link>
-                  </SheetClose>
+                  <SheetClose asChild><Link href="/" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Home className="mr-2 h-4 w-4" /> Home</Button></Link></SheetClose>
+                  <SheetClose asChild><Link href="/discover" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></Link></SheetClose>
+                  <SheetClose asChild><Link href="/what-we-offer" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></Link></SheetClose>
+                  <SheetClose asChild><Link href="/generate" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></Link></SheetClose>
                   <Separator className="my-1.5" />
-                  <SheetClose asChild>
-                    <Link href="/privacy-policy" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2"><Shield className="mr-2 h-4 w-4" /> Privacy Policy</Button>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/terms-conditions" className="block">
-                      <Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Terms & Conditions</Button>
-                    </Link>
-                  </SheetClose>
+                  <SheetClose asChild><Link href="/about" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></Link></SheetClose>
+                  <SheetClose asChild><Link href="/blog" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><FileText className="mr-2 h-4 w-4" /> Blog</Button></Link></SheetClose>
+                  <SheetClose asChild><Link href="/contact" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><MessageSquare className="mr-2 h-4 w-4" /> Contact</Button></Link></SheetClose>
+                  <Separator className="my-1.5" />
+                  <SheetClose asChild><Link href="/privacy-policy" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2"><Shield className="mr-2 h-4 w-4" /> Privacy Policy</Button></Link></SheetClose>
+                  <SheetClose asChild><Link href="/terms-conditions" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2">Terms & Conditions</Button></Link></SheetClose>
                   <Separator className="my-1.5" />
                   <div className="py-1">
                     <h4 className="text-sm font-semibold text-muted-foreground px-2 pt-2 pb-1">Categories</h4>

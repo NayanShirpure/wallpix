@@ -4,16 +4,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowRight, Monitor, Smartphone } from 'lucide-react';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-import type { PexelsPhoto } from '@/types/pexels';
+import type { PexelsPhoto, PexelsPhotoOrientation } from '@/types/pexels';
+import type { DeviceOrientationCategory } from '@/config/categories';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { WallpaperSection } from '@/components/wallpaper-section';
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
 import { getCuratedPhotos, searchPhotos as pexelsSearchPhotosLib } from '@/lib/pexels';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface DiscoverCategory {
   id: string;
@@ -41,7 +43,10 @@ const initialDiscoverPageCategories: DiscoverCategory[] = [
 
 export default function DiscoverPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+
+  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('desktop');
 
   const [wallpaperOfTheDay, setWallpaperOfTheDay] = useState<PexelsPhoto | null>(null);
   const [loadingWOTD, setLoadingWOTD] = useState(true);
@@ -65,14 +70,23 @@ export default function DiscoverPage() {
     initialDiscoverPageCategories.map(cat => ({ ...cat, imageLoading: true, fetchedImageUrl: null }))
   );
 
+  useEffect(() => {
+    const orientationFromUrl = searchParams.get('orientation') as DeviceOrientationCategory;
+    if (orientationFromUrl && (orientationFromUrl === 'smartphone' || orientationFromUrl === 'desktop')) {
+      setCurrentDeviceOrientation(orientationFromUrl);
+    }
+  }, [searchParams]);
+
   const fetchSectionPhotos = useCallback(async (
     query: string,
     setter: React.Dispatch<React.SetStateAction<PexelsPhoto[]>>,
     loader: React.Dispatch<React.SetStateAction<boolean>>,
+    orientation: DeviceOrientationCategory,
     perPage: number = 6
   ) => {
     loader(true);
-    const response = await pexelsSearchPhotosLib(query, 1, perPage);
+    const pexelsOrientation: PexelsPhotoOrientation = orientation === 'smartphone' ? 'portrait' : 'landscape';
+    const response = await pexelsSearchPhotosLib(query, 1, perPage, pexelsOrientation);
     if (response && response.photos) {
       setter(response.photos);
     } else {
@@ -84,7 +98,7 @@ export default function DiscoverPage() {
 
   useEffect(() => {
     setLoadingWOTD(true);
-    getCuratedPhotos(1, 1).then(data => {
+    getCuratedPhotos(1, 1).then(data => { // WOTD is general, not orientation specific for now
       if (data && data.photos && data.photos.length > 0) {
         setWallpaperOfTheDay(data.photos[0]);
       } else {
@@ -94,18 +108,20 @@ export default function DiscoverPage() {
       setLoadingWOTD(false);
     });
 
-    fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending);
-    fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks);
-    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal);
-    fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk);
-    fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage);
+    fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending, currentDeviceOrientation);
+    fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks, currentDeviceOrientation);
+    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal, currentDeviceOrientation);
+    fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk, currentDeviceOrientation);
+    fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage, currentDeviceOrientation);
 
-  }, [fetchSectionPhotos]);
+  }, [fetchSectionPhotos, currentDeviceOrientation]);
 
   useEffect(() => {
     const limitedCategories = initialDiscoverPageCategories.slice(0, 4);
+    const pexelsOrientation: PexelsPhotoOrientation = currentDeviceOrientation === 'smartphone' ? 'portrait' : 'landscape';
+
     limitedCategories.forEach(catDefinition => {
-      pexelsSearchPhotosLib(catDefinition.query, 1, 1)
+      pexelsSearchPhotosLib(catDefinition.query, 1, 1, pexelsOrientation)
         .then(response => {
           let imageUrl: string | null = null;
           if (response && response.photos && response.photos.length > 0) {
@@ -128,23 +144,30 @@ export default function DiscoverPage() {
           );
         });
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentDeviceOrientation]);
 
+  const handleDeviceOrientationChange = useCallback((newOrientation: DeviceOrientationCategory) => {
+    setCurrentDeviceOrientation(newOrientation);
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    newSearchParams.set('orientation', newOrientation);
+    router.push(`/discover?${newSearchParams.toString()}`, { scroll: false });
+  }, [router, searchParams]);
 
   const handleWallpaperCategorySelect = useCallback((categoryValue: string) => {
     if (categoryValue.trim()) {
-      router.push(`/search?query=${encodeURIComponent(categoryValue.trim())}`);
+      const newSearchParams = new URLSearchParams();
+      newSearchParams.set('query', categoryValue.trim());
+      newSearchParams.set('orientation', currentDeviceOrientation);
+      router.push(`/search?${newSearchParams.toString()}`);
     }
-  }, [router]);
+  }, [router, currentDeviceOrientation]);
 
   const handleSearchSubmit = useCallback((searchTerm: string) => {
-    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
     console.log("Search submitted on Discover page:", searchTerm);
   }, []);
 
   const handleViewWallpaper = (photo: PexelsPhoto) => {
-    router.push(`/photo/${photo.id}`);
+    router.push(`/photo/${photo.id}?orientation=${currentDeviceOrientation}`);
   };
 
   const handleDownloadWallpaper = async (photo: PexelsPhoto | null) => {
@@ -175,6 +198,8 @@ export default function DiscoverPage() {
   return (
     <>
       <GlobalHeader
+        currentDeviceOrientation={currentDeviceOrientation}
+        onDeviceOrientationChange={handleDeviceOrientationChange}
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
         onSearchSubmit={handleSearchSubmit}
       />
@@ -237,7 +262,7 @@ export default function DiscoverPage() {
               return (
                 <Link
                   key={category.id}
-                  href={`/search?query=${encodeURIComponent(category.query)}`}
+                  href={`/search?query=${encodeURIComponent(category.query)}&orientation=${currentDeviceOrientation}`}
                   className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 mb-4 sm:mb-6 break-inside-avoid-column aspect-[3/4]"
                 >
                     {category.imageLoading ? (
@@ -253,7 +278,11 @@ export default function DiscoverPage() {
                         priority={index < 3}
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 sm:p-4">
+                    <div className={cn(
+                      "absolute inset-0 flex flex-col justify-end p-3 sm:p-4",
+                      "bg-gradient-to-t from-black/70 via-black/40 to-transparent",
+                      "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
+                    )}>
                       <h3 className="text-white text-md sm:text-lg font-semibold line-clamp-2 leading-tight">
                         {category.title}
                       </h3>
