@@ -33,6 +33,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     const orientationFromUrl = searchParamsHook.get('orientation') as DeviceOrientationCategory;
     
     const newEffectiveSearchTerm = queryFromUrl?.trim() || initialQueryFromServer?.trim() || '';
+    
     if (newEffectiveSearchTerm !== currentSearchTerm) {
       setCurrentSearchTerm(newEffectiveSearchTerm);
     }
@@ -41,7 +42,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
       if (orientationFromUrl !== currentDeviceOrientation) {
         setCurrentDeviceOrientation(orientationFromUrl);
       }
-    } else if (currentDeviceOrientation !== 'desktop') { // Default to desktop if not in URL
+    } else if (currentDeviceOrientation !== 'desktop') { 
         setCurrentDeviceOrientation('desktop');
     }
   }, [searchParamsHook, initialQueryFromServer, currentSearchTerm, currentDeviceOrientation]);
@@ -128,9 +129,8 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
     }
   }, [router, currentDeviceOrientation]);
 
-  const handleSearchSubmit = useCallback((newSearchTerm: string) => {
-    console.log("Search submitted from SearchPageContent header, SearchBar component will handle navigation:", newSearchTerm);
-    // Navigation is handled by SearchBar component itself
+  const handleSearchSubmit = useCallback((searchTerm: string) => {
+    console.log("Search submitted from SearchPageContent, SearchBar component will handle navigation:", searchTerm);
   }, []);
 
   const loadingSkeletons = (
@@ -146,7 +146,7 @@ export function SearchPageContent({ initialQueryFromServer }: SearchPageContentP
   );
   
   const infiniteScrollLoader = (
-    <div className="text-center py-4 col-span-full">
+    <div className="w-full text-center py-4" style={{ minHeight: '60px' }}>
       <p className="text-muted-foreground">Loading more wallpapers...</p>
     </div>
   );

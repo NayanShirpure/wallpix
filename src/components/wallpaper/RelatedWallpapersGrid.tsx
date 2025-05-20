@@ -58,7 +58,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, currentDev
       setLoading(false);
       setHasMore(false);
     }
-  }, [initialQuery, fetchRelatedWallpapers, currentDeviceOrientation]); // Add currentDeviceOrientation to dependencies
+  }, [initialQuery, fetchRelatedWallpapers, currentDeviceOrientation]); 
 
   const handleLoadMore = useCallback(() => {
     if (!loading && hasMore) {
@@ -85,7 +85,7 @@ export function RelatedWallpapersGrid({ initialQuery, currentPhotoId, currentDev
   );
 
   const infiniteScrollLoader = (
-     <div className="text-center py-4 col-span-full">
+     <div className="w-full text-center py-4" style={{ minHeight: '60px' }}>
       <p className="text-muted-foreground">Loading more related...</p>
     </div>
   );

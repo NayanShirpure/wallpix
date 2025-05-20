@@ -11,6 +11,7 @@ import { WallpaperGrid } from '@/components/wallpaper/WallpaperGrid';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { searchPhotos as searchPhotosLib } from '@/lib/pexels';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_HOME_SEARCH_TERM = 'Wallpaper';
 
@@ -23,7 +24,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM; // Homepage always fetches for a default term
+  const currentFetchTerm = DEFAULT_HOME_SEARCH_TERM; 
 
   const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('desktop');
 
@@ -52,7 +53,6 @@ export default function Home() {
         setWallpapers([]);
       }
       setHasMore(false);
-      // Unconditional toast for critical API fetch issues
       if (response === null) { 
         toast({
           title: "API Fetch Issue (Home)",
@@ -78,7 +78,7 @@ export default function Home() {
     setWallpapers([]);
     setHasMore(true);
     fetchWallpapers(1, false, currentDeviceOrientation);
-  }, [fetchWallpapers, currentDeviceOrientation, searchParams]); // Re-fetch if orientation in URL changes
+  }, [fetchWallpapers, currentDeviceOrientation, searchParams]); 
 
   const handleDeviceOrientationChange = useCallback((newOrientation: DeviceOrientationCategory) => {
     setCurrentDeviceOrientation(newOrientation);
@@ -96,10 +96,8 @@ export default function Home() {
     }
   }, [router, currentDeviceOrientation]);
 
-  const handleSearchSubmit = useCallback((newSearchTerm: string) => {
-    console.log("Search submitted on Home page, SearchBar component will handle navigation:", newSearchTerm);
-    // Navigation is handled by SearchBar component itself due to navigateToSearchPage={true}
-    // It should ideally also carry forward the orientation.
+  const handleSearchSubmit = useCallback((searchTerm: string) => {
+    console.log("Search submitted on Home page, SearchBar component will handle navigation:", searchTerm);
   }, []);
 
   const loadingSkeletons = (
@@ -115,7 +113,7 @@ export default function Home() {
   );
   
   const infiniteScrollLoader = (
-    <div className="text-center py-4 col-span-full">
+    <div className="w-full text-center py-4" style={{ minHeight: '60px' }}>
       <p className="text-muted-foreground">Loading more wallpapers...</p>
     </div>
   );
