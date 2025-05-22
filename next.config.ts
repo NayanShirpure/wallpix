@@ -31,8 +31,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  // Removed env mapping for NEXT_PUBLIC_PEXELS_API_KEY as it's no longer needed on client.
-  // PEXELS_API_KEY will be used server-side only.
   webpack: (config, { isServer, webpack }) => {
     // For server-side builds
     if (isServer) {
@@ -57,6 +55,35 @@ const nextConfig: NextConfig = {
     // Important: return the modified config
     return config;
   },
+  async headers() {
+    return [
+      {
+        source: '/sitemap.xml',
+        headers: [
+          {
+            key: 'Cache-Control',
+            // This is a strong set of directives to prevent caching.
+            // no-store: Don't store any part of the response.
+            // no-cache: Revalidate with the origin server before using a cached copy.
+            // must-revalidate: Indicates that once it's stale, it must not be used.
+            // proxy-revalidate: Same as must-revalidate, but for shared caches (proxies).
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          {
+            // Pragma: no-cache is an HTTP/1.0 header for backwards compatibility.
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            // Expires: 0 tells caches the content is already expired.
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+    ];
+  },
+  productionBrowserSourceMaps: true,
 };
 
 export default nextConfig;
