@@ -10,14 +10,11 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: '',
-        // Add disallow rules here if needed for specific paths
-        // e.g., disallow: ['/admin/', '/tmp/'],
+        disallow: ['/api/'], // Explicitly disallow crawling API routes
       },
     ],
     sitemap: `${BASE_URL}sitemap.xml`,
-    host: BASE_URL,
     // Optionally, specify a host if your site is accessible via multiple domains
-    // host: BASE_URL,
+    // host: BASE_URL, // Host directive is deprecated by Google but still read by some crawlers like Yandex.
   };
 }
