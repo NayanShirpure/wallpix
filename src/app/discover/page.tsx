@@ -8,7 +8,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, Monitor, Smartphone } from 'lucide-react';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import type { PexelsPhoto, PexelsPhotoOrientation } from '@/types/pexels';
-import type { DeviceOrientationCategory } from '@/config/categories';
 import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 import { WallpaperSection } from '@/components/wallpaper-section';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +21,7 @@ interface DiscoverCategory {
   title: string;
   description: string;
   query: string;
-  imageUrl: string;
+  imageUrl: string; // This will be the placehold.co URL
   dataAiHint: string;
   imageWidth: number;
   imageHeight: number;
@@ -46,7 +45,7 @@ export default function DiscoverPage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<DeviceOrientationCategory>('desktop');
+  const [currentDeviceOrientation, setCurrentDeviceOrientation] = useState<'smartphone' | 'desktop'>('desktop');
 
   const [wallpaperOfTheDay, setWallpaperOfTheDay] = useState<PexelsPhoto | null>(null);
   const [loadingWOTD, setLoadingWOTD] = useState(true);
@@ -71,7 +70,7 @@ export default function DiscoverPage() {
   );
 
   useEffect(() => {
-    const orientationFromUrl = searchParams.get('orientation') as DeviceOrientationCategory;
+    const orientationFromUrl = searchParams.get('orientation') as 'smartphone' | 'desktop';
     if (orientationFromUrl && (orientationFromUrl === 'smartphone' || orientationFromUrl === 'desktop')) {
       setCurrentDeviceOrientation(orientationFromUrl);
     }
@@ -81,24 +80,23 @@ export default function DiscoverPage() {
     query: string,
     setter: React.Dispatch<React.SetStateAction<PexelsPhoto[]>>,
     loader: React.Dispatch<React.SetStateAction<boolean>>,
-    orientation: DeviceOrientationCategory,
     perPage: number = 6
   ) => {
     loader(true);
-    const pexelsOrientation: PexelsPhotoOrientation = orientation === 'smartphone' ? 'portrait' : 'landscape';
+    const pexelsOrientation: PexelsPhotoOrientation = currentDeviceOrientation === 'smartphone' ? 'portrait' : 'landscape';
     const response = await pexelsSearchPhotosLib(query, 1, perPage, pexelsOrientation);
     if (response && response.photos) {
       setter(response.photos);
     } else {
       setter([]);
-      console.warn(`[Discover Page] Failed to fetch photos for query: ${query}. Check console for Pexels API errors (e.g., rate limits).`);
+      console.warn(`[Discover Page] Failed to fetch section photos for query: "${query}". Response was null or had no photos. This might be due to Pexels API issues (e.g., rate limits). Check console for more specific errors from 'fetchFromInternalAPI'.`);
     }
     loader(false);
-  }, []);
+  }, [currentDeviceOrientation]);
 
   useEffect(() => {
     setLoadingWOTD(true);
-    getCuratedPhotos(1, 1).then(data => { // WOTD is general, not orientation specific for now
+    getCuratedPhotos(1, 1).then(data => { 
       if (data && data.photos && data.photos.length > 0) {
         setWallpaperOfTheDay(data.photos[0]);
       } else {
@@ -108,24 +106,29 @@ export default function DiscoverPage() {
       setLoadingWOTD(false);
     });
 
-    fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending, currentDeviceOrientation);
-    fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks, currentDeviceOrientation);
-    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal, currentDeviceOrientation);
-    fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk, currentDeviceOrientation);
-    fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage, currentDeviceOrientation);
+    fetchSectionPhotos("Trending Abstract", setTrendingWallpapers, setLoadingTrending);
+    fetchSectionPhotos("Editor's Choice Serene Landscapes", setEditorsPicks, setLoadingEditorsPicks);
+    fetchSectionPhotos("Autumn Forest", setSeasonalWallpapers, setLoadingSeasonal);
+    fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk);
+    fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage);
 
-  }, [fetchSectionPhotos, currentDeviceOrientation]);
+  }, [fetchSectionPhotos]); // Removed currentDeviceOrientation from here as fetchSectionPhotos uses it internally
 
   useEffect(() => {
-    const limitedCategories = initialDiscoverPageCategories.slice(0, 4);
+    // Fetch for only the first 2 categories to reduce API load
+    const limitedCategories = initialDiscoverPageCategories.slice(0, 2); 
     const pexelsOrientation: PexelsPhotoOrientation = currentDeviceOrientation === 'smartphone' ? 'portrait' : 'landscape';
 
     limitedCategories.forEach(catDefinition => {
+      setCategories(prev => prev.map(c => c.id === catDefinition.id ? { ...c, imageLoading: true } : c)); // Set loading true before fetch
       pexelsSearchPhotosLib(catDefinition.query, 1, 1, pexelsOrientation)
         .then(response => {
           let imageUrl: string | null = null;
           if (response && response.photos && response.photos.length > 0) {
-            imageUrl = response.photos[0].src.large || response.photos[0].src.medium;
+            const photo = response.photos[0];
+            imageUrl = photo.src.large || photo.src.medium || photo.src.original; // Prioritize quality
+          } else {
+            console.warn(`[Discover Page] No image found for category "${catDefinition.title}" from Pexels. Falling back to placeholder.`);
           }
           setCategories(prevCategories =>
             prevCategories.map(c =>
@@ -136,17 +139,18 @@ export default function DiscoverPage() {
           );
         })
         .catch(error => {
-          console.warn(`[Discover Page] Failed to fetch image for category ${catDefinition.title}:`, error);
+          console.error(`[Discover Page] Error fetching image for category ${catDefinition.title}:`, error);
           setCategories(prevCategories =>
             prevCategories.map(c =>
-              c.id === catDefinition.id ? { ...c, imageLoading: false } : c
+              c.id === catDefinition.id ? { ...c, fetchedImageUrl: null, imageLoading: false } : c // Ensure loading stops and fetchedUrl is null
             )
           );
         });
     });
-  }, [currentDeviceOrientation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDeviceOrientation]); // Re-fetch category images if orientation changes
 
-  const handleDeviceOrientationChange = useCallback((newOrientation: DeviceOrientationCategory) => {
+  const handleDeviceOrientationChange = useCallback((newOrientation: 'smartphone' | 'desktop') => {
     setCurrentDeviceOrientation(newOrientation);
     const newSearchParams = new URLSearchParams(searchParams.toString());
     newSearchParams.set('orientation', newOrientation);
@@ -157,13 +161,14 @@ export default function DiscoverPage() {
     if (categoryValue.trim()) {
       const newSearchParams = new URLSearchParams();
       newSearchParams.set('query', categoryValue.trim());
-      newSearchParams.set('orientation', currentDeviceOrientation);
+      newSearchParams.set('orientation', currentDeviceOrientation); // Preserve orientation
       router.push(`/search?${newSearchParams.toString()}`);
     }
   }, [router, currentDeviceOrientation]);
 
   const handleSearchSubmit = useCallback((searchTerm: string) => {
-    console.log("Search submitted on Discover page:", searchTerm);
+    // SearchBar component handles navigation
+    console.log("Search submitted on Discover page, SearchBar will navigate:", searchTerm);
   }, []);
 
   const handleViewWallpaper = (photo: PexelsPhoto) => {
@@ -201,9 +206,9 @@ export default function DiscoverPage() {
         currentDeviceOrientation={currentDeviceOrientation}
         onDeviceOrientationChange={handleDeviceOrientationChange}
         onWallpaperCategorySelect={handleWallpaperCategorySelect}
-        onSearchSubmit={handleSearchSubmit}
+        // onSearchSubmit is handled by SearchBar
       />
-      <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12 space-y-10 sm:space-y-12" aria-busy={loadingWOTD || loadingTrending || loadingEditorsPicks || loadingSeasonal || loadingThemeCyberpunk || loadingThemeVintage}>
+      <main className="flex-grow container mx-auto max-w-7xl p-4 py-8 md:p-6 md:py-12 space-y-10 sm:space-y-12" aria-busy={loadingWOTD || loadingTrending || loadingEditorsPicks || loadingSeasonal || loadingThemeCyberpunk || loadingThemeVintage || categories.some(c => c.imageLoading)}>
 
         <WallpaperOfTheDay
           wallpaper={wallpaperOfTheDay}
@@ -257,43 +262,47 @@ export default function DiscoverPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Explore Popular Categories</h2>
           <div className="columns-1 xs:columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-4 gap-4 sm:gap-6">
             {categories.map((category, index) => {
-              const imageToDisplay = category.fetchedImageUrl || category.imageUrl;
+              const imageToDisplay = category.fetchedImageUrl || category.imageUrl; // Fallback to placeholder
               const imageAltText = `Preview for ${category.title} category, showing ${category.dataAiHint}`;
+              
+              // console.log(`Category: ${category.title}, Fetched: ${category.fetchedImageUrl}, Placeholder: ${category.imageUrl}, Displaying: ${imageToDisplay}`);
+
               return (
-                <Link
-                  key={category.id}
-                  href={`/search?query=${encodeURIComponent(category.query)}&orientation=${currentDeviceOrientation}`}
-                  className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 mb-4 sm:mb-6 break-inside-avoid-column aspect-[3/4]"
-                >
-                    {category.imageLoading ? (
-                      <Skeleton className="w-full h-full" />
-                    ) : (
-                      <Image
-                        src={imageToDisplay}
-                        alt={imageAltText}
-                        fill
-                        sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                        className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                        data-ai-hint={category.dataAiHint}
-                        priority={index < 3}
-                      />
-                    )}
-                    <div className={cn(
-                      "absolute inset-0 flex flex-col justify-end p-3 sm:p-4",
-                      "bg-gradient-to-t from-black/70 via-black/40 to-transparent",
-                      "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
-                    )}>
-                      <h3 className="text-white text-md sm:text-lg font-semibold line-clamp-2 leading-tight">
-                        {category.title}
-                      </h3>
-                      <p className="text-gray-200 text-xs sm:text-sm mt-1 line-clamp-2 leading-snug">
-                        {category.description}
-                      </p>
-                      <div className="mt-2 text-xs sm:text-sm font-medium text-accent flex items-center opacity-90 group-hover:opacity-100 group-hover:underline">
-                        Explore <ArrowRight className="ml-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                <div key={category.id} className="mb-4 sm:mb-6 break-inside-avoid-column">
+                  <Link
+                    href={`/search?query=${encodeURIComponent(category.query)}&orientation=${currentDeviceOrientation}`}
+                    className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 aspect-[3/4]"
+                  >
+                      {category.imageLoading ? (
+                        <Skeleton className="w-full h-full" />
+                      ) : (
+                        <Image
+                          src={imageToDisplay}
+                          alt={imageAltText}
+                          fill
+                          sizes="(max-width: 479px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
+                          className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                          data-ai-hint={category.dataAiHint}
+                          priority={index < 2} // Prioritize only the first few dynamically loaded category images
+                        />
+                      )}
+                      <div className={cn(
+                        "absolute inset-0 flex flex-col justify-end p-3 sm:p-4",
+                        "bg-gradient-to-t from-black/70 via-black/40 to-transparent",
+                        "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
+                      )}>
+                        <h3 className="text-white text-md sm:text-lg font-semibold line-clamp-2 leading-tight">
+                          {category.title}
+                        </h3>
+                        <p className="text-gray-200 text-xs sm:text-sm mt-1 line-clamp-2 leading-snug">
+                          {category.description}
+                        </p>
+                        <div className="mt-2 text-xs sm:text-sm font-medium text-accent flex items-center opacity-90 group-hover:opacity-100 group-hover:underline">
+                          Explore <ArrowRight className="ml-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                        </div>
                       </div>
-                    </div>
-                </Link>
+                  </Link>
+                </div>
               );
             })}
           </div>
@@ -302,3 +311,6 @@ export default function DiscoverPage() {
     </>
   );
 }
+
+
+    
