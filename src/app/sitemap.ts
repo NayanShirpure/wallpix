@@ -3,12 +3,11 @@ import type { MetadataRoute } from 'next';
 import { blogPosts } from '@/config/blog';
 export const dynamic = 'force-static'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+const BASE_URL_FROM_ENV = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
 // Log the BASE_URL being used for sitemap generation.
 // This is helpful for debugging in build logs or local development.
-// You might want to remove or conditionalize this log for cleaner production build logs eventually.
-console.log('[sitemap.ts] Generating sitemap with BASE_URL:', BASE_URL);
+console.log('[sitemap.ts] Generating sitemap with BASE_URL from environment:', BASE_URL_FROM_ENV);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPagesData = [
@@ -24,28 +23,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/terms-conditions', changeFrequency: 'yearly', priority: 0.3 },
   ];
 
+  // Ensure effectiveBaseUrl does not have a trailing slash for consistent joining
+  const effectiveBaseUrl = BASE_URL_FROM_ENV.endsWith('/')
+    ? BASE_URL_FROM_ENV.slice(0, -1)
+    : BASE_URL_FROM_ENV;
+
   const staticPages = staticPagesData.map((page) => {
-    let pageUrlPath = page.url;
-    // Ensure the page path doesn't lead to double slashes if BASE_URL ends with / and page.url starts with /
-    if (BASE_URL.endsWith('/') && pageUrlPath.startsWith('/')) {
-      pageUrlPath = pageUrlPath.substring(1);
-    } else if (!BASE_URL.endsWith('/') && !pageUrlPath.startsWith('/') && pageUrlPath !== '') {
-      // Handle cases where pageUrlPath is not root and needs a preceding slash
-      pageUrlPath = `/${pageUrlPath}`;
+    let finalUrl;
+    if (page.url === '/') {
+      // Ensure the root URL always ends with a slash if it's just the base
+      finalUrl = `${effectiveBaseUrl}/`;
+    } else {
+      // Ensure path segment starts with a slash if it's not empty
+      const pathSegment = page.url.startsWith('/') ? page.url : `/${page.url}`;
+      finalUrl = `${effectiveBaseUrl}${pathSegment}`;
     }
-    
-    // For the homepage, ensure it's just the BASE_URL (handling trailing slash consistently)
-    let finalUrl = page.url === '/' 
-      ? (BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`)
-      : `${BASE_URL}${pageUrlPath}`;
-
-    // Ensure no double slashes for non-root URLs if BASE_URL ends with / and pageUrlPath is empty (e.g. for root)
-    // This specific case is handled by the ternary above, but good to be mindful of general double slash issues.
-    // A more generic approach for joining:
-    const base = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
-    const path = page.url.startsWith('/') ? page.url : `/${page.url}`;
-    finalUrl = page.url === '/' ? `${base}/` : `${base}${path}`;
-
 
     return {
       url: finalUrl,
@@ -56,9 +48,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   });
 
   const blogPostPages = blogPosts.map(post => {
-    const base = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
     return {
-      url: `${base}/blog/${post.slug}`,
+      url: `${effectiveBaseUrl}/blog/${post.slug}`,
       lastModified: new Date(post.date).toISOString(),
       changeFrequency: 'monthly' as MetadataRoute.Sitemap[0]['changeFrequency'],
       priority: 0.7,
@@ -69,9 +60,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Log a sample of generated URLs for debugging
   if (allSitemapEntries.length > 0) {
+    console.log('[sitemap.ts] Effective Base URL for sitemap:', effectiveBaseUrl);
     console.log('[sitemap.ts] Sample generated sitemap URL (static):', allSitemapEntries[0].url);
-    if (allSitemapEntries.length > staticPagesData.length) {
-      console.log('[sitemap.ts] Sample generated sitemap URL (blog):', allSitemapEntries[staticPagesData.length].url);
+    if (blogPostPages.length > 0) {
+      console.log('[sitemap.ts] Sample generated sitemap URL (blog):', blogPostPages[0].url);
     }
   } else {
     console.log('[sitemap.ts] No sitemap entries generated.');
