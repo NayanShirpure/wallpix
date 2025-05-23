@@ -1,7 +1,9 @@
 
 import type { MetadataRoute } from 'next';
 import { blogPosts } from '@/config/blog';
-export const dynamic = 'force-static'
+
+// This ensures the sitemap is generated at build time
+export const dynamic = 'force-static';
 
 const BASE_URL_FROM_ENV = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
 
@@ -28,6 +30,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ? BASE_URL_FROM_ENV.slice(0, -1)
     : BASE_URL_FROM_ENV;
 
+  if (!effectiveBaseUrl.startsWith('https://')) {
+    console.warn(`[sitemap.ts] WARNING: effectiveBaseUrl "${effectiveBaseUrl}" does not start with https. This might cause issues with search engines.`);
+  }
+
   const staticPages = staticPagesData.map((page) => {
     let finalUrl;
     if (page.url === '/') {
@@ -41,16 +47,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     return {
       url: finalUrl,
-      lastModified: new Date().toISOString(),
+      lastModified: new Date().toISOString(), // Static pages can use current date
       changeFrequency: page.changeFrequency as MetadataRoute.Sitemap[0]['changeFrequency'],
       priority: page.priority,
     };
   });
 
   const blogPostPages = blogPosts.map(post => {
+    let lastModifiedDate: string;
+    const parsedDate = new Date(post.date);
+
+    if (!isNaN(parsedDate.getTime())) { // Check if date is valid
+      lastModifiedDate = parsedDate.toISOString();
+    } else {
+      console.warn(`[sitemap.ts] Invalid date format for blog post slug: ${post.slug} (date: "${post.date}"). Using current date as fallback.`);
+      lastModifiedDate = new Date().toISOString();
+    }
+
     return {
       url: `${effectiveBaseUrl}/blog/${post.slug}`,
-      lastModified: new Date(post.date).toISOString(),
+      lastModified: lastModifiedDate,
       changeFrequency: 'monthly' as MetadataRoute.Sitemap[0]['changeFrequency'],
       priority: 0.7,
     };
@@ -66,7 +82,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       console.log('[sitemap.ts] Sample generated sitemap URL (blog):', blogPostPages[0].url);
     }
   } else {
-    console.log('[sitemap.ts] No sitemap entries generated.');
+    console.warn('[sitemap.ts] No sitemap entries generated.');
+  }
+
+  // Check for duplicate URLs, which can invalidate a sitemap
+  const urls = new Set<string>();
+  for (const entry of allSitemapEntries) {
+    if (urls.has(entry.url)) {
+      console.warn(`[sitemap.ts] Duplicate URL found in sitemap: ${entry.url}`);
+      // Optionally, you might want to filter out duplicates or throw an error
+    }
+    urls.add(entry.url);
   }
 
   return allSitemapEntries;
