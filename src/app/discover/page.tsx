@@ -112,21 +112,19 @@ export default function DiscoverPage() {
     fetchSectionPhotos("Cyberpunk City", setThemeCollectionCyberpunk, setLoadingThemeCyberpunk);
     fetchSectionPhotos("Vintage Cars", setThemeCollectionVintage, setLoadingThemeVintage);
 
-  }, [fetchSectionPhotos]); // Removed currentDeviceOrientation from here as fetchSectionPhotos uses it internally
+  }, [fetchSectionPhotos]);
 
   useEffect(() => {
-    // Fetch for only the first 2 categories to reduce API load
-    const limitedCategories = initialDiscoverPageCategories.slice(0, 2); 
     const pexelsOrientation: PexelsPhotoOrientation = currentDeviceOrientation === 'smartphone' ? 'portrait' : 'landscape';
 
-    limitedCategories.forEach(catDefinition => {
-      setCategories(prev => prev.map(c => c.id === catDefinition.id ? { ...c, imageLoading: true } : c)); // Set loading true before fetch
+    initialDiscoverPageCategories.forEach(catDefinition => { // Fetch for all categories
+      setCategories(prev => prev.map(c => c.id === catDefinition.id ? { ...c, imageLoading: true } : c));
       pexelsSearchPhotosLib(catDefinition.query, 1, 1, pexelsOrientation)
         .then(response => {
           let imageUrl: string | null = null;
           if (response && response.photos && response.photos.length > 0) {
             const photo = response.photos[0];
-            imageUrl = photo.src.large || photo.src.medium || photo.src.original; // Prioritize quality
+            imageUrl = photo.src.large || photo.src.medium || photo.src.original;
           } else {
             console.warn(`[Discover Page] No image found for category "${catDefinition.title}" from Pexels. Falling back to placeholder.`);
           }
@@ -142,13 +140,13 @@ export default function DiscoverPage() {
           console.error(`[Discover Page] Error fetching image for category ${catDefinition.title}:`, error);
           setCategories(prevCategories =>
             prevCategories.map(c =>
-              c.id === catDefinition.id ? { ...c, fetchedImageUrl: null, imageLoading: false } : c // Ensure loading stops and fetchedUrl is null
+              c.id === catDefinition.id ? { ...c, fetchedImageUrl: null, imageLoading: false } : c
             )
           );
         });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDeviceOrientation]); // Re-fetch category images if orientation changes
+  }, [currentDeviceOrientation]); 
 
   const handleDeviceOrientationChange = useCallback((newOrientation: 'smartphone' | 'desktop') => {
     setCurrentDeviceOrientation(newOrientation);
@@ -161,18 +159,18 @@ export default function DiscoverPage() {
     if (categoryValue.trim()) {
       const newSearchParams = new URLSearchParams();
       newSearchParams.set('query', categoryValue.trim());
-      newSearchParams.set('orientation', currentDeviceOrientation); // Preserve orientation
+      newSearchParams.set('orientation', currentDeviceOrientation); 
       router.push(`/search?${newSearchParams.toString()}`);
     }
   }, [router, currentDeviceOrientation]);
 
   const handleSearchSubmit = useCallback((searchTerm: string) => {
-    // SearchBar component handles navigation
     console.log("Search submitted on Discover page, SearchBar will navigate:", searchTerm);
   }, []);
 
   const handleViewWallpaper = (photo: PexelsPhoto) => {
-    router.push(`/photo/${photo.id}?orientation=${currentDeviceOrientation}`);
+    const currentOrientationParam = searchParams.get('orientation') || 'desktop';
+    router.push(`/photo/${photo.id}?orientation=${currentOrientationParam}`);
   };
 
   const handleDownloadWallpaper = async (photo: PexelsPhoto | null) => {
@@ -262,15 +260,14 @@ export default function DiscoverPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">Explore Popular Categories</h2>
           <div className="columns-1 xs:columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-4 gap-4 sm:gap-6">
             {categories.map((category, index) => {
-              const imageToDisplay = category.fetchedImageUrl || category.imageUrl; // Fallback to placeholder
+              const imageToDisplay = category.fetchedImageUrl || category.imageUrl; 
               const imageAltText = `Preview for ${category.title} category, showing ${category.dataAiHint}`;
               
-              // console.log(`Category: ${category.title}, Fetched: ${category.fetchedImageUrl}, Placeholder: ${category.imageUrl}, Displaying: ${imageToDisplay}`);
-
               return (
                 <div key={category.id} className="mb-4 sm:mb-6 break-inside-avoid-column">
                   <Link
                     href={`/search?query=${encodeURIComponent(category.query)}&orientation=${currentDeviceOrientation}`}
+                    aria-label={`Explore ${category.title} wallpapers`}
                     className="block group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 focus-within:-translate-y-1 aspect-[3/4]"
                   >
                       {category.imageLoading ? (
@@ -283,7 +280,7 @@ export default function DiscoverPage() {
                           sizes="(max-width: 479px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
                           className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                           data-ai-hint={category.dataAiHint}
-                          priority={index < 2} // Prioritize only the first few dynamically loaded category images
+                          priority={index < 4} // Prioritize only the first few dynamically loaded category images
                         />
                       )}
                       <div className={cn(
@@ -311,6 +308,5 @@ export default function DiscoverPage() {
     </>
   );
 }
-
 
     
