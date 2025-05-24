@@ -2,18 +2,33 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { fabric as FabricType } from 'fabric'; // Changed from 'import type'
+import { fabric as FabricType } from 'fabric';
 import { getHistoryStack, setHistoryStack } from '@/components/FabricCanvas';
-import { ZoomIn, ZoomOut, Type, Square, Circle as CircleIcon, Minus, Eraser, Undo, Redo, Image as ImageIconLucide, UploadCloud, Trash2 } from 'lucide-react';
+import { 
+  ZoomIn, ZoomOut, Type, Square, Circle as CircleIcon, Minus, Eraser, 
+  Undo, Redo, Image as ImageIconLucide, UploadCloud, Trash2,
+  FlipHorizontal, FlipVertical, Palette, Sparkles, Crop, EyeOff
+} from 'lucide-react';
 
 interface ToolbarProps {
   selectedColor: string;
   fabricCanvas: FabricType.Canvas | null;
-  historyRevision: number;
+  historyRevision: number; // To trigger re-render for disabled state of undo
+  onApplyFilter: (filterType: 'grayscale' | 'sepia' | 'invert' | null) => void;
+  onFlip: (direction: 'horizontal' | 'vertical') => void;
+  onToggleCropGuide: () => void;
+  onDeleteSelected: () => void;
 }
 
-export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }: ToolbarProps) {
-  // historyRevision prop change triggers re-render, ensuring getHistoryStack().length is fresh for `disabled`
+export default function Toolbar({ 
+  selectedColor, 
+  fabricCanvas, 
+  historyRevision,
+  onApplyFilter,
+  onFlip,
+  onToggleCropGuide,
+  onDeleteSelected
+}: ToolbarProps) {
 
   const addText = useCallback(() => {
     if (fabricCanvas) {
@@ -93,7 +108,7 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
     if (fabricCanvas) {
       let currentZoom = fabricCanvas.getZoom();
       currentZoom *= factor;
-      currentZoom = Math.max(0.1, Math.min(currentZoom, 10));
+      currentZoom = Math.max(0.1, Math.min(currentZoom, 10)); // Limit zoom
       const center = fabricCanvas.getCenter();
       fabricCanvas.zoomToPoint(new FabricType.Point(center.left, center.top), currentZoom);
       fabricCanvas.renderAll();
@@ -101,13 +116,13 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
   }, [fabricCanvas]);
 
   const handleUndo = useCallback(() => {
-    const currentHistory = getHistoryStack(); // Direct reference to module-level array
+    const currentHistory = getHistoryStack(); 
     if (fabricCanvas && currentHistory.length > 1) {
-      currentHistory.pop(); // Remove current state (mutates original array)
+      currentHistory.pop(); 
       const prevStateJSON = currentHistory[currentHistory.length - 1];
       fabricCanvas.loadFromJSON(prevStateJSON, () => {
         fabricCanvas.renderAll();
-        fabricCanvas.preserveObjectStacking = true;
+        fabricCanvas.preserveObjectStacking = true; 
       });
     }
   }, [fabricCanvas]);
@@ -143,23 +158,9 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
         });
       };
       reader.readAsDataURL(file);
-      if(event.target) event.target.value = '';
+      if(event.target) event.target.value = ''; // Reset file input
     }
   }, [fabricCanvas]);
-
-  const deleteSelectedObject = useCallback(() => {
-    if (fabricCanvas) {
-      const activeObject = fabricCanvas.getActiveObject();
-      if (activeObject) {
-        fabricCanvas.remove(activeObject);
-        fabricCanvas.discardActiveObject(); // Important to clear selection
-        fabricCanvas.renderAll();
-      } else {
-        alert("No object selected to delete.");
-      }
-    }
-  }, [fabricCanvas]);
-
 
   return (
     <div className="p-3 bg-card border rounded-md shadow space-y-3">
@@ -183,11 +184,29 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
       <button onClick={toggleFreeDrawing} title="Toggle Free Drawing" className="btn text-sm flex items-center justify-center" disabled={!fabricCanvas}>
         <Eraser className="mr-2 h-4 w-4"/> Draw
       </button>
+      
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={() => onFlip('horizontal')} title="Flip Horizontal" className="btn btn-icon" disabled={!fabricCanvas}><FlipHorizontal size={18}/></button>
+        <button onClick={() => onFlip('vertical')} title="Flip Vertical" className="btn btn-icon" disabled={!fabricCanvas}><FlipVertical size={18}/></button>
+      </div>
+
+      <p className="text-xs text-muted-foreground text-center">Filters (on selected image):</p>
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={() => onApplyFilter('grayscale')} title="Grayscale" className="btn text-xs" disabled={!fabricCanvas}>Grayscale</button>
+        <button onClick={() => onApplyFilter('sepia')} title="Sepia" className="btn text-xs" disabled={!fabricCanvas}>Sepia</button>
+        <button onClick={() => onApplyFilter('invert')} title="Invert" className="btn text-xs" disabled={!fabricCanvas}>Invert</button>
+        <button onClick={() => onApplyFilter(null)} title="Clear Filters" className="btn text-xs" disabled={!fabricCanvas}>Clear Filters</button>
+      </div>
+      
+      <button onClick={onToggleCropGuide} title="Toggle 16:9 Crop Guide" className="btn text-sm flex items-center justify-center" disabled={!fabricCanvas}>
+        <Crop className="mr-2 h-4 w-4"/> Crop Guide
+      </button>
+
       <div className="grid grid-cols-2 gap-2">
         <button onClick={handleUndo} title="Undo" className="btn btn-icon" disabled={!fabricCanvas || getHistoryStack().length <= 1}><Undo size={18}/></button>
         <button onClick={handleRedo} title="Redo (WIP)" className="btn btn-icon" disabled><Redo size={18}/></button>
       </div>
-      <button onClick={deleteSelectedObject} title="Delete Selected Object" className="btn text-sm flex items-center justify-center text-destructive-foreground bg-destructive hover:bg-destructive/90" disabled={!fabricCanvas}>
+      <button onClick={onDeleteSelected} title="Delete Selected Object" className="btn text-sm flex items-center justify-center text-destructive-foreground bg-destructive hover:bg-destructive/90" disabled={!fabricCanvas}>
         <Trash2 className="mr-2 h-4 w-4"/> Delete Selected
       </button>
        <style jsx>{`

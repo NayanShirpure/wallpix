@@ -11,16 +11,20 @@ export const setHistoryStack = (newStack: string[]) => {
 };
 export const getHistoryStack = () => historyStack;
 
-
 interface FabricCanvasProps {
   selectedColor: string;
   setFabricCanvasInstance: (canvas: fabric.Canvas | null) => void;
-  onHistoryUpdate?: () => void; // Callback to notify parent of history change
+  onHistoryUpdate?: () => void;
 }
 
-export default function FabricCanvas({ selectedColor, setFabricCanvasInstance, onHistoryUpdate }: FabricCanvasProps) {
+export default function FabricCanvas({ 
+  selectedColor, 
+  setFabricCanvasInstance, 
+  onHistoryUpdate 
+}: FabricCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
+  const cropGuideRef = useRef<fabric.Rect | null>(null);
 
   const saveState = useCallback(() => {
     const canvas = fabricCanvasRef.current;
@@ -29,8 +33,6 @@ export default function FabricCanvas({ selectedColor, setFabricCanvasInstance, o
     if (historyStack.length > 20) { 
       historyStack.shift();
     }
-    // Use toDatalessJSON to avoid bloating history with image data if images are part of canvas state
-    // Pass an array of properties to exclude if specific ones are causing issues or are not needed for history
     historyStack.push(JSON.stringify(canvas.toDatalessJSON(['clipPath']))); 
     onHistoryUpdate?.(); 
   }, [onHistoryUpdate]);
@@ -39,9 +41,9 @@ export default function FabricCanvas({ selectedColor, setFabricCanvasInstance, o
     if (!canvasRef.current) return;
 
     const canvas = new fabric.Canvas(canvasRef.current, {
-      width: 800, // Initial width, will be adjusted by resizeCanvas
-      height: 600, // Initial height
-      backgroundColor: '#2D3748', 
+      width: 800,
+      height: 600,
+      backgroundColor: '#2D3748', // Darker background for contrast
       preserveObjectStacking: true,
     });
     fabricCanvasRef.current = canvas;
@@ -56,7 +58,6 @@ export default function FabricCanvas({ selectedColor, setFabricCanvasInstance, o
     });
     canvas.add(text);
     
-    // Initialize history after canvas and initial object are ready
     historyStack = [JSON.stringify(canvas.toDatalessJSON(['clipPath']))]; 
     onHistoryUpdate?.(); 
 
@@ -67,24 +68,27 @@ export default function FabricCanvas({ selectedColor, setFabricCanvasInstance, o
     const resizeCanvas = () => {
       if (canvasRef.current && canvasRef.current.parentElement && fabricCanvasRef.current) {
         const parentElement = canvasRef.current.parentElement;
-        if (parentElement.clientWidth > 0) { // Ensure parent has valid width
-            fabricCanvasRef.current.setWidth(parentElement.clientWidth);
-            // Optional: Adjust height - current setup keeps height fixed unless explicitly handled elsewhere
-            // fabricCanvasRef.current.setHeight(parentElement.clientHeight); 
+        if (parentElement.clientWidth > 0) {
+            const newWidth = parentElement.clientWidth;
+            // For simplicity, keep height fixed unless specific aspect ratio logic is needed
+            // const newHeight = parentElement.clientHeight; // Or fixed like 600
+            fabricCanvasRef.current.setWidth(newWidth);
+            // fabricCanvasRef.current.setHeight(newHeight);
             fabricCanvasRef.current.renderAll();
         }
       }
     };
 
-    // Defer initial resize to ensure parent dimensions are stable
-    const resizeTimeoutId = setTimeout(resizeCanvas, 0);
-    window.addEventListener('resize', resizeCanvas);
+    const resizeObserver = new ResizeObserver(resizeCanvas);
+    if (canvasRef.current?.parentElement) {
+        resizeObserver.observe(canvasRef.current.parentElement);
+    }
+    // Initial resize
+    setTimeout(resizeCanvas, 0); 
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      clearTimeout(resizeTimeoutId);
+      resizeObserver.disconnect();
       if (fabricCanvasRef.current) {
-        // Make sure to turn off listeners before disposing
         fabricCanvasRef.current.off('object:modified', saveState);
         fabricCanvasRef.current.off('object:added', saveState);
         fabricCanvasRef.current.off('object:removed', saveState);
@@ -116,16 +120,121 @@ export default function FabricCanvas({ selectedColor, setFabricCanvasInstance, o
         }
         if (needsRender) {
             fabricCanvasRef.current.renderAll();
+            saveState(); // Save state after color change
         }
-        // Note: Changing color of an active object does not save to history stack here.
-        // If desired, call saveState() after renderAll(), but this might make many history entries.
       } else {
         if (fabricCanvasRef.current.freeDrawingBrush) {
           fabricCanvasRef.current.freeDrawingBrush.color = selectedColor;
         }
       }
     }
-  }, [selectedColor, saveState]); // Added saveState to dependencies of second useEffect if it were to call saveState
+  }, [selectedColor, saveState]);
+
+  const applyFilter = (filterType: 'grayscale' | 'sepia' | 'invert' | null) => {
+    const canvas = fabricCanvasRef.current;
+    const activeObject = canvas?.getActiveObject();
+    if (canvas && activeObject && activeObject.type === 'image') {
+      const image = activeObject as fabric.Image;
+      image.filters = []; // Clear existing filters
+      if (filterType === 'grayscale') {
+        image.filters.push(new fabric.Image.filters.Grayscale());
+      } else if (filterType === 'sepia') {
+        image.filters.push(new fabric.Image.filters.Sepia());
+      } else if (filterType === 'invert') {
+        image.filters.push(new fabric.Image.filters.Invert());
+      }
+      image.applyFilters();
+      canvas.renderAll();
+      saveState();
+    } else if (filterType !== null) {
+      alert("Please select an image object to apply filters.");
+    } else if (filterType === null && activeObject && activeObject.type === 'image') {
+        // This part is for clearing, already handled by resetting image.filters
+        (activeObject as fabric.Image).applyFilters();
+        canvas.renderAll();
+        saveState();
+    }
+  };
+
+  const flipObject = (direction: 'horizontal' | 'vertical') => {
+    const canvas = fabricCanvasRef.current;
+    const activeObject = canvas?.getActiveObject();
+    if (canvas && activeObject) {
+      if (direction === 'horizontal') {
+        activeObject.set('flipX', !activeObject.flipX);
+      } else {
+        activeObject.set('flipY', !activeObject.flipY);
+      }
+      canvas.renderAll();
+      saveState();
+    } else {
+      alert("Please select an object to flip.");
+    }
+  };
+  
+  const toggleCropGuide = () => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) return;
+
+    if (cropGuideRef.current) {
+      canvas.remove(cropGuideRef.current);
+      cropGuideRef.current = null;
+    } else {
+      const canvasWidth = canvas.getWidth();
+      const canvasHeight = canvas.getHeight();
+      // Example: 16:9 guide
+      let guideWidth = canvasWidth * 0.9;
+      let guideHeight = guideWidth * (9 / 16);
+
+      if (guideHeight > canvasHeight * 0.9) {
+        guideHeight = canvasHeight * 0.9;
+        guideWidth = guideHeight * (16 / 9);
+      }
+      
+      const guide = new fabric.Rect({
+        left: (canvasWidth - guideWidth) / 2,
+        top: (canvasHeight - guideHeight) / 2,
+        width: guideWidth,
+        height: guideHeight,
+        fill: 'rgba(0,0,0,0)', // Transparent fill
+        stroke: 'rgba(255,255,255,0.7)', // White dashed line
+        strokeDashArray: [5, 5],
+        selectable: false,
+        evented: false, // Not interactive
+      });
+      cropGuideRef.current = guide;
+      canvas.add(guide).bringToFront(guide);
+    }
+    canvas.renderAll();
+  };
+
+  const deleteSelectedObject = () => {
+    const canvas = fabricCanvasRef.current;
+    const activeObject = canvas?.getActiveObject();
+    if (canvas && activeObject) {
+      canvas.remove(activeObject);
+      // If it was a group, remove all objects in the group
+      if (activeObject.type === 'activeSelection') {
+        (activeObject as fabric.ActiveSelection).forEachObject(obj => canvas.remove(obj));
+        canvas.discardActiveObject();
+      }
+      canvas.renderAll();
+      saveState(); // Save state after deletion
+    } else {
+      alert("No object selected to delete.");
+    }
+  };
+
+  // Make functions available to Toolbar via props passed from EditorPage
+  useEffect(() => {
+    if (fabricCanvasRef.current) {
+      (fabricCanvasRef.current as any).customApplyFilter = applyFilter;
+      (fabricCanvasRef.current as any).customFlipObject = flipObject;
+      (fabricCanvasRef.current as any).customToggleCropGuide = toggleCropGuide;
+      (fabricCanvasRef.current as any).customDeleteSelectedObject = deleteSelectedObject;
+    }
+  }, [applyFilter, flipObject, toggleCropGuide, deleteSelectedObject]);
+
 
   return <canvas ref={canvasRef} className="w-full h-full" />;
 }
