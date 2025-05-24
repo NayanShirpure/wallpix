@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useMemo } from 'react';
-import dynamic from 'next/dynamic';
+// import dynamic from 'next/dynamic'; // Temporarily remove dynamic import
+import ImageEditorClient from '@/components/ImageEditor'; // Use static import for diagnostics
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -11,22 +12,18 @@ import { UploadCloud, Edit3, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { downloadFile } from '@/lib/utils';
-// Types from react-filerobot-image-editor
-import type { FilerobotImageEditorConfig, SaveData } from 'react-filerobot-image-editor';
+import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
 
+// Dynamic import (kept for reference, but not used in this diagnostic version)
+// const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
+//   ssr: false,
+//   loading: () => (
+//     <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
+//       <p className="text-muted-foreground">Loading Filerobot Editor...</p>
+//     </div>
+//   ),
+// });
 
-// Dynamically import the client-side editor wrapper
-const DynamicEditorClient = dynamic(
-  () => import('@/components/ImageEditor'), // Points to ImageEditor.tsx which exports ImageEditorClient
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
-        <p className="text-muted-foreground">Loading Image Editor...</p>
-      </div>
-    ),
-  }
-);
 
 export default function EditorPage() {
   const [imageSource, setImageSource] = useState<string | null>(null);
@@ -57,8 +54,7 @@ export default function EditorPage() {
         reader.onload = (e) => {
           setImageSource(e.target?.result as string);
           setImageName(file.name);
-          // Automatically open editor once image is selected for this simplified test
-          // setIsEditorOpen(true); 
+          //setIsEditorOpen(true); // Don't auto-open, let user click "Edit"
         };
         reader.readAsDataURL(file);
       }
@@ -86,17 +82,13 @@ export default function EditorPage() {
     setIsEditorOpen(false);
   }, []);
 
-  // This onSaveImage will be passed to the ImageEditorClient,
-  // which now has its own internal simpler handler for diagnostic.
-  // So, this specific function won't be called by Filerobot directly in this test.
   const onSaveImage = useCallback(
     (editedImageObject: SaveData, designState?: any) => {
-      // console.log('Page onSaveImage triggered with:', editedImageObject, designState);
-      if (editedImageObject.imageBase64) { // Filerobot often returns base64
+      console.log('Image saved:', editedImageObject, designState);
+      if (editedImageObject.imageBase64) {
         const originalExtension = imageName?.split('.').pop() || editedImageObject.extension || 'png';
         const filename = `${imageName?.replace(/\.[^/.]+$/, "") || 'edited_image'}_filerobot.${originalExtension}`;
         
-        // Use the base64 directly
         downloadFile(editedImageObject.imageBase64, filename)
           .then(() => {
             toast({
@@ -123,42 +115,54 @@ export default function EditorPage() {
     },
     [imageName, closeEditor, toast]
   );
-  
-  // Filerobot theme and config - will be passed to ImageEditorClient
-  // if the basic rendering test (without config) succeeds
+
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
-    // Using more generic color names that Filerobot's theme structure might expect
+    const accentColor = isDark ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; // From globals.css
+    const primaryBg = isDark ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)';     // --background or --popover-background
+    const secondaryBg = isDark ? 'hsl(220 13% 15%)' : 'hsl(0 0% 98%)';   // --card or --background
+    const text = isDark ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';       // --foreground
+    const textMuted = isDark ? 'hsl(210 8% 65%)' : 'hsl(210 10% 35%)';   // --muted-foreground
+    const borders = isDark ? 'hsl(220 13% 25%)' : 'hsl(210 14% 80%)';     // --border
+
     return {
-      primaryBg: isDark ? '#111827' : '#FFFFFF', // Darker background for dark, white for light
-      secondaryBg: isDark ? '#1F2937' : '#F3F4F6', // Slightly lighter for dark, light gray for light
-      text: isDark ? '#E5E7EB' : '#111827', // Light gray for dark, dark gray for light
-      textMuted: isDark ? '#9CA3AF' : '#6B7280', // Muted gray
-      accent: '#2DD4CF', // Your teal accent
-      accentMuted: '#5EEAD4', // Lighter teal
-      borders: isDark ? '#374151' : '#D1D5DB', // Borders
-      activeTabBg: '#2DD4CF', 
+      primaryBg,
+      secondaryBg,
+      text,
+      textMuted,
+      accent: accentColor, // Use the defined accent color
+      borders,
+      activeTabBg: accentColor,
+      // Further theme properties as per Filerobot docs, using HSL values
+      // Example:
+      // 'icons.primary': text,
+      // 'icons.secondary': textMuted,
+      // 'icons.active': accentColor,
+      // 'buttons.primary.text': primaryBg, // Text color on primary button
+      // 'buttons.primary.background': accentColor,
+      // 'buttons.secondary.text': text,
+      // 'buttons.secondary.background': secondaryBg,
+      // 'buttons.secondary.border': borders,
     };
   }, [currentTheme]);
 
   const editorConfigObject: Partial<FilerobotImageEditorConfig> = useMemo(() => ({
-    // @ts-ignore Filerobot's ThemeConfig type can be complex.
-    // theme: {
-    //   colors: filerobotThemeColors,
-    //   typography: {
-    //     fontFamily: 'Inter, Arial, sans-serif',
-    //   },
-    // },
-    tools: [ // Common tools
-      'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize',
-      'text', 'image', 'shapes', 'draw', 'watermark'
+    // We removed source, onSave, onClose from here as they are direct props
+    theme: {
+      colors: filerobotThemeColors,
+      typography: {
+        fontFamily: 'Inter, Arial, sans-serif', // Match your site's font
+      },
+    },
+    tools: [
+      'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize', 'text', 'image', 'shapes', 'draw', 'watermark'
     ],
-    // Example using TABS and TOOLS if they were available and needed for defaults
-    // We'd need to import them from 'react-filerobot-image-editor'
-    // tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK],
-    // defaultTabId: TABS.ADJUST,
-    // defaultToolId: TOOLS.CROP,
-  }), [/* filerobotThemeColors */]); // Temporarily remove theme from dependencies if not used in config yet
+    // Example: default to Annotate tab and Text tool
+    // defaultTabId: TABS.ANNOTATE, // Requires TABS import
+    // defaultToolId: TOOLS.TEXT,    // Requires TOOLS import
+    // To use TABS and TOOLS, ensure they are imported:
+    // import { TABS, TOOLS } from 'react-filerobot-image-editor';
+  }), [filerobotThemeColors]);
 
 
   return (
@@ -207,16 +211,16 @@ export default function EditorPage() {
 
         {isEditorOpen && imageSource && (
           <div
-            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} // Adjust height as needed
+            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }}
             className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
-            <DynamicEditorClient
+            {/* Use static import for diagnostics */}
+            <ImageEditorClient
               key={imageSource} // Re-mount if source changes
               source={imageSource}
-              // For this diagnostic step, ImageEditorClient defines its own onSave/onClose
-              // onSave={onSaveImage} 
-              // onClose={closeEditor}
-              // config={editorConfigObject} // Temporarily not passing config
+              onSave={onSaveImage}
+              onClose={closeEditor}
+              config={editorConfigObject}
             />
           </div>
         )}
