@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react'; // Added useEffect
 import dynamic from 'next/dynamic';
-import Image from 'next/image'; // For the image preview before editing
+import Image from 'next/image';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,8 @@ import { downloadFile } from '@/lib/utils';
 import type { SaveData, FilerobotImageEditorConfig, TABS, TOOLS } from 'react-filerobot-image-editor';
 
 // ✅ Declare the dynamic import BEFORE using it
-// Point back to our actual ImageEditor component
 const DynamicEditorClient = dynamic(
-  () => import('@/components/ImageEditor'),
+  () => import('@/components/ImageEditor'), // Points to our client wrapper
   {
     ssr: false, // <--- ABSOLUTELY ESSENTIAL.
     loading: () => (
@@ -33,7 +32,7 @@ export default function EditorPage() {
   const [imageSource, setImageSource] = useState<string | null>(null);
   const [imageName, setImageName] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
-  const [editorReadyToRender, setEditorReadyToRender] = useState<boolean>(false); // To defer rendering of editor slightly
+  const [editorReadyToRender, setEditorReadyToRender] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { theme: currentTheme } = useTheme();
@@ -100,7 +99,6 @@ export default function EditorPage() {
       console.log('Image saved:', editedImageObject, designState);
       if (editedImageObject.imageBase64) {
         const originalNamePart = imageName?.replace(/\.[^/.]+$/, "") || 'edited_image';
-        // Filerobot's SaveData provides extension and mime, use them
         const extension = editedImageObject.extension || imageName?.split('.').pop()?.toLowerCase() || 'png';
         const filename = `${originalNamePart}_filerobot.${extension}`;
         
@@ -135,32 +133,26 @@ export default function EditorPage() {
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
     setEditorReadyToRender(false);
-    // Optional: Reset imageSource if you want to clear the preview when editor is closed
-    // setImageSource(null); 
-    // setImageName(null);
-    // if (fileInputRef.current) fileInputRef.current.value = '';
     toast({ title: 'Editor Closed', description: 'Editing session was closed.'});
   }, [toast]);
 
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
-    // Using your "Vibrant Professional" dark theme colors
-    const accentColor = '#27D2F5'; // Vibrant Cyan for dark mode primary
-    const primaryBg = isDark ? '#1B232E' : '#FFFFFF'; // Darker Desaturated Blue or White
-    const secondaryBg = isDark ? '#121821' : '#F8F9FA'; // Very Dark Blue or Lighter Gray
-    const text = isDark ? '#EFF2F5' : '#212529'; // Very Light Gray or Dark Gray
-    const textMuted = isDark ? '#9AA5B1' : '#6C757D'; // Adjusted for Filerobot context
-    const borders = isDark ? '#313A48' : '#DEE2E6'; // Medium Dark Gray-Blue or Gray
+    const accentColor = isDark ? '#27D2F5' : '#0DCAF0'; // Vibrant Cyan for primary accent
+    const primaryBg = isDark ? '#1B232E' : '#FFFFFF'; 
+    const secondaryBg = isDark ? '#121821' : '#F8F9FA'; 
+    const text = isDark ? '#EFF2F5' : '#212529'; 
+    const textMuted = isDark ? '#9AA5B1' : '#6C757D'; 
+    const borders = isDark ? '#313A48' : '#DEE2E6'; 
 
     return {
       primaryBg: primaryBg,
       secondaryBg: secondaryBg,
       text: text,
-      textMuted: textMuted, // For less important text inside the editor
-      accent: accentColor, // Main interactive color
+      textMuted: textMuted, 
+      accent: accentColor, 
       borders: borders,
-      activeTabBg: accentColor, // Example: make active tab background accent
-      // Further theme properties as per Filerobot docs
+      activeTabBg: accentColor, 
     };
   }, [currentTheme]);
   
@@ -168,20 +160,18 @@ export default function EditorPage() {
     theme: {
       colors: filerobotThemeColors,
       typography: {
-        fontFamily: 'Inter, Arial, sans-serif', // Match your site's font
+        fontFamily: 'Inter, Arial, sans-serif',
       },
     },
     tools: [
       TOOLS.ADJUST, TOOLS.FINETUNE, TOOLS.FILTER, TOOLS.CROP, 
       TOOLS.ROTATE, TOOLS.TEXT, TOOLS.IMAGE, TOOLS.SHAPES, 
-      TOOLS.DRAW, TOOLS.WATERMARK, TOOLS.BACKGROUND, // Added Background tool
+      TOOLS.DRAW, TOOLS.WATERMARK, TOOLS.BACKGROUND,
     ],
-    tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTER], // Example tabs
+    tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTER],
     defaultTabId: TABS.ADJUST, 
     defaultToolId: TOOLS.CROP,
     language: 'en',
-    // closeOnSave: true, // Default is false
-    // avoidChangesNotSavedAlertOnLeave: true, // Default is false
   }), [filerobotThemeColors]);
 
   return (
@@ -195,7 +185,6 @@ export default function EditorPage() {
         <ThemeToggle />
       </PageHeader>
       <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12">
-        {/* UI for uploading an image */}
         {!isEditorOpen && (
           <div className="mb-6 p-6 border border-border rounded-lg shadow-sm bg-card">
             <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -229,14 +218,13 @@ export default function EditorPage() {
           </div>
         )}
 
-        {/* Image preview before opening editor */}
         {imageSource && !isEditorOpen && (
           <div className="mt-8 p-4 border border-dashed border-border rounded-lg text-center bg-muted/30">
             <Image
               src={imageSource}
               alt={imageName || 'Uploaded preview'}
               width={320} 
-              height={240} // Provide height for aspect ratio
+              height={240} 
               className="max-w-xs max-h-60 mx-auto rounded-md shadow-md mb-4 object-contain"
               data-ai-hint="uploaded preview"
             />
@@ -246,10 +234,9 @@ export default function EditorPage() {
           </div>
         )}
         
-        {/* Filerobot editor rendering area */}
         {isEditorOpen && imageSource && editorReadyToRender && (
           <div 
-             style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} // Ensure container has defined height
+             style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} 
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
             <DynamicEditorClient
@@ -261,7 +248,6 @@ export default function EditorPage() {
             />
           </div>
         )}
-         {/* Placeholder while editor is preparing to render, but not yet fully loaded by next/dynamic */}
          {isEditorOpen && imageSource && !editorReadyToRender && (
             <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
                 <p className="text-muted-foreground">Preparing editor interface...</p>
