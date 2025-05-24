@@ -238,6 +238,11 @@
   .dark .prose ol > li::before {
     @apply text-foreground;
   }
+
+  /* Button style for Fabric.js editor */
+  .btn {
+    @apply bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-full transition-colors text-sm;
+  }
 }
 
 /* Styles for react-masonry-css */
@@ -250,6 +255,7 @@
   padding-left: 1rem; /* Gutter size (e.g., 16px if gap-4) */
   background-clip: padding-box;
 }
-.my-masonry-grid_column > div { /* Direct child (the item wrapper) */
+/* Parent Scolling Box */
+.my-masonry-grid_column > div { 
   margin-bottom: 1rem; /* Space between items in the same column (e.g., 16px if gap-4) */
 }
