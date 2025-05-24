@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useMemo } from 'react';
-import dynamic from 'next/dynamic'; // Using Next.js dynamic import
-
+import dynamic from 'next/dynamic';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,8 @@ import { UploadCloud, Edit3, Download, Image as ImageIconLucide } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { downloadFile } from '@/lib/utils';
-import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor'; // Keep types for context
+// Types are needed even if component is dynamic
+import type { SaveData, FilerobotImageEditorConfig, TabsIds, ToolsIds } from 'react-filerobot-image-editor';
 
 // ✅ Declare the dynamic import BEFORE using it
 const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
@@ -24,7 +24,9 @@ const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
   ),
 });
 
+
 export default function EditorPage() {
+  // React state hooks
   const [imageSource, setImageSource] = useState<string | null>(null);
   const [imageName, setImageName] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
@@ -53,7 +55,6 @@ export default function EditorPage() {
         reader.onload = (e) => {
           setImageSource(e.target?.result as string);
           setImageName(file.name);
-          //setIsEditorOpen(true); // Don't auto-open, let user click "Edit"
         };
         reader.readAsDataURL(file);
       }
@@ -64,7 +65,7 @@ export default function EditorPage() {
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
-
+  
   const openEditor = () => {
     if (imageSource) {
       setIsEditorOpen(true);
@@ -83,10 +84,11 @@ export default function EditorPage() {
 
   const onSaveImage = useCallback(
     (editedImageObject: SaveData, designState?: any) => {
-      console.log('Image saved from Filerobot:', editedImageObject, designState);
+      // console.log('Image saved from Filerobot:', editedImageObject, designState);
       if (editedImageObject.imageBase64) {
-        const originalExtension = imageName?.split('.').pop() || editedImageObject.extension || 'png';
-        const filename = `${imageName?.replace(/\.[^/.]+$/, "") || 'edited_image'}_filerobot.${originalExtension}`;
+        const originalNamePart = imageName?.replace(/\.[^/.]+$/, "") || 'edited_image';
+        const extension = editedImageObject.extension || imageName?.split('.').pop() || 'png';
+        const filename = `${originalNamePart}_filerobot.${extension}`;
         
         downloadFile(editedImageObject.imageBase64, filename)
           .then(() => {
@@ -110,15 +112,14 @@ export default function EditorPage() {
           variant: 'destructive',
         });
       }
-      closeEditor();
+      closeEditor(); // Close editor after save attempt
     },
     [imageName, closeEditor, toast]
   );
-
-  // Theme configuration for Filerobot (kept for when we re-enable the config prop)
+  
+  // Theme configuration for Filerobot - still memoized but not passed for now
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
-    // Using "Vibrant Professional" Dark Theme colors from globals.css
     const accentColor = 'hsl(190 88% 55%)'; 
     const primaryBg = 'hsl(220 13% 10%)';    
     const secondaryBg = 'hsl(220 13% 15%)';  
@@ -127,30 +128,28 @@ export default function EditorPage() {
     const borders = 'hsl(220 13% 25%)';    
 
     return {
-      primaryBg,
-      secondaryBg,
-      text,
-      textMuted,
-      accent: accentColor,
-      borders,
-      activeTabBg: accentColor,
+      primaryBg: isDark ? primaryBg : '#ffffff', 
+      secondaryBg: isDark ? secondaryBg : '#f8f9fa', 
+      text: isDark ? text : '#212529',      
+      textMuted: isDark ? textMuted : '#6c757d',
+      accent: accentColor, 
+      borders: isDark ? borders : '#dee2e6',
+      activeTabBg: accentColor, 
     };
   }, [currentTheme]);
 
   const editorConfigObject: Partial<FilerobotImageEditorConfig> = useMemo(() => ({
     theme: {
       colors: filerobotThemeColors,
-      typography: {
-        fontFamily: 'Inter, Arial, sans-serif',
-      },
+      typography: { fontFamily: 'Inter, Arial, sans-serif' },
     },
     tools: [
       'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize', 
       'text', 'image', 'shapes', 'draw', 'watermark'
-    ],
-    // Example default tab (ensure TABS is imported if used directly)
+    ] as ToolsIds[],
+    // TABS and TOOLS enums would be imported if these lines were active
     // defaultTabId: TABS.ADJUST, 
-    // defaultToolId: TOOLS.CROP,
+    // defaultToolId: TOOLS.CROP,  
   }), [filerobotThemeColors]);
 
 
@@ -200,21 +199,21 @@ export default function EditorPage() {
 
         {isEditorOpen && imageSource && (
           <div 
-            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} 
-            className="border rounded-lg overflow-hidden bg-background shadow-lg"
+             style={{ height: 'calc(100vh - 250px)', minHeight: 600 }}
+             className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
             <DynamicEditorClient
               key={imageSource} // Re-mount if source changes
               source={imageSource}
               // For this diagnostic step, ImageEditorClient defines its own onSave/onClose
-              // We will re-add these once the basic rendering is confirmed:
-              // onSave={onSaveImage}
-              // onClose={closeEditor}
-              // config={editorConfigObject} // Temporarily remove complex config
+              // and does not take a config prop directly from here
+              // onSave={onSaveImage} // Temporarily handled by stub in ImageEditorClient
+              // onClose={closeEditor} // Temporarily handled by stub in ImageEditorClient
+              // config={editorConfigObject} // Temporarily handled by stub in ImageEditorClient
             />
           </div>
         )}
-
+        
         {imageSource && !isEditorOpen && (
           <div className="mt-8 p-4 border border-dashed border-border rounded-lg text-center bg-muted/30">
             <img
