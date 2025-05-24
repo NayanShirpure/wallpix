@@ -12,9 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import { UploadCloud, Edit3, Download, Image as ImageIcon } from 'lucide-react';
 import { downloadFile } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-// Import TABS and TOOLS if they are indeed exported by Filerobot
-// For Filerobot, configuration of tools is often done via string arrays in config
-// Example: import FilerobotImageEditor, { TABS, TOOLS } from 'filerobot-image-editor';
+// Import TABS and TOOLS from Filerobot if they are indeed exported
+import { TABS, TOOLS } from 'filerobot-image-editor';
+
 
 // Dynamically import FilerobotImageEditor
 const DynamicFilerobotEditor = dynamic(
@@ -35,7 +35,7 @@ export default function EditorPage() {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { theme: currentTheme } = useTheme(); // Renamed to avoid conflict with Filerobot's theme prop
+  const { theme: currentTheme } = useTheme();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -93,27 +93,20 @@ export default function EditorPage() {
       });
     }
     setIsEditorOpen(false);
-    // Reset image after saving, to allow re-upload of same file
     if (fileInputRef.current) {
         fileInputRef.current.value = '';
     }
-    // setImageSource(null); // Optionally clear preview
-    // setImageName(null);
   }, [imageName, toast]);
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
-    // Optionally reset imageSource and imageName if you want to clear the preview
-    // setImageSource(null); 
-    // setImageName(null);
   }, []);
 
   const filerobotThemeColors = useMemo(() => {
-    // Using the "Vibrant Professional" theme's accent color: #0DCAF0 (light) / #27D2F5 (dark)
-    const accentColor = currentTheme === 'dark' ? '#27D2F5' : '#0DCAF0';
-    const primaryBg = currentTheme === 'dark' ? '#1B232E' : '#FFFFFF'; // card background
-    const secondaryBg = currentTheme === 'dark' ? '#121821' : '#F8F9FA'; // main background
-    const text = currentTheme === 'dark' ? '#EFF2F5' : '#212529'; // foreground
+    const accentColor = currentTheme === 'dark' ? '#27D2F5' : '#0DCAF0'; // Vibrant Cyan
+    const primaryBg = currentTheme === 'dark' ? '#1B232E' : '#FFFFFF'; 
+    const secondaryBg = currentTheme === 'dark' ? '#121821' : '#F8F9FA'; 
+    const text = currentTheme === 'dark' ? '#EFF2F5' : '#212529'; 
     const textMuted = currentTheme === 'dark' ? '#707C88' : '#6c757d';
     const borders = currentTheme === 'dark' ? '#313A48' : '#dee2e6';
 
@@ -122,36 +115,15 @@ export default function EditorPage() {
       secondaryBg,
       text,
       textMuted,
-      accent,
+      accent: accentColor, // Corrected: use accentColor here
       borders,
-      activeTabBg: accentColor, // Example: make active tab background accent
-      // Further theme properties as per Filerobot docs
+      activeTabBg: accentColor, 
     };
   }, [currentTheme]);
 
 
   const editorConfigObject = useMemo(() => {
-    // These are direct props for FilerobotImageEditor, not nested in a `config` prop
-    // source, onSave, onClose are passed directly to DynamicFilerobotEditor
-    
-    // The 'config' prop for Filerobot takes a nested object of settings
     return {
-      // Example: use TABS and TOOLS if available from 'filerobot-image-editor'
-      // If TABS and TOOLS are not directly exported, use string arrays for tabsIds and tools
-      // tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTERS, TABS.RESIZE],
-      // defaultTabId: TABS.ADJUST,
-      // defaultToolId: TOOLS.CROP,
-      tabsIds: ['Adjust', 'Annotate', 'Filters', 'Finetune', 'Resize', 'Watermark'],
-      defaultTabId: 'Adjust',
-      defaultToolId: 'Crop',
-      tools: [
-        'Adjust', 'Rotate', 'Brightness', 'Contrast', 'Saturation', 'Exposure', // Adjust tools
-        'Filters', // Filters tab
-        'Annotate', 'Text', 'Rect', 'Ellipse', 'Arrow', 'Draw', // Annotate tools
-        'Resize', // Resize tool
-        'Watermark', // Watermark tool
-        // Add more tools as needed based on Filerobot documentation
-      ],
       theme: {
         colors: {
           primaryBg: filerobotThemeColors.primaryBg,
@@ -177,8 +149,19 @@ export default function EditorPage() {
         },
       },
       language: 'en',
-      // avoidChangesNotSavedAlertOnLeave: true,
-      // loadableDesignState: null, 
+      tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTERS, TABS.RESIZE],
+      defaultTabId: TABS.ADJUST,
+      defaultToolId: TOOLS.CROP,
+      tools: [
+        'adjust', 'rotate', 'brightness', 'contrast', 'saturation', 'exposure', 
+        'filters', 
+        'annotate', 'text', 'rect', 'ellipse', 'arrow', 'draw', 
+        'resize', 
+        'watermark',
+        'crop'
+      ],
+      // avoidChangesNotSavedAlertOnLeave: true, // Optional: prompts user if they try to leave with unsaved changes
+      // loadableDesignState: null, // Optional: for loading a previous design state
     };
   }, [filerobotThemeColors, currentTheme]);
 
@@ -233,7 +216,7 @@ export default function EditorPage() {
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
-              config={editorConfigObject} // Pass the nested config object here
+              config={editorConfigObject}
             />
           </div>
         )}
