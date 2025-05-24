@@ -12,12 +12,11 @@ import { UploadCloud, Edit3, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { downloadFile } from '@/lib/utils';
-// Import types from the React wrapper
-import type { FilerobotImageEditorConfig, SaveData, AnnotationsCommon, Text, Rotate, Crop } from 'react-filerobot-image-editor';
+// Types from react-filerobot-image-editor
+import type { FilerobotImageEditorConfig, SaveData } from 'react-filerobot-image-editor';
 
-// Dynamically import the client-side wrapper
 const DynamicEditorClient = dynamic(
-  () => import('@/components/ImageEditor'), // This exports ImageEditorClient as default
+  () => import('@/components/ImageEditor'), // Points to ImageEditor.tsx which exports ImageEditorClient
   {
     ssr: false,
     loading: () => (
@@ -57,7 +56,6 @@ export default function EditorPage() {
         reader.onload = (e) => {
           setImageSource(e.target?.result as string);
           setImageName(file.name);
-          // setIsEditorOpen(false); // Keep editor closed until "Edit" is clicked
         };
         reader.readAsDataURL(file);
       }
@@ -83,7 +81,6 @@ export default function EditorPage() {
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
-    // toast({ title: 'Editor Closed', description: 'Editing session ended.' });
   }, []);
 
   const onSaveImage = useCallback(
@@ -121,36 +118,32 @@ export default function EditorPage() {
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
     return {
-      primaryBg: isDark ? '#1B232E' : '#FFFFFF',
-      secondaryBg: isDark ? '#121821' : '#F8F9FA',
+      primaryBg: isDark ? '#121821' : '#FFFFFF',
+      secondaryBg: isDark ? '#1B232E' : '#F0F2F5',
       text: isDark ? '#EFF2F5' : '#212529',
-      textMuted: isDark ? '#707C88' : '#687076',
-      accent: isDark ? '#27D2F5' : '#0DCAF0', // Primary accent
+      textMuted: isDark ? '#9AA5B1' : '#687076',
+      accent: isDark ? '#27D2F5' : '#0DCAF0', 
+      accentMuted: isDark ? '#27D2F5' : '#0DCAF0',
       borders: isDark ? '#313A48' : '#CBD5E0',
       activeTabBg: isDark ? '#27D2F5' : '#0DCAF0',
-      // Add more Filerobot specific theme keys as needed
     };
   }, [currentTheme]);
 
   const editorConfigObject: FilerobotImageEditorConfig = useMemo(() => ({
-    // @ts-ignore Filerobot's ThemeConfig type can be extensive.
+    // @ts-ignore Filerobot's ThemeConfig type can be extensive and has caused issues.
+    // For now, we'll rely on Filerobot's defaults or more specific themeing if simple color objects don't work.
     theme: {
       colors: filerobotThemeColors,
       typography: {
-        fontFamily: 'Inter, Arial, sans-serif', // Match your site's font
+        fontFamily: 'Inter, Arial, sans-serif',
       },
     },
     tools: [
       'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize',
-      'text', 'image', 'shapes', 'draw', 'watermark' // 'effects' might need separate licensing or config
+      'text', 'image', 'shapes', 'draw', 'watermark'
     ],
-    // Example: if TABS and TOOLS enums were available from 'react-filerobot-image-editor'
-    // tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK],
-    // defaultTabId: TABS.ADJUST,
-    // defaultToolId: TOOLS.CROP,
-    // translations: { en: { 'toolbar.save': 'Download' } }, // Example to change save button text
-    // Avoiding TABS/TOOLS enums for now as their export status can vary
-    // Defaulting to Filerobot's own tool/tab setup which is generally good
+    // Removed TABS/TOOLS enum usage from here as they can be problematic if types are mismatched or not exported as expected.
+    // Filerobot will use its default tab/tool setup if these are not provided or if provided as strings.
   }), [filerobotThemeColors]);
 
   return (
@@ -199,15 +192,15 @@ export default function EditorPage() {
 
         {isEditorOpen && imageSource && (
           <div
-            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} // Ensure sufficient height for the editor
+            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }}
             className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
             <DynamicEditorClient
-              key={imageSource} // Re-mount if source changes, helps Filerobot re-initialize
+              key={imageSource} // Re-mount if source changes
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
-              config={editorConfigObject}
+              // config={editorConfigObject} // Temporarily remove config for this diagnostic step
             />
           </div>
         )}

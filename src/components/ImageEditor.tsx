@@ -1,34 +1,51 @@
-// src/components/ImageEditor.tsx
 'use client';
 
 import React from 'react';
-// Import FilerobotImageEditor from the React wrapper
-import FilerobotImageEditor from 'react-filerobot-image-editor';
-// Import types as named exports from the React wrapper
-import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
+// Use default import for the React component from the wrapper library
+import FilerobotImageEditorComponent from 'react-filerobot-image-editor';
+// Import types for props if needed, e.g., SaveData for onSave
+// Ensure FilerobotImageEditorConfig is imported if used for config prop later
+import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor'; 
 
 interface ImageEditorClientProps {
   source: string;
-  onSave: (editedImageObject: SaveData, designState?: any) => void;
-  onClose: () => void;
-  config?: FilerobotImageEditorConfig;
+  // Temporarily making these optional or removing if we hardcode inside for testing
+  onSave?: (editedImageObject: SaveData, designState?: any) => void;
+  onClose?: () => void;
+  config?: FilerobotImageEditorConfig; // Still accept it, but won't pass it for now
 }
 
-export default function ImageEditorClient(props: ImageEditorClientProps) {
-  if (!props.source) {
-    return <p>Image source is not available for the editor.</p>;
+export default function ImageEditorClient({ source, onSave, onClose, config }: ImageEditorClientProps) {
+  if (!source) {
+    return <p>Error: Image source is missing for the editor.</p>;
   }
 
+  const internalOnSave = (editedImageObject: SaveData, designState?: any) => {
+    console.log('Internal Save:', editedImageObject);
+    if (onSave) {
+      onSave(editedImageObject, designState);
+    }
+  };
+
+  const internalOnClose = () => {
+    console.log('Internal Close');
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  // For this diagnostic step, we pass a minimal or no config
+  // to see if the component loads at all.
+  // The actual config prop is still accepted by ImageEditorClient
+  // but we are testing without passing it to FilerobotImageEditorComponent.
+
   return (
-    // Filerobot editor typically needs its container to have dimensions.
-    // The parent div in EditorPage provides this via style={{ height: '...', width: '...' }}
-    // or Tailwind classes ensuring fixed height.
     <div style={{ height: '100%', width: '100%' }}>
-      <FilerobotImageEditor
-        source={props.source}
-        onSave={props.onSave}
-        onClose={props.onClose}
-        config={props.config}
+      <FilerobotImageEditorComponent
+        source={source}
+        onSave={internalOnSave} // Use internal or passed-through handlers
+        onClose={internalOnClose}
+        // config={config} // Temporarily remove config for diagnostics
       />
     </div>
   );
