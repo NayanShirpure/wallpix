@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useCallback, useMemo } from 'react';
@@ -12,22 +11,18 @@ import { useToast } from '@/hooks/use-toast';
 import { UploadCloud, Edit3, Download, Image as ImageIcon } from 'lucide-react';
 import { downloadFile } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-// Import TABS and TOOLS from Filerobot if they are indeed exported
+// Import TABS and TOOLS if they are exported and needed for config
 import { TABS, TOOLS } from 'filerobot-image-editor';
 
-
-// Dynamically import FilerobotImageEditor
-const DynamicFilerobotEditor = dynamic(
-  () => import('filerobot-image-editor').then(mod => mod.default || mod),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[600px] flex items-center justify-center border rounded-lg bg-muted/30">
-        <p className="text-muted-foreground">Loading Editor...</p>
-      </div>
-    ),
-  }
-);
+// Dynamically import the new client-only ImageEditor component
+const DynamicImageEditor = dynamic(() => import('@/components/ImageEditor'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[600px] flex items-center justify-center border rounded-lg bg-muted/30">
+      <p className="text-muted-foreground">Loading Editor...</p>
+    </div>
+  ),
+});
 
 export default function EditorPage() {
   const [imageSource, setImageSource] = useState<string | null>(null);
@@ -40,10 +35,10 @@ export default function EditorPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
         toast({
           title: 'Unsupported File Type',
-          description: 'Please upload a JPG, PNG, WEBP, or GIF image.',
+          description: 'Please upload a JPG, PNG, or WEBP image.',
           variant: 'destructive',
         });
         if (fileInputRef.current) {
@@ -92,7 +87,10 @@ export default function EditorPage() {
         variant: 'destructive',
       });
     }
-    setIsEditorOpen(false);
+    setIsEditorOpen(false); // Close editor after save
+    // Reset image source to allow re-upload of same image if desired, or show upload prompt again
+    setImageSource(null); 
+    setImageName(null);
     if (fileInputRef.current) {
         fileInputRef.current.value = '';
     }
@@ -100,24 +98,32 @@ export default function EditorPage() {
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
+    // Optionally reset imageSource if you want to force re-upload
+    setImageSource(null);
+    setImageName(null);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
   }, []);
 
   const filerobotThemeColors = useMemo(() => {
-    const accentColor = currentTheme === 'dark' ? '#27D2F5' : '#0DCAF0'; // Vibrant Cyan
-    const primaryBg = currentTheme === 'dark' ? '#1B232E' : '#FFFFFF'; 
-    const secondaryBg = currentTheme === 'dark' ? '#121821' : '#F8F9FA'; 
-    const text = currentTheme === 'dark' ? '#EFF2F5' : '#212529'; 
-    const textMuted = currentTheme === 'dark' ? '#707C88' : '#6c757d';
-    const borders = currentTheme === 'dark' ? '#313A48' : '#dee2e6';
+    // Using HSL values from your globals.css for the "Vibrant Professional" dark theme
+    // Assuming these are the base colors for the dark theme
+    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; // #27D2F5 or #0DCAF0
+    const primaryBg = currentTheme === 'dark' ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)';    // #121821 or #FFFFFF
+    const secondaryBg = currentTheme === 'dark' ? 'hsl(220 13% 15%)' : 'hsl(210 17% 98%)'; // #1B232E or #F8F9FA
+    const text = currentTheme === 'dark' ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';       // #EFF2F5 or #212529
+    const textMuted = currentTheme === 'dark' ? 'hsl(210 8% 65%)' : 'hsl(210 10% 35%)';  // #707C88 or #707C88 (similar for both)
+    const borders = currentTheme === 'dark' ? 'hsl(220 13% 25%)' : 'hsl(210 14% 80%)';   // #313A48 or #C8CDD2
 
     return {
       primaryBg,
       secondaryBg,
       text,
       textMuted,
-      accent: accentColor, // Corrected: use accentColor here
+      accent: accentColor,
       borders,
-      activeTabBg: accentColor, 
+      activeTabBg: accentColor,
     };
   }, [currentTheme]);
 
@@ -135,9 +141,9 @@ export default function EditorPage() {
           textMuted: filerobotThemeColors.textMuted,
           textWarn: '#f7931e', 
           accent: filerobotThemeColors.accent,
-          accentHover: currentTheme === 'dark' ? '#56DFFF' : '#00B2D6', 
+          accentHover: currentTheme === 'dark' ? 'hsl(190 88% 65%)' : 'hsl(190 88% 40%)', // Slightly lighter/darker accent for hover
           borders: filerobotThemeColors.borders,
-          border: filerobotThemeColors.borders,
+          border: filerobotThemeColors.borders, // Filerobot might use 'border'
           icons: filerobotThemeColors.text,
           iconsHover: filerobotThemeColors.accent,
           disabled: filerobotThemeColors.textMuted,
@@ -149,10 +155,11 @@ export default function EditorPage() {
         },
       },
       language: 'en',
+      // Configure available tabs and tools
       tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTERS, TABS.RESIZE],
       defaultTabId: TABS.ADJUST,
-      defaultToolId: TOOLS.CROP,
-      tools: [
+      defaultToolId: TOOLS.CROP, // Example: default to Crop tool in Adjust tab
+      tools: [ // List of tools to include in the toolbar
         'adjust', 'rotate', 'brightness', 'contrast', 'saturation', 'exposure', 
         'filters', 
         'annotate', 'text', 'rect', 'ellipse', 'arrow', 'draw', 
@@ -160,8 +167,12 @@ export default function EditorPage() {
         'watermark',
         'crop'
       ],
-      // avoidChangesNotSavedAlertOnLeave: true, // Optional: prompts user if they try to leave with unsaved changes
-      // loadableDesignState: null, // Optional: for loading a previous design state
+      // saveConvention: 'originalName_variant_timestamp', // Optional: naming convention for saved files
+      // reduceBeforeEdit: { // Optional: resize image before loading into editor
+      //   mode: 'manual',
+      //   widthLimit: 2000,
+      //   heightLimit: 2000,
+      // },
     };
   }, [filerobotThemeColors, currentTheme]);
 
@@ -177,14 +188,14 @@ export default function EditorPage() {
         <ThemeToggle />
       </PageHeader>
       <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12">
-        {!isEditorOpen ? (
+        {!isEditorOpen || !imageSource ? (
           <div className="flex flex-col items-center justify-center text-center space-y-8 p-6 border-2 border-dashed border-border rounded-xl bg-card shadow-lg min-h-[400px]">
             <ImageIcon className="h-20 w-20 text-primary opacity-70" />
             <h2 className="text-2xl font-semibold text-primary">
               Upload Your Image to Start Editing
             </h2>
             <p className="text-muted-foreground max-w-md">
-              Click the button below to choose an image from your device. You can crop, rotate, add filters, text, and much more!
+              Click the button below to choose an image. You can crop, rotate, add filters, text, and much more!
             </p>
             <Button onClick={triggerFileUpload} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
               <UploadCloud className="mr-2 h-5 w-5" /> Upload Image
@@ -194,25 +205,24 @@ export default function EditorPage() {
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
-              accept="image/png, image/jpeg, image/webp, image/gif"
+              accept="image/png, image/jpeg, image/webp" // Common image types
             />
-            {imageSource && imageName && (
+            {imageSource && imageName && !isEditorOpen && ( // Show re-open if an image was processed
               <div className="mt-6 text-sm text-muted-foreground">
-                <p>Selected: {imageName}</p>
-                <Button variant="link" onClick={() => setIsEditorOpen(true)} className="text-accent">
-                  <Edit3 className="mr-2 h-4 w-4" /> Re-open Editor
-                </Button>
+                <p>Previously edited: {imageName}. Upload a new image or re-open.</p>
+                {/* This scenario might not be hit often if editor auto-closes */}
               </div>
             )}
           </div>
         ) : null}
 
         {isEditorOpen && imageSource && (
-          <div 
-             style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }} 
+           <div 
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
+             // Style the container for the editor if needed, Filerobot itself manages its height mostly
            >
-            <DynamicFilerobotEditor
+            <DynamicImageEditor
+              key={imageSource} // Add key to help React re-initialize if source changes
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
