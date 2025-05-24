@@ -1,156 +1,173 @@
 // File: components/Toolbar.tsx
 'use client';
 
-import React, { useEffect } from 'react'; // Ensure React is imported
-import { fabric } from 'fabric';
-import { getHistoryStack, setHistoryStack } from '@/components/FabricCanvas'; // Import history
-import { ZoomIn, ZoomOut, Type, Square, Circle as CircleIcon, Minus, Eraser, Undo, Redo, Image as ImageIcon, UploadCloud } from 'lucide-react'; // Import necessary icons
+import React, { useCallback } from 'react'; 
+import type { fabric as FabricType } from 'fabric'; // Import fabric type
+import { getHistoryStack, setHistoryStack } from '@/components/FabricCanvas'; 
+import { ZoomIn, ZoomOut, Type, Square, Circle as CircleIcon, Minus, Eraser, Undo, Redo, Image as ImageIconLucide, UploadCloud, Trash2 } from 'lucide-react'; 
 
 interface ToolbarProps {
   selectedColor: string;
-  fabricCanvas: fabric.Canvas | null; // Receive fabric instance as prop
+  fabricCanvas: FabricType.Canvas | null; // Use FabricType.Canvas
+  historyRevision: number; 
 }
 
-export default function Toolbar({ selectedColor, fabricCanvas }: ToolbarProps) {
-  
-  const getCanvas = (): fabric.Canvas | null => {
-    // Prioritize passed prop, fallback to window object for legacy compatibility if any
-    return fabricCanvas || (window as any).__fabricCanvas as fabric.Canvas || null;
-  };
+export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }: ToolbarProps) {
+  // historyRevision prop change triggers re-render, ensuring getHistoryStack().length is fresh for `disabled`
 
-  const addText = () => {
-    const canvas = getCanvas();
-    if (canvas) {
-      const newText = new fabric.Textbox('New Text', {
-        left: canvas.getWidth() / 2 - 50,
-        top: canvas.getHeight() / 2 - 20,
+  const addText = useCallback(() => {
+    if (fabricCanvas) {
+      const newText = new FabricType.Textbox('New Text', {
+        left: fabricCanvas.getWidth() / 2 - 50,
+        top: fabricCanvas.getHeight() / 2 - 20,
         fontSize: 24,
         fill: selectedColor,
         fontFamily: 'Inter, sans-serif',
         originX: 'center',
         originY: 'center',
       });
-      canvas.add(newText);
-      canvas.setActiveObject(newText);
-      canvas.renderAll();
+      fabricCanvas.add(newText);
+      fabricCanvas.setActiveObject(newText);
+      fabricCanvas.renderAll();
     }
-  };
+  }, [fabricCanvas, selectedColor]);
 
-  const addRect = () => {
-    const canvas = getCanvas();
-    if (canvas) {
-      const rect = new fabric.Rect({
-        left: canvas.getWidth() / 2 - 50,
-        top: canvas.getHeight() / 2 - 25,
+  const addRect = useCallback(() => {
+    if (fabricCanvas) {
+      const rect = new FabricType.Rect({
+        left: fabricCanvas.getWidth() / 2 - 50,
+        top: fabricCanvas.getHeight() / 2 - 25,
         fill: selectedColor,
         width: 100,
         height: 50,
         originX: 'center',
         originY: 'center',
       });
-      canvas.add(rect);
-      canvas.renderAll();
+      fabricCanvas.add(rect);
+      fabricCanvas.renderAll();
     }
-  };
+  }, [fabricCanvas, selectedColor]);
   
-  const addCircle = () => {
-    const canvas = getCanvas();
-    if (canvas) {
-      const circle = new fabric.Circle({
-        left: canvas.getWidth() / 2,
-        top: canvas.getHeight() / 2,
+  const addCircle = useCallback(() => {
+    if (fabricCanvas) {
+      const circle = new FabricType.Circle({
+        left: fabricCanvas.getWidth() / 2,
+        top: fabricCanvas.getHeight() / 2,
         fill: selectedColor,
         radius: 40,
         originX: 'center',
         originY: 'center',
       });
-      canvas.add(circle);
-      canvas.renderAll();
+      fabricCanvas.add(circle);
+      fabricCanvas.renderAll();
     }
-  };
+  }, [fabricCanvas, selectedColor]);
 
-  const addLine = () => {
-    const canvas = getCanvas();
-    if (canvas) {
-      const line = new fabric.Line([50, 100, 250, 100], {
-        left: canvas.getWidth() / 2 - 100,
-        top: canvas.getHeight() / 2,
+  const addLine = useCallback(() => {
+    if (fabricCanvas) {
+      const line = new FabricType.Line([50, 100, 250, 100], { 
+        left: fabricCanvas.getWidth() / 2 - 100,
+        top: fabricCanvas.getHeight() / 2,
         stroke: selectedColor,
         strokeWidth: 3,
         originX: 'center',
         originY: 'center',
       });
-      canvas.add(line);
-      canvas.renderAll();
+      fabricCanvas.add(line);
+      fabricCanvas.renderAll();
     }
-  };
+  }, [fabricCanvas, selectedColor]);
 
-  const toggleFreeDrawing = () => {
-    const canvas = getCanvas();
-    if (canvas) {
-      canvas.isDrawingMode = !canvas.isDrawingMode;
-      if (canvas.isDrawingMode && canvas.freeDrawingBrush) {
-        canvas.freeDrawingBrush.color = selectedColor;
-        canvas.freeDrawingBrush.width = 5;
+  const toggleFreeDrawing = useCallback(() => {
+    if (fabricCanvas) {
+      fabricCanvas.isDrawingMode = !fabricCanvas.isDrawingMode;
+      if (fabricCanvas.isDrawingMode && fabricCanvas.freeDrawingBrush) {
+        fabricCanvas.freeDrawingBrush.color = selectedColor;
+        const brushWidth = parseInt(prompt("Enter brush width (e.g., 5):", "5") || "5", 10);
+        fabricCanvas.freeDrawingBrush.width = isNaN(brushWidth) ? 5 : brushWidth;
       }
     }
-  };
+  }, [fabricCanvas, selectedColor]);
   
-  const handleZoom = (factor: number) => {
-    const canvas = getCanvas();
-    if (canvas) {
-      let currentZoom = canvas.getZoom();
+  const handleZoom = useCallback((factor: number) => {
+    if (fabricCanvas) {
+      let currentZoom = fabricCanvas.getZoom();
       currentZoom *= factor;
-      // Prevent zooming too far in or out
       currentZoom = Math.max(0.1, Math.min(currentZoom, 10)); 
-      
-      const center = canvas.getCenter();
-      canvas.zoomToPoint(new fabric.Point(center.left, center.top), currentZoom);
-      canvas.renderAll();
+      const center = fabricCanvas.getCenter();
+      fabricCanvas.zoomToPoint(new FabricType.Point(center.left, center.top), currentZoom);
+      fabricCanvas.renderAll();
     }
-  };
+  }, [fabricCanvas]);
 
-  const handleUndo = () => {
-    const canvas = getCanvas();
-    const currentHistory = getHistoryStack();
-    if (canvas && currentHistory.length > 1) { // Keep at least one state (initial)
-      currentHistory.pop(); // Remove current state
-      const prevState = currentHistory[currentHistory.length - 1];
-      canvas.loadFromJSON(prevState, () => {
-        canvas.renderAll();
-        // Restore object stacking after loadFromJSON
-        canvas.preserveObjectStacking = true; 
+  const handleUndo = useCallback(() => {
+    const currentHistory = getHistoryStack(); // Direct reference to module-level array
+    if (fabricCanvas && currentHistory.length > 1) {
+      currentHistory.pop(); // Remove current state (mutates original array)
+      const prevStateJSON = currentHistory[currentHistory.length - 1];
+      // Ensure FabricCanvas.onHistoryUpdate will be called to update historyRevision in parent
+      // This is typically handled by object:modified, object:added, object:removed listeners.
+      // After loadFromJSON, FabricCanvas should call its saveState if it's a structural change.
+      // For now, we expect FabricCanvas to manage the onHistoryUpdate calls correctly.
+      fabricCanvas.loadFromJSON(prevStateJSON, () => {
+        fabricCanvas.renderAll();
+        fabricCanvas.preserveObjectStacking = true; 
+        // If FabricCanvas's onHistoryUpdate is not triggered by loadFromJSON's internal changes,
+        // we might need a way for Toolbar to signal EditorPage to update historyRevision.
+        // However, the `object:added/removed/modified` events should cover canvas changes.
+        // The parent `EditorPage` will re-render because `handleHistoryUpdate` changes its state.
       });
-      setHistoryStack([...currentHistory]); // Update the shared history
     }
-  };
+  }, [fabricCanvas]);
 
-  // Placeholder for Redo - more complex as it requires a forward stack
-  const handleRedo = () => {
-    console.log("Redo functionality to be implemented");
-  };
+  const handleRedo = useCallback(() => {
+    console.log("Redo functionality requires a separate redoStack, not implemented in this version.");
+    alert("Redo not yet implemented.");
+  }, []);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const canvas = getCanvas();
-    if (canvas && event.target.files && event.target.files[0]) {
+  const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    if (fabricCanvas && event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       const reader = new FileReader();
       reader.onload = (f) => {
         const data = f.target?.result as string;
-        fabric.Image.fromURL(data, (img) => {
-          img.scaleToWidth(canvas.getWidth() / 2); // Scale to fit nicely
+        FabricType.Image.fromURL(data, (img) => {
+          const maxDim = Math.min(fabricCanvas.getWidth(), fabricCanvas.getHeight()) * 0.8;
+          if (img.width && img.height && (img.width > maxDim || img.height > maxDim)) {
+            if (img.width > img.height) {
+              img.scaleToWidth(maxDim);
+            } else {
+              img.scaleToHeight(maxDim);
+            }
+          }
           img.set({
-            left: canvas.getWidth() / 4,
-            top: canvas.getHeight() / 4,
+            left: fabricCanvas.getWidth() / 2,
+            top: fabricCanvas.getHeight() / 2,
+            originX: 'center',
+            originY: 'center',
           });
-          canvas.add(img);
-          canvas.renderAll();
+          fabricCanvas.add(img);
+          // fabricCanvas.setActiveObject(img); // Optionally make uploaded image active
+          fabricCanvas.renderAll();
         });
       };
       reader.readAsDataURL(file);
-      event.target.value = ''; // Reset file input
+      if(event.target) event.target.value = ''; 
     }
-  };
+  }, [fabricCanvas]);
+
+  const deleteSelectedObject = useCallback(() => {
+    if (fabricCanvas) {
+      const activeObject = fabricCanvas.getActiveObject();
+      if (activeObject) {
+        fabricCanvas.remove(activeObject);
+        fabricCanvas.discardActiveObject(); // Important to clear selection
+        fabricCanvas.renderAll();
+      } else {
+        alert("No object selected to delete.");
+      }
+    }
+  }, [fabricCanvas]);
 
 
   return (
@@ -163,22 +180,26 @@ export default function Toolbar({ selectedColor, fabricCanvas }: ToolbarProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <button onClick={() => handleZoom(1.1)} title="Zoom In" className="btn btn-icon"><ZoomIn size={18} /></button>
-        <button onClick={() => handleZoom(0.9)} title="Zoom Out" className="btn btn-icon"><ZoomOut size={18} /></button>
+        <button onClick={() => handleZoom(1.1)} title="Zoom In" className="btn btn-icon" disabled={!fabricCanvas}><ZoomIn size={18} /></button>
+        <button onClick={() => handleZoom(0.9)} title="Zoom Out" className="btn btn-icon" disabled={!fabricCanvas}><ZoomOut size={18} /></button>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <button onClick={addText} title="Add Text" className="btn btn-icon"><Type size={18}/></button>
-        <button onClick={addRect} title="Add Rectangle" className="btn btn-icon"><Square size={18}/></button>
-        <button onClick={addCircle} title="Add Circle" className="btn btn-icon"><CircleIcon size={18}/></button>
-        <button onClick={addLine} title="Add Line" className="btn btn-icon"><Minus size={18}/></button>
+        <button onClick={addText} title="Add Text" className="btn btn-icon" disabled={!fabricCanvas}><Type size={18}/></button>
+        <button onClick={addRect} title="Add Rectangle" className="btn btn-icon" disabled={!fabricCanvas}><Square size={18}/></button>
+        <button onClick={addCircle} title="Add Circle" className="btn btn-icon" disabled={!fabricCanvas}><CircleIcon size={18}/></button>
+        <button onClick={addLine} title="Add Line" className="btn btn-icon" disabled={!fabricCanvas}><Minus size={18}/></button>
       </div>
-      <button onClick={toggleFreeDrawing} title="Toggle Free Drawing" className="btn text-sm flex items-center justify-center">
+      <button onClick={toggleFreeDrawing} title="Toggle Free Drawing" className="btn text-sm flex items-center justify-center" disabled={!fabricCanvas}>
         <Eraser className="mr-2 h-4 w-4"/> Draw
       </button>
       <div className="grid grid-cols-2 gap-2">
-        <button onClick={handleUndo} title="Undo" className="btn btn-icon" disabled={getHistoryStack().length <= 1}><Undo size={18}/></button>
+        {/* Use getHistoryStack().length for checking disabled state */}
+        <button onClick={handleUndo} title="Undo" className="btn btn-icon" disabled={!fabricCanvas || getHistoryStack().length <= 1}><Undo size={18}/></button>
         <button onClick={handleRedo} title="Redo (WIP)" className="btn btn-icon" disabled><Redo size={18}/></button>
       </div>
+      <button onClick={deleteSelectedObject} title="Delete Selected Object" className="btn text-sm flex items-center justify-center text-destructive-foreground bg-destructive hover:bg-destructive/90" disabled={!fabricCanvas}>
+        <Trash2 className="mr-2 h-4 w-4"/> Delete Selected
+      </button>
        <style jsx>{`
         .btn-icon {
           @apply p-2 flex items-center justify-center;
