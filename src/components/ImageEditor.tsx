@@ -1,8 +1,9 @@
+
 'use client';
 
 import React from 'react';
-// Assuming FilerobotImageEditor is a named export based on common usage and user examples
-import { FilerobotImageEditor } from 'filerobot-image-editor'; 
+// Use default import for FilerobotImageEditor
+import FilerobotImageEditorComponent from 'filerobot-image-editor';
 import type { SaveData } from 'filerobot-image-editor';
 
 // Props for the client-side wrapper
@@ -10,7 +11,7 @@ interface ImageEditorClientProps {
   source: string;
   onSave: (editedImageObject: SaveData, designState?: any) => void;
   onClose: () => void;
-  // config prop is omitted for now to simplify and diagnose
+  config?: object; // Allow passing the config object
 }
 
 // This is our client-only wrapper, ensuring Filerobot only loads client-side.
@@ -18,6 +19,7 @@ export default function ImageEditorClient({
   source,
   onSave,
   onClose,
+  config, // Accept the config prop
 }: ImageEditorClientProps) {
   if (!source) {
     // Should ideally not happen if parent component controls this
@@ -25,11 +27,11 @@ export default function ImageEditorClient({
   }
 
   return (
-    <FilerobotImageEditor
+    <FilerobotImageEditorComponent
       source={source}
       onSave={onSave}
       onClose={onClose}
-      // Default tools and theme will be used initially
+      config={config} // Pass the config to the editor
     />
   );
 }
