@@ -3,49 +3,40 @@
 import React from 'react';
 // Use default import for the React component from the wrapper library
 import FilerobotImageEditorComponent from 'react-filerobot-image-editor';
-// Import types for props if needed, e.g., SaveData for onSave
-// Ensure FilerobotImageEditorConfig is imported if used for config prop later
-import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor'; 
+// Import types if needed for props, though we are simplifying props for now
+// import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
 
+// Simplified props for this diagnostic step
 interface ImageEditorClientProps {
-  source: string;
-  // Temporarily making these optional or removing if we hardcode inside for testing
-  onSave?: (editedImageObject: SaveData, designState?: any) => void;
-  onClose?: () => void;
-  config?: FilerobotImageEditorConfig; // Still accept it, but won't pass it for now
+  source: string; // Source is essential
+  // onSave, onClose, and config will be handled internally or omitted for this test
 }
 
-export default function ImageEditorClient({ source, onSave, onClose, config }: ImageEditorClientProps) {
+export default function ImageEditorClient({ source }: ImageEditorClientProps) {
   if (!source) {
+    // This should ideally not happen if EditorPage manages source correctly
     return <p>Error: Image source is missing for the editor.</p>;
   }
 
-  const internalOnSave = (editedImageObject: SaveData, designState?: any) => {
-    console.log('Internal Save:', editedImageObject);
-    if (onSave) {
-      onSave(editedImageObject, designState);
-    }
+  const handleSave = (editedImageObject: any, designState: any) => {
+    console.log('Simplified Save:', editedImageObject, designState);
+    // In a real scenario, this would trigger download or further processing
   };
 
-  const internalOnClose = () => {
-    console.log('Internal Close');
-    if (onClose) {
-      onClose();
-    }
+  const handleClose = () => {
+    console.log('Simplified Close');
+    // In a real scenario, this would hide the editor
   };
 
-  // For this diagnostic step, we pass a minimal or no config
+  // For this diagnostic step, we pass minimal or no config
   // to see if the component loads at all.
-  // The actual config prop is still accepted by ImageEditorClient
-  // but we are testing without passing it to FilerobotImageEditorComponent.
-
   return (
     <div style={{ height: '100%', width: '100%' }}>
       <FilerobotImageEditorComponent
         source={source}
-        onSave={internalOnSave} // Use internal or passed-through handlers
-        onClose={internalOnClose}
-        // config={config} // Temporarily remove config for diagnostics
+        onSave={handleSave} // Using simplified internal handler
+        onClose={handleClose} // Using simplified internal handler
+        // config={{ tools: ['crop', 'rotate', 'filter', 'adjust'] }} // Temporarily removing config
       />
     </div>
   );

@@ -1,4 +1,3 @@
-// src/app/editor/page.tsx
 'use client';
 
 import React, { useState, useCallback, useRef, useMemo } from 'react';
@@ -15,6 +14,8 @@ import { downloadFile } from '@/lib/utils';
 // Types from react-filerobot-image-editor
 import type { FilerobotImageEditorConfig, SaveData } from 'react-filerobot-image-editor';
 
+
+// Dynamically import the client-side editor wrapper
 const DynamicEditorClient = dynamic(
   () => import('@/components/ImageEditor'), // Points to ImageEditor.tsx which exports ImageEditorClient
   {
@@ -47,7 +48,7 @@ export default function EditorPage() {
             variant: 'destructive',
           });
           if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+            fileInputRef.current.value = ''; // Reset file input
           }
           return;
         }
@@ -56,6 +57,8 @@ export default function EditorPage() {
         reader.onload = (e) => {
           setImageSource(e.target?.result as string);
           setImageName(file.name);
+          // Automatically open editor once image is selected for this simplified test
+          // setIsEditorOpen(true); 
         };
         reader.readAsDataURL(file);
       }
@@ -83,12 +86,18 @@ export default function EditorPage() {
     setIsEditorOpen(false);
   }, []);
 
+  // This onSaveImage will be passed to the ImageEditorClient,
+  // which now has its own internal simpler handler for diagnostic.
+  // So, this specific function won't be called by Filerobot directly in this test.
   const onSaveImage = useCallback(
     (editedImageObject: SaveData, designState?: any) => {
-      if (editedImageObject.dataURL) {
+      // console.log('Page onSaveImage triggered with:', editedImageObject, designState);
+      if (editedImageObject.imageBase64) { // Filerobot often returns base64
         const originalExtension = imageName?.split('.').pop() || editedImageObject.extension || 'png';
         const filename = `${imageName?.replace(/\.[^/.]+$/, "") || 'edited_image'}_filerobot.${originalExtension}`;
-        downloadFile(editedImageObject.dataURL, filename)
+        
+        // Use the base64 directly
+        downloadFile(editedImageObject.imageBase64, filename)
           .then(() => {
             toast({
               title: 'Image Downloaded',
@@ -106,7 +115,7 @@ export default function EditorPage() {
       } else {
         toast({
           title: 'Save Error',
-          description: 'Edited image data (dataURL) is not available for download.',
+          description: 'Edited image data (base64) is not available for download.',
           variant: 'destructive',
         });
       }
@@ -114,37 +123,43 @@ export default function EditorPage() {
     },
     [imageName, closeEditor, toast]
   );
-
+  
+  // Filerobot theme and config - will be passed to ImageEditorClient
+  // if the basic rendering test (without config) succeeds
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
+    // Using more generic color names that Filerobot's theme structure might expect
     return {
-      primaryBg: isDark ? '#121821' : '#FFFFFF',
-      secondaryBg: isDark ? '#1B232E' : '#F0F2F5',
-      text: isDark ? '#EFF2F5' : '#212529',
-      textMuted: isDark ? '#9AA5B1' : '#687076',
-      accent: isDark ? '#27D2F5' : '#0DCAF0', 
-      accentMuted: isDark ? '#27D2F5' : '#0DCAF0',
-      borders: isDark ? '#313A48' : '#CBD5E0',
-      activeTabBg: isDark ? '#27D2F5' : '#0DCAF0',
+      primaryBg: isDark ? '#111827' : '#FFFFFF', // Darker background for dark, white for light
+      secondaryBg: isDark ? '#1F2937' : '#F3F4F6', // Slightly lighter for dark, light gray for light
+      text: isDark ? '#E5E7EB' : '#111827', // Light gray for dark, dark gray for light
+      textMuted: isDark ? '#9CA3AF' : '#6B7280', // Muted gray
+      accent: '#2DD4CF', // Your teal accent
+      accentMuted: '#5EEAD4', // Lighter teal
+      borders: isDark ? '#374151' : '#D1D5DB', // Borders
+      activeTabBg: '#2DD4CF', 
     };
   }, [currentTheme]);
 
-  const editorConfigObject: FilerobotImageEditorConfig = useMemo(() => ({
-    // @ts-ignore Filerobot's ThemeConfig type can be extensive and has caused issues.
-    // For now, we'll rely on Filerobot's defaults or more specific themeing if simple color objects don't work.
-    theme: {
-      colors: filerobotThemeColors,
-      typography: {
-        fontFamily: 'Inter, Arial, sans-serif',
-      },
-    },
-    tools: [
+  const editorConfigObject: Partial<FilerobotImageEditorConfig> = useMemo(() => ({
+    // @ts-ignore Filerobot's ThemeConfig type can be complex.
+    // theme: {
+    //   colors: filerobotThemeColors,
+    //   typography: {
+    //     fontFamily: 'Inter, Arial, sans-serif',
+    //   },
+    // },
+    tools: [ // Common tools
       'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize',
       'text', 'image', 'shapes', 'draw', 'watermark'
     ],
-    // Removed TABS/TOOLS enum usage from here as they can be problematic if types are mismatched or not exported as expected.
-    // Filerobot will use its default tab/tool setup if these are not provided or if provided as strings.
-  }), [filerobotThemeColors]);
+    // Example using TABS and TOOLS if they were available and needed for defaults
+    // We'd need to import them from 'react-filerobot-image-editor'
+    // tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK],
+    // defaultTabId: TABS.ADJUST,
+    // defaultToolId: TOOLS.CROP,
+  }), [/* filerobotThemeColors */]); // Temporarily remove theme from dependencies if not used in config yet
+
 
   return (
     <>
@@ -192,15 +207,16 @@ export default function EditorPage() {
 
         {isEditorOpen && imageSource && (
           <div
-            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }}
+            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} // Adjust height as needed
             className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
             <DynamicEditorClient
               key={imageSource} // Re-mount if source changes
               source={imageSource}
-              onSave={onSaveImage}
-              onClose={closeEditor}
-              // config={editorConfigObject} // Temporarily remove config for this diagnostic step
+              // For this diagnostic step, ImageEditorClient defines its own onSave/onClose
+              // onSave={onSaveImage} 
+              // onClose={closeEditor}
+              // config={editorConfigObject} // Temporarily not passing config
             />
           </div>
         )}
