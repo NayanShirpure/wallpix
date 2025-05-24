@@ -11,11 +11,11 @@ import { UploadCloud, Edit3, Image as ImageIconLucide, Download } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-import type { SaveData, TABS, TOOLS } from 'filerobot-image-editor';
+import type { SaveData } from 'filerobot-image-editor'; // TABS and TOOLS are not typically top-level exports for config objects in Filerobot v4+
 
-// Dynamically import FilerobotImageEditor as it's client-side only
+// Declare the dynamic import BEFORE using it in the component
 const DynamicFilerobotEditor = dynamic(
-  () => import('filerobot-image-editor').then((mod) => mod.default || mod),
+  () => import('filerobot-image-editor').then((mod) => mod.default || mod), // Handle potential default export wrapping
   {
     ssr: false,
     loading: () => (
@@ -44,7 +44,7 @@ export default function EditorPage() {
           variant: 'destructive',
         });
         if (fileInputRef.current) {
-          fileInputRef.current.value = ''; // Reset file input
+          fileInputRef.current.value = ''; 
         }
         return;
       }
@@ -52,7 +52,7 @@ export default function EditorPage() {
       reader.onload = (e) => {
         setImageSource(e.target?.result as string);
         setImageName(file.name);
-        setIsEditorOpen(true); // Open editor once image is loaded
+        setIsEditorOpen(true); 
       };
       reader.readAsDataURL(file);
     }
@@ -89,30 +89,25 @@ export default function EditorPage() {
         variant: 'destructive',
       });
     }
-    setIsEditorOpen(false); // Close editor after save
-    setImageSource(null); // Clear image source
+    setIsEditorOpen(false);
+    setImageSource(null); 
     setImageName(null);
-    if (fileInputRef.current) { // Reset file input
+    if (fileInputRef.current) { 
         fileInputRef.current.value = '';
     }
   }, [imageName, toast]);
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
-    setImageSource(null); // Clear image source when closing editor
+    setImageSource(null); 
     setImageName(null);
-    if (fileInputRef.current) { // Reset file input
+    if (fileInputRef.current) { 
         fileInputRef.current.value = '';
     }
   }, []);
 
   const filerobotThemeColors = useMemo(() => {
-    // Using Tailwind HSL variables directly by parsing them.
-    // This requires Tailwind's CSS variables to be loaded, which they are in globals.css.
-    // A more robust way might be to define these colors also in JS if possible,
-    // or use a utility to parse them. For now, this is an approximation.
-
-    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; // Vibrant Cyan
+    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; 
     const primaryBg = currentTheme === 'dark' ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)'; 
     const secondaryBg = currentTheme === 'dark' ? 'hsl(220 13% 15%)' : 'hsl(210 17% 98%)';
     const text = currentTheme === 'dark' ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';
@@ -131,22 +126,36 @@ export default function EditorPage() {
   }, [currentTheme]);
 
   const editorConfigObject = useMemo(() => {
-    const TABS_ENUM = (DynamicFilerobotEditor as any)?.TABS || {};
-    const TOOLS_ENUM = (DynamicFilerobotEditor as any)?.TOOLS || {};
-
+    // Filerobot's TABS and TOOLS are typically configured via string arrays or specific props
+    // For Filerobot v4, the TABS and TOOLS enums are not typically exported for this level of config
+    // We use string identifiers for tools and rely on Filerobot's default tab structure or specific props if available.
     return {
+      // source: imageSource, // Source is passed as a direct prop
+      // onSave: onSaveImage, // onSave is passed as a direct prop
+      // onClose: closeEditor, // onClose is passed as a direct prop
+      // Default tools, can be customized as per Filerobot docs
+      tools: [
+        'crop', 'rotate', 'flip', 'adjust', 'finetune',
+        'filters', 'watermark', 'annotate', 'draw', 'text',
+        'shapes', 'frame', 'merge', 'resize'
+      ],
+      // Example: Default to Adjust tab and Crop tool if needed (check Filerobot docs for exact props)
+      // defaultTabId: 'Adjust', // Or use TABS.ADJUST if available and preferred by library
+      // defaultToolId: 'Crop', // Or use TOOLS.CROP if available and preferred by library
+      
+      // Theme configuration
       theme: {
         colors: {
           primaryBg: filerobotThemeColors.primaryBg,
-          primaryBgHover: filerobotThemeColors.accent,
+          primaryBgHover: filerobotThemeColors.accent, // Example hover
           secondaryBg: filerobotThemeColors.secondaryBg,
-          secondaryBgHover: filerobotThemeColors.accent,
+          secondaryBgHover: filerobotThemeColors.accent, // Example hover
           text: filerobotThemeColors.text,
-          textHover: filerobotThemeColors.accent,
+          textHover: filerobotThemeColors.accent, // Example hover
           textMuted: filerobotThemeColors.textMuted,
-          textWarn: '#f7931e', // Example warning color
+          textWarn: '#f7931e', // Standard warning color
           accent: filerobotThemeColors.accent,
-          accentHover: currentTheme === 'dark' ? 'hsl(190 88% 65%)' : 'hsl(190 88% 40%)', // Lighter/darker accent for hover
+          accentHover: currentTheme === 'dark' ? 'hsl(190 88% 65%)' : 'hsl(190 88% 40%)',
           borders: filerobotThemeColors.borders,
           border: filerobotThemeColors.borders, 
           icons: filerobotThemeColors.text,
@@ -155,38 +164,27 @@ export default function EditorPage() {
           activeTabBg: filerobotThemeColors.activeTabBg,
         },
         typography: {
-          fontFamily: 'Inter, Arial, sans-serif', // Match your site font
+          fontFamily: 'Inter, Arial, sans-serif', 
           fontSize: '14px',
         },
       },
       language: 'en',
-      // Example using TABS and TOOLS enums (if they are correctly exported and loaded)
-      // Otherwise, use string identifiers.
-      tabsIds: [
-        TABS_ENUM.ADJUST || 'Adjust', 
-        TABS_ENUM.ANNOTATE || 'Annotate', 
-        TABS_ENUM.WATERMARK || 'Watermark',
-        TABS_ENUM.FINETUNE || 'Finetune',
-        TABS_ENUM.FILTERS || 'Filters',
-        TABS_ENUM.RESIZE || 'Resize',
-      ],
-      defaultTabId: TABS_ENUM.ADJUST || 'Adjust',
-      defaultToolId: TOOLS_ENUM.CROP || 'Crop',
-      tools: [ // Standard string identifiers for tools array
-        'crop', 'rotate', 'flip', 'adjust', 'finetune',
-        'filters', 'watermark', 'annotate', 'draw', 'text',
-        'shapes', 'frame', 'merge', 'resize'
-      ],
+      // defaultSavedImageName: 'edited_wallpaper', // Filerobot handles naming
+      // defaultSavedImageType: 'png', // Filerobot usually defaults to original or offers choices
+      showBackButton: true,
+      // cropPresets can be added here if needed
       cropPresets: [
-        { name: 'Original', value: 0 },
+        { name: 'Original', value: 0 }, // 0 means free ratio
         { name: 'Square (1:1)', value: 1 / 1 },
         { name: 'Landscape (16:9)', value: 16 / 9 },
         { name: 'Portrait (9:16)', value: 9 / 16 },
+        // Add more presets as needed
       ],
-      showBackButton: true,
-      // defaultSavedImageName: 'edited_wallpaper',
-      // defaultSavedImageType: 'png', // Filerobot defaults to original type
+      // Example of enabling certain tabs if filerobot supports `tabsIds` in this way
+      // Consult Filerobot documentation for precise control over tabs.
+      // tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTERS, TABS.RESIZE],
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filerobotThemeColors, currentTheme]);
 
 
@@ -225,7 +223,7 @@ export default function EditorPage() {
 
         {isEditorOpen && imageSource && (
           <div 
-             style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}
+             style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }} // Ensure container has dimensions
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
            >
             <DynamicFilerobotEditor
@@ -233,7 +231,7 @@ export default function EditorPage() {
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
-              config={editorConfigObject}
+              config={editorConfigObject} // Pass the main config object here
             />
           </div>
         )}
