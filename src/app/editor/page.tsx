@@ -1,26 +1,28 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { UploadCloud, Edit3, Download, Image as ImageIconLucide } from 'lucide-react';
+import { UploadCloud, Download, Edit3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 import { downloadFile } from '@/lib/utils';
-import { useTheme } from 'next-themes';
-import type { SaveData, FilerobotImageEditorConfig } from 'filerobot-image-editor';
 
-// Declare the dynamic import BEFORE using it in the component
-const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
-  ssr: false, // This component (and Filerobot editor) must only run on the client
-  loading: () => (
-    <div className="w-full h-[600px] flex items-center justify-center border rounded-lg bg-muted/30">
-      <p className="text-muted-foreground">Loading Editor...</p>
-    </div>
-  ),
-});
+// Dynamically import the client-side wrapper component for Filerobot
+const DynamicEditorClient = dynamic(
+  () => import('@/components/ImageEditor'), // This imports the default export from ImageEditor.tsx
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
+        <p className="text-muted-foreground">Loading Editor...</p>
+      </div>
+    ),
+  }
+);
 
 export default function EditorPage() {
   const [imageSource, setImageSource] = useState<string | null>(null);
@@ -28,150 +30,101 @@ export default function EditorPage() {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { theme: currentTheme } = useTheme();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        toast({
-          title: 'Unsupported File Type',
-          description: 'Please upload a JPG, PNG, or WEBP image.',
-          variant: 'destructive',
-        });
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+          toast({
+            title: 'Invalid File Type',
+            description: 'Please upload a JPG, PNG, WEBP, or GIF image.',
+            variant: 'destructive',
+          });
+          if (fileInputRef.current) {
+            fileInputRef.current.value = ''; // Reset file input
+          }
+          return;
         }
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImageSource(e.target?.result as string);
-        setImageName(file.name);
-        setIsEditorOpen(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  const triggerFileUpload = () => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImageSource(e.target?.result as string);
+          setImageName(file.name);
+          setIsEditorOpen(false); // Close any previous editor instance
+          // Delay opening to ensure state updates propagate if needed, though usually direct is fine
+          // setTimeout(() => setIsEditorOpen(true), 0); 
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    [toast]
+  );
+
+  const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
 
-  const onSaveImage = useCallback((editedImageData: SaveData) => {
-    if (editedImageData.image.imageBase64 && editedImageData.image.fullName) {
-      const originalExtension = imageName?.split('.').pop() || 'png';
-      const newName = editedImageData.image.fullName.replace(/\.\w+$/, `.${originalExtension}`);
-      
-      downloadFile(editedImageData.image.imageBase64, newName)
-        .then(() => {
-          toast({
-            title: 'Image Downloaded',
-            description: `${newName} has been saved.`,
-          });
-        })
-        .catch((error) => {
-          console.error('Error downloading image:', error);
-          toast({
-            title: 'Download Failed',
-            description: 'Could not download the edited image.',
-            variant: 'destructive',
-          });
-        });
+  const openEditor = () => {
+    if (imageSource) {
+      setIsEditorOpen(true);
     } else {
-       toast({
-        title: 'Save Error',
-        description: 'Could not retrieve edited image data.',
-        variant: 'destructive',
+      toast({
+        title: 'No Image Selected',
+        description: 'Please upload an image first to start editing.',
+        variant: 'default',
       });
     }
-    setIsEditorOpen(false);
-    setImageSource(null); 
-    setImageName(null);
-    if (fileInputRef.current) { 
-        fileInputRef.current.value = '';
-    }
-  }, [imageName, toast]);
-
+  };
+  
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
-    setImageSource(null); 
-    setImageName(null);
-    if (fileInputRef.current) { 
-        fileInputRef.current.value = '';
-    }
-  }, []);
+    // Optionally clear imageSource and imageName if you want to force re-upload
+    // setImageSource(null);
+    // setImageName(null);
+    toast({ title: 'Editor Closed', description: 'Editing session ended.' });
+  }, [toast]);
 
-  const filerobotThemeColors = useMemo(() => {
-    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; 
-    const primaryBg = currentTheme === 'dark' ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)'; 
-    const secondaryBg = currentTheme === 'dark' ? 'hsl(220 13% 15%)' : 'hsl(210 17% 98%)';
-    const text = currentTheme === 'dark' ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';
-    const textMuted = currentTheme === 'dark' ? 'hsl(210 8% 65%)' : 'hsl(210 10% 35%)';
-    const borders = currentTheme === 'dark' ? 'hsl(220 13% 25%)' : 'hsl(210 14% 80%)';
+  const onSaveImage = useCallback(
+    (editedImageObject: { imageCanvas: HTMLCanvasElement; name: string; extension: string; fullName: string; mimeType: string; saved?: boolean; dataUrl?: string }, designState?: any) => {
+      if (editedImageObject.dataUrl) {
+        const originalExtension = imageName?.split('.').pop() || 'png';
+        const filename = `${imageName?.replace(/\.[^/.]+$/, "") || 'edited_image'}_filerobot.${originalExtension}`;
+        downloadFile(editedImageObject.dataUrl, filename)
+          .then(() => {
+            toast({
+              title: 'Image Downloaded',
+              description: `${filename} has been saved.`,
+            });
+          })
+          .catch((err) => {
+            console.error('Error downloading image:', err);
+            toast({
+              title: 'Download Failed',
+              description: 'Could not download the edited image.',
+              variant: 'destructive',
+            });
+          });
+      } else {
+        toast({
+          title: 'Save Error',
+          description: 'Edited image data is not available for download.',
+          variant: 'destructive',
+        });
+      }
+      closeEditor(); 
+    },
+    [imageName, closeEditor, toast]
+  );
 
-    return {
-      primaryBg,
-      secondaryBg,
-      text,
-      textMuted,
-      accent: accentColor, 
-      borders,
-      activeTabBg: accentColor,
-    };
-  }, [currentTheme]);
-
-  const editorConfigObject: Partial<FilerobotImageEditorConfig> = useMemo(() => {
-    return {
-      tools: [
-        'crop', 'rotate', 'flip', 'adjust', 'finetune',
-        'filters', 'watermark', 'annotate', 'draw', 'text',
-        'shapes', 'frame', 'merge', 'resize'
-      ],
-      theme: {
-        colors: {
-          primaryBg: filerobotThemeColors.primaryBg,
-          primaryBgHover: filerobotThemeColors.accent,
-          secondaryBg: filerobotThemeColors.secondaryBg,
-          secondaryBgHover: filerobotThemeColors.accent,
-          text: filerobotThemeColors.text,
-          textHover: filerobotThemeColors.accent,
-          textMuted: filerobotThemeColors.textMuted,
-          textWarn: '#f7931e',
-          accent: filerobotThemeColors.accent,
-          accentHover: currentTheme === 'dark' ? 'hsl(190 88% 65%)' : 'hsl(190 88% 40%)',
-          borders: filerobotThemeColors.borders,
-          border: filerobotThemeColors.borders, 
-          icons: filerobotThemeColors.text,
-          iconsHover: filerobotThemeColors.accent,
-          disabled: filerobotThemeColors.textMuted,
-          activeTabBg: filerobotThemeColors.activeTabBg,
-        },
-        typography: {
-          fontFamily: 'Inter, Arial, sans-serif', 
-          fontSize: '14px',
-        },
-      },
-      language: 'en',
-      showBackButton: true,
-      cropPresets: [
-        { name: 'Original', value: 0 },
-        { name: 'Square (1:1)', value: 1 / 1 },
-        { name: 'Landscape (16:9)', value: 16 / 9 },
-        { name: 'Portrait (9:16)', value: 9 / 16 },
-      ],
-      // Example using TABS and TOOLS if available and needed for tabsIds, defaultTabId, defaultToolId
-      // tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK], // Using imported TABS enum
-      // defaultTabId: TABS.ADJUST, // Using imported TABS enum
-      // defaultToolId: TOOLS.CROP, // Using imported TOOLS enum
-    };
-  }, [filerobotThemeColors, currentTheme]);
-
+  // For now, we will omit the complex config object to simplify debugging
+  // const editorConfigObject = useMemo(() => { ... } , [currentTheme, filerobotThemeColors, onSaveImage, closeEditor, imageSource]);
 
   return (
     <>
       <PageHeader
-        title={isEditorOpen && imageName ? `Editing: ${imageName.substring(0,25)}${imageName.length > 25 ? '...' : ''}` : "Image Editor"}
+        title="Image Editor"
         backHref="/"
         backTextDesktop="Back to Wallify"
         backTextMobile="Home"
@@ -179,41 +132,61 @@ export default function EditorPage() {
         <ThemeToggle />
       </PageHeader>
       <main className="flex-grow container mx-auto max-w-5xl p-4 py-8 md:p-6 md:py-12">
-        {!isEditorOpen || !imageSource ? (
-          <div className="flex flex-col items-center justify-center text-center space-y-8 p-6 border-2 border-dashed border-border rounded-xl bg-card shadow-lg min-h-[400px]">
-            <ImageIconLucide className="h-20 w-20 text-primary opacity-70" />
-            <h2 className="text-2xl font-semibold text-primary">
-              Upload Your Image to Start Editing
-            </h2>
-            <p className="text-muted-foreground max-w-md">
-              Click the button below to choose an image (JPG, PNG, WEBP). You can crop, rotate, add filters, text, and much more!
-            </p>
-            <Button onClick={triggerFileUpload} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <UploadCloud className="mr-2 h-5 w-5" /> Upload Image
-            </Button>
+        <div className="mb-6 p-6 border border-border rounded-lg shadow-sm bg-card">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <Input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
-              accept="image/png, image/jpeg, image/webp"
+              accept="image/png, image/jpeg, image/webp, image/gif"
             />
+            <Button onClick={triggerFileInput} variant="outline" className="w-full sm:w-auto">
+              <UploadCloud className="mr-2 h-4 w-4" /> Upload Image
+            </Button>
+            {imageSource && (
+              <Button onClick={openEditor} className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
+                <Edit3 className="mr-2 h-4 w-4" /> Edit Selected Image
+              </Button>
+            )}
           </div>
-        ) : null}
+          {imageName && (
+            <p className="text-sm text-muted-foreground mt-3">
+              Selected: <span className="font-medium text-foreground">{imageName}</span>
+            </p>
+          )}
+          {!imageSource && (
+            <p className="text-sm text-muted-foreground mt-3">
+              Upload an image (PNG, JPG, WEBP, GIF) to start editing. Max file size may apply.
+            </p>
+          )}
+        </div>
 
-        {isEditorOpen && imageSource && (
+        {isEditorOpen && imageSource ? (
           <div 
-             style={{ height: 'calc(100vh - 250px)', minHeight: '600px' }} // Ensure container has dimensions
+             style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} // Adjusted height
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
-           >
+          >
             <DynamicEditorClient
+              key={imageSource} // Add key to help React re-initialize if source changes
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
-              config={editorConfigObject}
+              // config={editorConfigObject} // Config is omitted for now
             />
           </div>
-        )}
+        ) : imageSource ? (
+            <div className="mt-8 p-4 border border-dashed border-border rounded-lg text-center bg-muted/30">
+                 <img
+                    src={imageSource}
+                    alt={imageName || 'Uploaded preview'}
+                    className="max-w-xs max-h-60 mx-auto rounded-md shadow-md mb-4 object-contain"
+                 />
+                <p className="text-muted-foreground">
+                    Ready to edit "{imageName || 'your image'}"? Click the "Edit Selected Image" button above.
+                </p>
+            </div>
+        ) : null}
       </main>
     </>
   );

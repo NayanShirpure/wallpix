@@ -1,36 +1,35 @@
 'use client';
 
 import React from 'react';
-import FilerobotImageEditorComponent from 'filerobot-image-editor'; // Use default import
-import type { FilerobotImageEditorConfig, SaveData } from 'filerobot-image-editor';
+// Assuming FilerobotImageEditor is a named export based on common usage and user examples
+import { FilerobotImageEditor } from 'filerobot-image-editor'; 
+import type { SaveData } from 'filerobot-image-editor';
 
-interface EditorClientProps {
+// Props for the client-side wrapper
+interface ImageEditorClientProps {
   source: string;
-  onSave: (data: SaveData, designState?: any) => void;
-  onClose: (closingReason?: string, editorInstance?: any) => void;
-  config?: Partial<FilerobotImageEditorConfig>;
+  onSave: (editedImageObject: SaveData, designState?: any) => void;
+  onClose: () => void;
+  // config prop is omitted for now to simplify and diagnose
 }
 
-// Renamed function to EditorClient as per user's example structure
-// and exporting as default so dynamic import in page.tsx works as expected
-export default function ImageEditorClient({ source, onSave, onClose, config }: EditorClientProps) {
+// This is our client-only wrapper, ensuring Filerobot only loads client-side.
+export default function ImageEditorClient({
+  source,
+  onSave,
+  onClose,
+}: ImageEditorClientProps) {
   if (!source) {
-    // Optional: render nothing or a placeholder if no source
-    return (
-        <div className="w-full h-full flex items-center justify-center bg-muted">
-            <p className="text-muted-foreground">Error: No image source provided to editor.</p>
-        </div>
-    );
+    // Should ideally not happen if parent component controls this
+    return <p>Image source is missing.</p>;
   }
 
   return (
-    <div style={{ height: '100%', width: '100%' }} className="w-full h-full"> {/* Ensure wrapper takes up space */}
-      <FilerobotImageEditorComponent
-        source={source}
-        onSave={onSave}
-        onClose={onClose}
-        config={config} 
-      />
-    </div>
+    <FilerobotImageEditor
+      source={source}
+      onSave={onSave}
+      onClose={onClose}
+      // Default tools and theme will be used initially
+    />
   );
 }
