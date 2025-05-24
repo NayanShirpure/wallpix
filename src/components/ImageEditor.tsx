@@ -1,54 +1,51 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
-// Use default import for react-filerobot-image-editor
-import FilerobotImageEditorComponent from 'react-filerobot-image-editor';
-import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
-// Note: TABS and TOOLS enums might not be exported or might have different names.
-// If needed, refer to react-filerobot-image-editor documentation for specific config.
+import React, { useEffect, useRef } from 'react';
+// Do NOT include Filerobot, Konva, or any other heavy libraries here yet for this specific step.
+// We will reintroduce Filerobot import in the next step if this basic shell loads.
 
+// Props for the client-side wrapper
 interface ImageEditorClientProps {
   source: string;
-  onSave: (data: SaveData, designState?: any) => void;
+  onSave: (editedImageObject: any, designState?: any) => void; // Using 'any' for Filerobot's SaveData for now
   onClose: () => void;
-  config?: Partial<FilerobotImageEditorConfig>;
+  config?: any; // Using 'any' for Filerobot's config for now
+  // Add 'key' if it's being passed and used for re-mounting, though it's a React prop
+  key?: string | number; 
 }
 
-export default function ImageEditorClient({
-  source,
-  onSave,
-  onClose,
-  config,
+export default function ImageEditorClient({ 
+  source, 
+  onSave, // Mark as used by logging
+  onClose, // Mark as used by logging
+  config // Mark as used by logging
 }: ImageEditorClientProps) {
-  const [isMounted, setIsMounted] = useState(false);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Set mounted to true after the component has mounted on the client.
-    // This ensures FilerobotImageEditorComponent is only rendered client-side
-    // and after this wrapper has established its DOM presence.
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    // This can be a more specific loader for just this component
-    // if the dynamic import loader in page.tsx is too generic.
-    // Or return null if parent's loader is sufficient.
-    return <div className="flex items-center justify-center h-full w-full"><p className="text-muted-foreground">Initializing Editor Interface...</p></div>;
-  }
-  
-  if (!source) {
-    // This case should ideally be handled by the parent component
-    // by not rendering ImageEditorClient if source is not available.
-    return <div className="flex items-center justify-center h-full w-full"><p className="text-muted-foreground">Image source is required to load the editor.</p></div>;
-  }
+    // This useEffect will run only on the client-side after mount
+    console.log('ImageEditorClient component mounted on client-side.');
+    console.log('Source prop:', source);
+    console.log('Config prop received in ImageEditorClient:', config ? 'Yes' : 'No', config);
+    if (typeof onSave === 'function') {
+        console.log('onSave handler received in ImageEditorClient');
+    }
+    if (typeof onClose === 'function') {
+        console.log('onClose handler received in ImageEditorClient');
+    }
+    // Any other basic, client-side-safe initialization that doesn't involve external libraries yet.
+  }, [source, config, onSave, onClose]); // Re-run if source changes
 
   return (
-    <FilerobotImageEditorComponent
-      source={source}
-      onSave={onSave}
-      onClose={onClose}
-      config={config}
-    />
+    <div 
+      ref={editorContainerRef} 
+      style={{ padding: '20px', border: '1px solid green', minHeight: '300px', width: '100%', height: '100%' }}
+    >
+      <h3>Original ImageEditorClient - Basic Render (No Filerobot Library Yet)</h3>
+      <p>Source received: {source ? 'Yes, string of length ' + source.length : 'No/Empty'}</p>
+      <p>This component is designed to wrap the Filerobot editor.</p>
+      {/* This div will eventually hold your Filerobot instance */}
+    </div>
   );
 }
