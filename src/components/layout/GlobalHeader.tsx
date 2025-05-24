@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone } from 'lucide-react';
+import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone, Image as ImageIconLucide } from 'lucide-react'; // Added ImageIconLucide
 import {
   Sheet,
   SheetClose,
@@ -31,7 +31,7 @@ interface GlobalHeaderProps {
   currentDeviceOrientation: DeviceOrientationCategory;
   onDeviceOrientationChange: (orientation: DeviceOrientationCategory) => void;
   onWallpaperCategorySelect: (categoryValue: string) => void;
-  // onSearchSubmit is no longer passed as SearchBar handles navigation
+  // onSearchSubmit is handled by SearchBar itself
 }
 
 export function GlobalHeader({
@@ -40,40 +40,41 @@ export function GlobalHeader({
   onWallpaperCategorySelect,
 }: GlobalHeaderProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParamsHook = useSearchParams();
 
   let displaySearchTerm = '';
   if (pathname === '/search') {
-    const queryParam = searchParams.get('query');
+    const queryParam = searchParamsHook.get('query');
     if (queryParam) {
       displaySearchTerm = queryParam;
     }
+  } else if (pathname === '/') {
+    // Do not pre-fill on home page
+    displaySearchTerm = '';
   }
+
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 print:hidden">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-2 px-3 sm:px-4">
 
-        <Link href="/" className="flex items-center space-x-2 shrink-0" aria-label="Wallify Home">
+        <Link href="/" className="flex items-center space-x-2 shrink-0 mr-auto" aria-label="Wallify Home">
           <Palette className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           <span className="font-bold text-lg sm:text-xl text-primary hidden xxs:inline">Wallify</span>
         </Link>
 
-        <div className="flex-1 flex justify-center items-center px-2 sm:px-4">
-          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-            <SearchBar
-              initialValue={displaySearchTerm}
-              navigateToSearchPage={true}
-            />
-          </div>
+        <div className="absolute left-1/2 -translate-x-1/2 flex justify-center items-center px-2 sm:px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
+           <SearchBar
+            initialValue={displaySearchTerm}
+            navigateToSearchPage={true} 
+           />
         </div>
-
-        <nav className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2">
+        
+        <nav className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2 ml-auto">
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
             <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="hidden md:block">
               <TabsList className="h-9">
-                {/* Updated TabsTrigger for desktop */}
                 <TabsTrigger
                   value="desktop"
                   className="p-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
@@ -150,6 +151,12 @@ export function GlobalHeader({
                     AI Generate
                   </Link>
                 </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="/editor" className="flex items-center">
+                    <ImageIconLucide className="mr-2 h-4 w-4" /> {/* Using ImageIconLucide */}
+                    Image Editor
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/about" className="flex items-center">
@@ -199,7 +206,6 @@ export function GlobalHeader({
                     <span className="text-sm font-medium text-muted-foreground">Orientation</span>
                     <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="mt-1.5">
                       <TabsList className="grid w-full grid-cols-2 h-9">
-                        {/* Mobile TabsTrigger remains unchanged with icon and label */}
                         <TabsTrigger
                           value="desktop"
                           className="text-xs px-2 py-1.5 h-auto"
@@ -222,6 +228,7 @@ export function GlobalHeader({
                   <SheetClose asChild><Link href="/discover" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/what-we-offer" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/generate" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></Link></SheetClose>
+                  <SheetClose asChild><Link href="/editor" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><ImageIconLucide className="mr-2 h-4 w-4" /> Image Editor</Button></Link></SheetClose>
                   <Separator className="my-1.5" />
                   <SheetClose asChild><Link href="/about" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/blog" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><FileText className="mr-2 h-4 w-4" /> Blog</Button></Link></SheetClose>

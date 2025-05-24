@@ -12,6 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import { UploadCloud, Edit3, Download, Image as ImageIcon } from 'lucide-react';
 import { downloadFile } from '@/lib/utils';
 import { useTheme } from 'next-themes';
+// Import TABS and TOOLS if they are indeed exported by Filerobot
+// For Filerobot, configuration of tools is often done via string arrays in config
+// Example: import FilerobotImageEditor, { TABS, TOOLS } from 'filerobot-image-editor';
 
 // Dynamically import FilerobotImageEditor
 const DynamicFilerobotEditor = dynamic(
@@ -32,7 +35,7 @@ export default function EditorPage() {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { theme } = useTheme();
+  const { theme: currentTheme } = useTheme(); // Renamed to avoid conflict with Filerobot's theme prop
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,7 +47,7 @@ export default function EditorPage() {
           variant: 'destructive',
         });
         if (fileInputRef.current) {
-          fileInputRef.current.value = ''; // Reset file input
+          fileInputRef.current.value = ''; 
         }
         return;
       }
@@ -52,7 +55,7 @@ export default function EditorPage() {
       reader.onload = (e) => {
         setImageSource(e.target?.result as string);
         setImageName(file.name);
-        setIsEditorOpen(true); // Open editor once image is selected
+        setIsEditorOpen(true); 
       };
       reader.readAsDataURL(file);
     }
@@ -62,7 +65,7 @@ export default function EditorPage() {
     fileInputRef.current?.click();
   };
 
-  const onSaveImage = (editedImageData: { imageCanvas: HTMLCanvasElement, name: string, extension: string, fullName?: string, mimeType: string, quality?: number, dataURL?: string }) => {
+  const onSaveImage = useCallback((editedImageData: { imageCanvas: HTMLCanvasElement, name: string, extension: string, fullName?: string, mimeType: string, quality?: number, dataURL?: string }) => {
     if (editedImageData.dataURL && editedImageData.fullName) {
       const originalExtension = imageName?.split('.').pop() || 'png';
       const newName = editedImageData.fullName.replace(/\.\w+$/, `.${originalExtension}`);
@@ -89,8 +92,14 @@ export default function EditorPage() {
         variant: 'destructive',
       });
     }
-    setIsEditorOpen(false); // Close editor after save
-  };
+    setIsEditorOpen(false);
+    // Reset image after saving, to allow re-upload of same file
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+    // setImageSource(null); // Optionally clear preview
+    // setImageName(null);
+  }, [imageName, toast]);
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
@@ -100,69 +109,78 @@ export default function EditorPage() {
   }, []);
 
   const filerobotThemeColors = useMemo(() => {
-    // Using the "Vibrant Professional" theme's accent color: #0DCAF0
-    // This color should be recognizable by Filerobot.
-    // If HSL variables don't work directly, use the hex.
-    const accentColor = '#0DCAF0'; // hsl(var(--accent)) -> Vibrant Cyan for light mode
-    const darkAccentColor = '#27D2F5'; // hsl(var(--accent)) in dark mode -> Lighter Vibrant Cyan
+    // Using the "Vibrant Professional" theme's accent color: #0DCAF0 (light) / #27D2F5 (dark)
+    const accentColor = currentTheme === 'dark' ? '#27D2F5' : '#0DCAF0';
+    const primaryBg = currentTheme === 'dark' ? '#1B232E' : '#FFFFFF'; // card background
+    const secondaryBg = currentTheme === 'dark' ? '#121821' : '#F8F9FA'; // main background
+    const text = currentTheme === 'dark' ? '#EFF2F5' : '#212529'; // foreground
+    const textMuted = currentTheme === 'dark' ? '#707C88' : '#6c757d';
+    const borders = currentTheme === 'dark' ? '#313A48' : '#dee2e6';
 
-    const currentAccent = theme === 'dark' ? darkAccentColor : accentColor;
-    
     return {
-      primaryBg: theme === 'dark' ? '#1B232E' : '#FFFFFF', // card background
-      secondaryBg: theme === 'dark' ? '#121821' : '#F8F9FA', // main background
-      text: theme === 'dark' ? '#EFF2F5' : '#212529', // foreground
-      textMuted: theme === 'dark' ? '#707C88' : '#6c757d', // muted-foreground
-      accent: currentAccent, // Your primary accent color
-      // You can add more theme overrides here if needed
-      // Filerobot theme structure: https://github.com/scaleflex/filerobot-image-editor#themeobject
+      primaryBg,
+      secondaryBg,
+      text,
+      textMuted,
+      accent,
+      borders,
+      activeTabBg: accentColor, // Example: make active tab background accent
+      // Further theme properties as per Filerobot docs
     };
-  }, [theme]);
+  }, [currentTheme]);
 
-  const editorConfigObject = useMemo(() => ({
-    // source: imageSource, // Source is passed as a direct prop
-    // onSave: onSaveImage, // onSave is passed as a direct prop
-    // onClose: closeEditor, // onClose is passed as a direct prop
-    annotationsCommon: {
-      fill: filerobotThemeColors.accent,
-    },
-    Text: { text: 'Text Here' },
-    Rotate: { angle: 90, componentType: 'slider' },
-    tabsIds: ['Adjust', 'Annotate', 'Filters', 'Finetune', 'Resize'], // Common tabs
-    defaultTabId: 'Adjust',
-    defaultToolId: 'Crop',
-    tools: [
-      'Adjust', 'Annotate', 'Filters', 'Finetune', 'Resize', 'Crop', 'Rotate', 'Text', 'Draw', 'Watermark'
-    ],
-    theme: {
-      colors: {
-        primaryBg: filerobotThemeColors.primaryBg,
-        primaryBgHover: filerobotThemeColors.accent, // Use accent for hover
-        secondaryBg: filerobotThemeColors.secondaryBg,
-        secondaryBgHover: filerobotThemeColors.accent,
-        text: filerobotThemeColors.text,
-        textHover: filerobotThemeColors.accent,
-        textMuted: filerobotThemeColors.textMuted,
-        textWarn: '#f7931e', // Orange for warnings
-        accent: filerobotThemeColors.accent,
-        accentHover: theme === 'dark' ? '#56DFFF' : '#00B2D6', // Slightly lighter/darker accent for hover
-        borders: theme === 'dark' ? '#313A48' : '#dee2e6', // border
-        border: theme === 'dark' ? '#313A48' : '#dee2e6',
-        icons: filerobotThemeColors.text,
-        iconsHover: filerobotThemeColors.accent,
-        disabled: filerobotThemeColors.textMuted,
-        // You might need to define more colors like activeIcon, etc.
+
+  const editorConfigObject = useMemo(() => {
+    // These are direct props for FilerobotImageEditor, not nested in a `config` prop
+    // source, onSave, onClose are passed directly to DynamicFilerobotEditor
+    
+    // The 'config' prop for Filerobot takes a nested object of settings
+    return {
+      // Example: use TABS and TOOLS if available from 'filerobot-image-editor'
+      // If TABS and TOOLS are not directly exported, use string arrays for tabsIds and tools
+      // tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTERS, TABS.RESIZE],
+      // defaultTabId: TABS.ADJUST,
+      // defaultToolId: TOOLS.CROP,
+      tabsIds: ['Adjust', 'Annotate', 'Filters', 'Finetune', 'Resize', 'Watermark'],
+      defaultTabId: 'Adjust',
+      defaultToolId: 'Crop',
+      tools: [
+        'Adjust', 'Rotate', 'Brightness', 'Contrast', 'Saturation', 'Exposure', // Adjust tools
+        'Filters', // Filters tab
+        'Annotate', 'Text', 'Rect', 'Ellipse', 'Arrow', 'Draw', // Annotate tools
+        'Resize', // Resize tool
+        'Watermark', // Watermark tool
+        // Add more tools as needed based on Filerobot documentation
+      ],
+      theme: {
+        colors: {
+          primaryBg: filerobotThemeColors.primaryBg,
+          primaryBgHover: filerobotThemeColors.accent, 
+          secondaryBg: filerobotThemeColors.secondaryBg,
+          secondaryBgHover: filerobotThemeColors.accent,
+          text: filerobotThemeColors.text,
+          textHover: filerobotThemeColors.accent,
+          textMuted: filerobotThemeColors.textMuted,
+          textWarn: '#f7931e', 
+          accent: filerobotThemeColors.accent,
+          accentHover: currentTheme === 'dark' ? '#56DFFF' : '#00B2D6', 
+          borders: filerobotThemeColors.borders,
+          border: filerobotThemeColors.borders,
+          icons: filerobotThemeColors.text,
+          iconsHover: filerobotThemeColors.accent,
+          disabled: filerobotThemeColors.textMuted,
+          activeTabBg: filerobotThemeColors.activeTabBg,
+        },
+        typography: {
+          fontFamily: 'Inter, Arial, sans-serif', 
+          fontSize: '14px',
+        },
       },
-      typography: {
-        fontFamily: 'Inter, Arial, sans-serif', // Match your site's font
-        fontSize: '14px',
-      },
-    },
-    // Example: Language and other options
-    language: 'en', // Default is 'en', can be 'fr', 'de', etc.
-    // avoidChangesNotSavedAlertOnLeave: true, // Prompt if there are unsaved changes
-    // loadableDesignState: null, // For loading a previously saved state
-  }), [filerobotThemeColors, theme]);
+      language: 'en',
+      // avoidChangesNotSavedAlertOnLeave: true,
+      // loadableDesignState: null, 
+    };
+  }, [filerobotThemeColors, currentTheme]);
 
 
   return (
@@ -208,14 +226,14 @@ export default function EditorPage() {
 
         {isEditorOpen && imageSource && (
           <div 
-             style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }} // Ensure editor has space
+             style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }} 
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
            >
             <DynamicFilerobotEditor
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
-              config={editorConfigObject} // Pass the memoized config object here
+              config={editorConfigObject} // Pass the nested config object here
             />
           </div>
         )}
@@ -223,4 +241,3 @@ export default function EditorPage() {
     </>
   );
 }
-

@@ -61,7 +61,7 @@ export function GlobalFooter() {
             <Link href="/discover" className="hover:text-accent hover:underline">Discover</Link>
             <Link href="/what-we-offer" className="hover:text-accent hover:underline">What We Offer</Link>
             <Link href="/generate" className="hover:text-accent hover:underline">Generate</Link>
-            {/* Removed AI Background Remover link */}
+            <Link href="/editor" className="hover:text-accent hover:underline">Image Editor</Link>
             <Link href="/blog" className="hover:text-accent hover:underline">Blog</Link>
             <Link href="/about" className="hover:text-accent hover:underline">About</Link>
             <Link href="/privacy-policy" className="hover:text-accent hover:underline">Privacy</Link>
