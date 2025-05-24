@@ -1,15 +1,15 @@
 // File: components/Toolbar.tsx
 'use client';
 
-import React, { useCallback } from 'react'; 
-import type { fabric as FabricType } from 'fabric'; // Import fabric type
-import { getHistoryStack, setHistoryStack } from '@/components/FabricCanvas'; 
-import { ZoomIn, ZoomOut, Type, Square, Circle as CircleIcon, Minus, Eraser, Undo, Redo, Image as ImageIconLucide, UploadCloud, Trash2 } from 'lucide-react'; 
+import React, { useCallback } from 'react';
+import { fabric as FabricType } from 'fabric'; // Changed from 'import type'
+import { getHistoryStack, setHistoryStack } from '@/components/FabricCanvas';
+import { ZoomIn, ZoomOut, Type, Square, Circle as CircleIcon, Minus, Eraser, Undo, Redo, Image as ImageIconLucide, UploadCloud, Trash2 } from 'lucide-react';
 
 interface ToolbarProps {
   selectedColor: string;
-  fabricCanvas: FabricType.Canvas | null; // Use FabricType.Canvas
-  historyRevision: number; 
+  fabricCanvas: FabricType.Canvas | null;
+  historyRevision: number;
 }
 
 export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }: ToolbarProps) {
@@ -47,7 +47,7 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
       fabricCanvas.renderAll();
     }
   }, [fabricCanvas, selectedColor]);
-  
+
   const addCircle = useCallback(() => {
     if (fabricCanvas) {
       const circle = new FabricType.Circle({
@@ -65,7 +65,7 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
 
   const addLine = useCallback(() => {
     if (fabricCanvas) {
-      const line = new FabricType.Line([50, 100, 250, 100], { 
+      const line = new FabricType.Line([50, 100, 250, 100], {
         left: fabricCanvas.getWidth() / 2 - 100,
         top: fabricCanvas.getHeight() / 2,
         stroke: selectedColor,
@@ -88,12 +88,12 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
       }
     }
   }, [fabricCanvas, selectedColor]);
-  
+
   const handleZoom = useCallback((factor: number) => {
     if (fabricCanvas) {
       let currentZoom = fabricCanvas.getZoom();
       currentZoom *= factor;
-      currentZoom = Math.max(0.1, Math.min(currentZoom, 10)); 
+      currentZoom = Math.max(0.1, Math.min(currentZoom, 10));
       const center = fabricCanvas.getCenter();
       fabricCanvas.zoomToPoint(new FabricType.Point(center.left, center.top), currentZoom);
       fabricCanvas.renderAll();
@@ -105,17 +105,9 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
     if (fabricCanvas && currentHistory.length > 1) {
       currentHistory.pop(); // Remove current state (mutates original array)
       const prevStateJSON = currentHistory[currentHistory.length - 1];
-      // Ensure FabricCanvas.onHistoryUpdate will be called to update historyRevision in parent
-      // This is typically handled by object:modified, object:added, object:removed listeners.
-      // After loadFromJSON, FabricCanvas should call its saveState if it's a structural change.
-      // For now, we expect FabricCanvas to manage the onHistoryUpdate calls correctly.
       fabricCanvas.loadFromJSON(prevStateJSON, () => {
         fabricCanvas.renderAll();
-        fabricCanvas.preserveObjectStacking = true; 
-        // If FabricCanvas's onHistoryUpdate is not triggered by loadFromJSON's internal changes,
-        // we might need a way for Toolbar to signal EditorPage to update historyRevision.
-        // However, the `object:added/removed/modified` events should cover canvas changes.
-        // The parent `EditorPage` will re-render because `handleHistoryUpdate` changes its state.
+        fabricCanvas.preserveObjectStacking = true;
       });
     }
   }, [fabricCanvas]);
@@ -147,12 +139,11 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
             originY: 'center',
           });
           fabricCanvas.add(img);
-          // fabricCanvas.setActiveObject(img); // Optionally make uploaded image active
           fabricCanvas.renderAll();
         });
       };
       reader.readAsDataURL(file);
-      if(event.target) event.target.value = ''; 
+      if(event.target) event.target.value = '';
     }
   }, [fabricCanvas]);
 
@@ -193,7 +184,6 @@ export default function Toolbar({ selectedColor, fabricCanvas, historyRevision }
         <Eraser className="mr-2 h-4 w-4"/> Draw
       </button>
       <div className="grid grid-cols-2 gap-2">
-        {/* Use getHistoryStack().length for checking disabled state */}
         <button onClick={handleUndo} title="Undo" className="btn btn-icon" disabled={!fabricCanvas || getHistoryStack().length <= 1}><Undo size={18}/></button>
         <button onClick={handleRedo} title="Redo (WIP)" className="btn btn-icon" disabled><Redo size={18}/></button>
       </div>
