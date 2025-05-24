@@ -1,29 +1,28 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useMemo } from 'react';
-// import dynamic from 'next/dynamic'; // Temporarily remove dynamic import
-import ImageEditorClient from '@/components/ImageEditor'; // Use static import for diagnostics
+import dynamic from 'next/dynamic'; // Using Next.js dynamic import
+
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UploadCloud, Edit3, Download } from 'lucide-react';
+import { UploadCloud, Edit3, Download, Image as ImageIconLucide } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { downloadFile } from '@/lib/utils';
-import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
+import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor'; // Keep types for context
 
-// Dynamic import (kept for reference, but not used in this diagnostic version)
-// const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
-//   ssr: false,
-//   loading: () => (
-//     <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
-//       <p className="text-muted-foreground">Loading Filerobot Editor...</p>
-//     </div>
-//   ),
-// });
-
+// ✅ Declare the dynamic import BEFORE using it
+const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
+      <p className="text-muted-foreground">Loading Filerobot Editor...</p>
+    </div>
+  ),
+});
 
 export default function EditorPage() {
   const [imageSource, setImageSource] = useState<string | null>(null);
@@ -84,7 +83,7 @@ export default function EditorPage() {
 
   const onSaveImage = useCallback(
     (editedImageObject: SaveData, designState?: any) => {
-      console.log('Image saved:', editedImageObject, designState);
+      console.log('Image saved from Filerobot:', editedImageObject, designState);
       if (editedImageObject.imageBase64) {
         const originalExtension = imageName?.split('.').pop() || editedImageObject.extension || 'png';
         const filename = `${imageName?.replace(/\.[^/.]+$/, "") || 'edited_image'}_filerobot.${originalExtension}`;
@@ -116,52 +115,42 @@ export default function EditorPage() {
     [imageName, closeEditor, toast]
   );
 
+  // Theme configuration for Filerobot (kept for when we re-enable the config prop)
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
-    const accentColor = isDark ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; // From globals.css
-    const primaryBg = isDark ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)';     // --background or --popover-background
-    const secondaryBg = isDark ? 'hsl(220 13% 15%)' : 'hsl(0 0% 98%)';   // --card or --background
-    const text = isDark ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';       // --foreground
-    const textMuted = isDark ? 'hsl(210 8% 65%)' : 'hsl(210 10% 35%)';   // --muted-foreground
-    const borders = isDark ? 'hsl(220 13% 25%)' : 'hsl(210 14% 80%)';     // --border
+    // Using "Vibrant Professional" Dark Theme colors from globals.css
+    const accentColor = 'hsl(190 88% 55%)'; 
+    const primaryBg = 'hsl(220 13% 10%)';    
+    const secondaryBg = 'hsl(220 13% 15%)';  
+    const text = 'hsl(210 17% 95%)';      
+    const textMuted = 'hsl(210 8% 65%)';  
+    const borders = 'hsl(220 13% 25%)';    
 
     return {
       primaryBg,
       secondaryBg,
       text,
       textMuted,
-      accent: accentColor, // Use the defined accent color
+      accent: accentColor,
       borders,
       activeTabBg: accentColor,
-      // Further theme properties as per Filerobot docs, using HSL values
-      // Example:
-      // 'icons.primary': text,
-      // 'icons.secondary': textMuted,
-      // 'icons.active': accentColor,
-      // 'buttons.primary.text': primaryBg, // Text color on primary button
-      // 'buttons.primary.background': accentColor,
-      // 'buttons.secondary.text': text,
-      // 'buttons.secondary.background': secondaryBg,
-      // 'buttons.secondary.border': borders,
     };
   }, [currentTheme]);
 
   const editorConfigObject: Partial<FilerobotImageEditorConfig> = useMemo(() => ({
-    // We removed source, onSave, onClose from here as they are direct props
     theme: {
       colors: filerobotThemeColors,
       typography: {
-        fontFamily: 'Inter, Arial, sans-serif', // Match your site's font
+        fontFamily: 'Inter, Arial, sans-serif',
       },
     },
     tools: [
-      'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize', 'text', 'image', 'shapes', 'draw', 'watermark'
+      'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize', 
+      'text', 'image', 'shapes', 'draw', 'watermark'
     ],
-    // Example: default to Annotate tab and Text tool
-    // defaultTabId: TABS.ANNOTATE, // Requires TABS import
-    // defaultToolId: TOOLS.TEXT,    // Requires TOOLS import
-    // To use TABS and TOOLS, ensure they are imported:
-    // import { TABS, TOOLS } from 'react-filerobot-image-editor';
+    // Example default tab (ensure TABS is imported if used directly)
+    // defaultTabId: TABS.ADJUST, 
+    // defaultToolId: TOOLS.CROP,
   }), [filerobotThemeColors]);
 
 
@@ -210,17 +199,18 @@ export default function EditorPage() {
         )}
 
         {isEditorOpen && imageSource && (
-          <div
-            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }}
+          <div 
+            style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} 
             className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
-            {/* Use static import for diagnostics */}
-            <ImageEditorClient
+            <DynamicEditorClient
               key={imageSource} // Re-mount if source changes
               source={imageSource}
-              onSave={onSaveImage}
-              onClose={closeEditor}
-              config={editorConfigObject}
+              // For this diagnostic step, ImageEditorClient defines its own onSave/onClose
+              // We will re-add these once the basic rendering is confirmed:
+              // onSave={onSaveImage}
+              // onClose={closeEditor}
+              // config={editorConfigObject} // Temporarily remove complex config
             />
           </div>
         )}
