@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useState, useCallback, useMemo } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { UploadCloud, Edit3, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { UploadCloud, Image as ImageIcon } from 'lucide-react';
 import { downloadFile } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-import type { FilerobotImageEditorConfig, TabsIds, ToolsIds } from 'filerobot-image-editor';
+import type { FilerobotImageEditorConfig, TabsIds, ToolsIds, SaveData } from 'filerobot-image-editor';
 
-// Dynamically import the client-only editor component
+// ✅ Dynamic import MUST be declared here
 const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
   ssr: false,
   loading: () => (
@@ -27,7 +26,7 @@ export default function EditorPage() {
   const [imageSource, setImageSource] = useState<string | null>(null);
   const [imageName, setImageName] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { theme: currentTheme } = useTheme();
 
@@ -49,7 +48,7 @@ export default function EditorPage() {
       reader.onload = (e) => {
         setImageSource(e.target?.result as string);
         setImageName(file.name);
-        setIsEditorOpen(true);
+        setIsEditorOpen(true); // Open editor once image is loaded
       };
       reader.readAsDataURL(file);
     }
@@ -59,12 +58,13 @@ export default function EditorPage() {
     fileInputRef.current?.click();
   };
 
-  const onSaveImage = useCallback((editedImageData: { imageCanvas: HTMLCanvasElement, name: string, extension: string, fullName?: string, mimeType: string, quality?: number, dataURL?: string }) => {
-    if (editedImageData.dataURL && editedImageData.fullName) {
+  const onSaveImage = useCallback((editedImageData: SaveData) => {
+    // Filerobot's saveData object structure: editedImageObject.image.imageBase64
+    if (editedImageData.image.imageBase64 && editedImageData.image.fullName) {
       const originalExtension = imageName?.split('.').pop() || 'png';
-      const newName = editedImageData.fullName.replace(/\.\w+$/, `.${originalExtension}`);
+      const newName = editedImageData.image.fullName.replace(/\.\w+$/, `.${originalExtension}`);
       
-      downloadFile(editedImageData.dataURL, newName)
+      downloadFile(editedImageData.image.imageBase64, newName)
         .then(() => {
           toast({
             title: 'Image Downloaded',
@@ -86,7 +86,7 @@ export default function EditorPage() {
         variant: 'destructive',
       });
     }
-    setIsEditorOpen(false);
+    setIsEditorOpen(false); // Close editor after save
     setImageSource(null);
     setImageName(null);
     if (fileInputRef.current) {
@@ -96,7 +96,7 @@ export default function EditorPage() {
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
-    setImageSource(null);
+    setImageSource(null); // Clear image source when closing editor
     setImageName(null);
     if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -104,10 +104,10 @@ export default function EditorPage() {
   }, []);
 
   const filerobotThemeColors = useMemo(() => {
-    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)';
-    const primaryBg = currentTheme === 'dark' ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)';
-    const secondaryBg = currentTheme === 'dark' ? 'hsl(220 13% 15%)' : 'hsl(210 17% 98%)';
-    const text = currentTheme === 'dark' ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';
+    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; // Vibrant Cyan
+    const primaryBg = currentTheme === 'dark' ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)'; // Dark: #121821, Light: White
+    const secondaryBg = currentTheme === 'dark' ? 'hsl(220 13% 15%)' : 'hsl(210 17% 98%)'; // Dark: #1B232E, Light: #F8F9FA
+    const text = currentTheme === 'dark' ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)'; // Dark: #EFF2F5, Light: #212529
     const textMuted = currentTheme === 'dark' ? 'hsl(210 8% 65%)' : 'hsl(210 10% 35%)';
     const borders = currentTheme === 'dark' ? 'hsl(220 13% 25%)' : 'hsl(210 14% 80%)';
 
@@ -122,7 +122,7 @@ export default function EditorPage() {
     };
   }, [currentTheme]);
 
-  const editorConfigObject: FilerobotImageEditorConfig = useMemo(() => {
+  const editorConfigObject: Partial<FilerobotImageEditorConfig> = useMemo(() => {
     return {
       theme: {
         colors: {
@@ -137,7 +137,7 @@ export default function EditorPage() {
           accent: filerobotThemeColors.accent,
           accentHover: currentTheme === 'dark' ? 'hsl(190 88% 65%)' : 'hsl(190 88% 40%)',
           borders: filerobotThemeColors.borders,
-          border: filerobotThemeColors.borders,
+          border: filerobotThemeColors.borders, 
           icons: filerobotThemeColors.text,
           iconsHover: filerobotThemeColors.accent,
           disabled: filerobotThemeColors.textMuted,
@@ -149,17 +149,33 @@ export default function EditorPage() {
         },
       },
       language: 'en',
-      tabsIds: ['Adjust', 'Annotate', 'Watermark', 'Finetune', 'Filters', 'Resize'] as TabsIds[],
-      defaultTabId: 'Adjust' as TabsIds[number],
-      defaultToolId: 'Crop' as ToolsIds,
+      // As per user example
+      tabsIds: [TabsIds.ADJUST, TabsIds.ANNOTATE, TabsIds.WATERMARK],
+      defaultTabId: TabsIds.ANNOTATE,
+      defaultToolId: ToolsIds.TEXT,
+      // A more comprehensive set of tools:
       tools: [
-        'adjust', 'rotate', 'brightness', 'contrast', 'saturation', 'exposure', 'filters',
-        'annotate', 'text', 'rect', 'ellipse', 'arrow', 'draw',
-        'resize', 'watermark', 'crop'
-      ] as ToolsIds[],
-      // Removed source, onSave, onClose from here, as they are top-level props
+        ToolsIds.CROP, ToolsIds.ROTATE, ToolsIds.FLIP, ToolsIds.ADJUST, ToolsIds.FINETUNE,
+        ToolsIds.FILTERS, ToolsIds.WATERMARK, ToolsIds.ANNOTATE, ToolsIds.DRAW, ToolsIds.TEXT,
+        ToolsIds.SHAPES, ToolsIds.FRAME, ToolsIds.MERGE, ToolsIds.RESIZE
+      ],
+      // Crop presets
+      cropPresets: [
+        { name: 'Original', value: 0 },
+        { name: 'Square (1:1)', value: 1 / 1 },
+        { name: 'Landscape (16:9)', value: 16 / 9 },
+        { name: 'Portrait (9:16)', value: 9 / 16 },
+        { name: 'Instagram Story (9:16)', value: 9 / 16 },
+        { name: 'Facebook Post (1.91:1)', value: 1.91 / 1 },
+        { name: 'Twitter Post (16:9)', value: 16 / 9 },
+      ],
+      // Other options
+      showBackButton: true,
+      // defaultSavedImageName: 'edited_image',
+      // defaultSavedImageType: 'png', // Filerobot defaults to original type
     };
   }, [filerobotThemeColors, currentTheme]);
+
 
   return (
     <>
@@ -191,18 +207,11 @@ export default function EditorPage() {
               className="hidden"
               accept="image/png, image/jpeg, image/webp"
             />
-            {imageSource && imageName && !isEditorOpen && (
-              <div className="mt-6 text-sm text-muted-foreground">
-                <p>Previously edited: {imageName}. Upload a new image or re-open.</p>
-              </div>
-            )}
           </div>
         ) : null}
 
         {isEditorOpen && imageSource && (
-           <div 
-             className="border rounded-lg overflow-hidden bg-background shadow-lg"
-           >
+          <div className="border rounded-lg overflow-hidden bg-background shadow-lg">
             <DynamicEditorClient
               source={imageSource}
               onSave={onSaveImage}
