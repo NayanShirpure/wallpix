@@ -52,6 +52,14 @@ const nextConfig: NextConfig = {
       config.externals.push('handlebars');
     }
     
+    // Alias 'canvas' to false for client-side bundles to prevent build errors from Konva
+    if (!isServer) {
+      if (typeof config.resolve.alias !== 'object' || config.resolve.alias === null) {
+        config.resolve.alias = {};
+      }
+      (config.resolve.alias as Record<string, string | false>)['canvas'] = false; 
+    }
+    
     // Important: return the modified config
     return config;
   },
