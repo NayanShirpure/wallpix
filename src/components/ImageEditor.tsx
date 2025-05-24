@@ -1,41 +1,54 @@
+
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+// Use default import for react-filerobot-image-editor
 import FilerobotImageEditorComponent from 'react-filerobot-image-editor';
-import type { SaveData } from 'react-filerobot-image-editor';
+import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
+// Note: TABS and TOOLS enums might not be exported or might have different names.
+// If needed, refer to react-filerobot-image-editor documentation for specific config.
 
-// Props for the client-side wrapper, simplified for diagnostics
 interface ImageEditorClientProps {
   source: string;
-  // onSave and onClose will be stubbed internally for this test
-  // config will be omitted for this test
+  onSave: (data: SaveData, designState?: any) => void;
+  onClose: () => void;
+  config?: Partial<FilerobotImageEditorConfig>;
 }
 
-export default function ImageEditorClient({ source }: ImageEditorClientProps) {
-  // console.log('Diagnostic ImageEditorClient rendering with source:', source);
+export default function ImageEditorClient({
+  source,
+  onSave,
+  onClose,
+  config,
+}: ImageEditorClientProps) {
+  const [isMounted, setIsMounted] = useState(false);
 
-  const handleSave = (editedImageObject: SaveData, designState?: any) => {
-    console.log('DIAGNOSTIC: Filerobot save triggered', editedImageObject, designState);
-    // In a real scenario, this would call a prop like props.onSave
-  };
+  useEffect(() => {
+    // Set mounted to true after the component has mounted on the client.
+    // This ensures FilerobotImageEditorComponent is only rendered client-side
+    // and after this wrapper has established its DOM presence.
+    setIsMounted(true);
+  }, []);
 
-  const handleClose = () => {
-    console.log('DIAGNOSTIC: Filerobot close triggered');
-    // In a real scenario, this would call a prop like props.onClose
-  };
-
+  if (!isMounted) {
+    // This can be a more specific loader for just this component
+    // if the dynamic import loader in page.tsx is too generic.
+    // Or return null if parent's loader is sufficient.
+    return <div className="flex items-center justify-center h-full w-full"><p className="text-muted-foreground">Initializing Editor Interface...</p></div>;
+  }
+  
   if (!source) {
-    return <p className="text-center text-muted-foreground p-4">Image source is missing for editor.</p>;
+    // This case should ideally be handled by the parent component
+    // by not rendering ImageEditorClient if source is not available.
+    return <div className="flex items-center justify-center h-full w-full"><p className="text-muted-foreground">Image source is required to load the editor.</p></div>;
   }
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
-      <FilerobotImageEditorComponent
-        source={source}
-        onSave={handleSave} // Using internal stub
-        onClose={handleClose} // Using internal stub
-        // config prop is explicitly omitted for this diagnostic step
-      />
-    </div>
+    <FilerobotImageEditorComponent
+      source={source}
+      onSave={onSave}
+      onClose={onClose}
+      config={config}
+    />
   );
 }
