@@ -3,6 +3,7 @@
 
 import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image'; // Added this import
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -12,15 +13,13 @@ import { UploadCloud, Edit3, Download, Image as ImageIconLucide } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { downloadFile } from '@/lib/utils';
-// Types are needed even if component is dynamic, ensure they are from the correct package
-import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor'; 
-// Removed TABS, TOOLS import as they are not directly used here and might have caused issues if not exported by the lib
+import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
 
-// Declare the dynamic import of the client-side wrapper component BEFORE using it
+// Dynamically import the client-side wrapper for FilerobotImageEditor
 const DynamicEditorClient = dynamic(
-  () => import('@/components/ImageEditor'), // This points to src/components/ImageEditor.tsx
+  () => import('@/components/ImageEditor').then((mod) => mod.default || mod),
   {
-    ssr: false, // CRUCIAL: Ensure this component is only rendered on the client
+    ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
         <p className="text-muted-foreground">Loading Filerobot Editor...</p>
@@ -50,7 +49,7 @@ export default function EditorPage() {
             variant: 'destructive',
           });
           if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+            fileInputRef.current.value = ''; // Reset file input
           }
           return;
         }
@@ -59,7 +58,7 @@ export default function EditorPage() {
         reader.onload = (e) => {
           setImageSource(e.target?.result as string);
           setImageName(file.name);
-          // setIsEditorOpen(true); // Let user click "Edit"
+          // Don't open editor immediately, let user click "Edit Selected Image"
         };
         reader.readAsDataURL(file);
       }
@@ -70,7 +69,7 @@ export default function EditorPage() {
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
-  
+
   const openEditor = () => {
     if (imageSource) {
       setIsEditorOpen(true);
@@ -84,8 +83,10 @@ export default function EditorPage() {
   };
 
   useEffect(() => {
+    // This effect handles deferring the rendering of the editor
+    // until after the imageSource is set and the editor is intended to be open.
+    // This gives React time to update the DOM.
     if (isEditorOpen && imageSource) {
-      // Defer rendering to ensure DOM is ready
       const timer = setTimeout(() => setEditorReadyToRender(true), 0);
       return () => clearTimeout(timer);
     } else {
@@ -95,14 +96,21 @@ export default function EditorPage() {
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
-    setEditorReadyToRender(false);
+    setEditorReadyToRender(false); // Ensure this is reset
+    // Optionally reset imageSource and imageName if desired upon close
+    // setImageSource(null);
+    // setImageName(null);
+    // if (fileInputRef.current) {
+    //   fileInputRef.current.value = '';
+    // }
   }, []);
 
   const onSaveImage = useCallback(
     (editedImageObject: SaveData, designState?: any) => {
       if (editedImageObject.imageBase64) {
         const originalNamePart = imageName?.replace(/\.[^/.]+$/, "") || 'edited_image';
-        const extension = editedImageObject.extension || imageName?.split('.').pop() || 'png';
+        // Ensure the extension from Filerobot is used, or fallback to original extension or png
+        const extension = editedImageObject.extension || imageName?.split('.').pop()?.toLowerCase() || 'png';
         const filename = `${originalNamePart}_filerobot.${extension}`;
         
         downloadFile(editedImageObject.imageBase64, filename)
@@ -127,43 +135,54 @@ export default function EditorPage() {
           variant: 'destructive',
         });
       }
-      closeEditor();
+      closeEditor(); // Close the editor after saving
     },
     [imageName, closeEditor, toast]
   );
   
+  // Theme configuration for Filerobot editor
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
-    const accentColor = 'hsl(190 88% 55%)'; 
-    const primaryBg = 'hsl(220 13% 10%)';    
-    const secondaryBg = 'hsl(220 13% 15%)';  
-    const text = 'hsl(210 17% 95%)';      
-    const textMuted = 'hsl(210 8% 65%)';  
-    const borders = 'hsl(220 13% 25%)';    
+    // Using direct hex codes for simplicity, as HSL conversion logic isn't here.
+    // These should ideally map to your theme variables from globals.css.
+    const accentColor = '#0DCAF0'; // Your vibrant cyan (from Vibrant Professional theme)
+    const primaryBg = isDark ? '#1B232E' : '#FFFFFF'; // Card background
+    const secondaryBg = isDark ? '#121821' : '#F8F9FA'; // Main background
+    const text = isDark ? '#EFF2F5' : '#212529'; // Foreground
+    const textMuted = isDark ? '#707C88' : '#6C757D'; // Muted foreground
+    const borders = isDark ? '#313A48' : '#DEE2E6'; // Border color
 
     return {
-      primaryBg: isDark ? primaryBg : '#ffffff', 
-      secondaryBg: isDark ? secondaryBg : '#f8f9fa', 
-      text: isDark ? text : '#212529',      
-      textMuted: isDark ? textMuted : '#6c757d',
+      primaryBg: primaryBg,
+      secondaryBg: secondaryBg,
+      text: text,
+      textMuted: textMuted,
       accent: accentColor, 
-      borders: isDark ? borders : '#dee2e6',
-      activeTabBg: accentColor, 
+      borders: borders,
+      activeTabBg: accentColor,
+      // Add other Filerobot theme properties as needed based on their documentation
     };
   }, [currentTheme]);
 
   const editorConfigObject: Partial<FilerobotImageEditorConfig> = useMemo(() => ({
+    // Essential props are passed directly to DynamicEditorClient
+    // This object holds the 'config' prop for Filerobot
     theme: {
       colors: filerobotThemeColors,
-      typography: { fontFamily: 'Inter, Arial, sans-serif' },
+      typography: { fontFamily: 'Inter, Arial, sans-serif' }, // Match your site's font
     },
-    tools: [
+    tools: [ // Common tools
       'adjust', 'finetune', 'filter', 'crop', 'rotate', 'resize', 
       'text', 'image', 'shapes', 'draw', 'watermark'
     ],
-    // If TABS and TOOLS enums are correctly exported by react-filerobot-image-editor, they can be used here.
-    // Example: defaultTabId: TABS.ADJUST, 
-    language: 'en',
+    // Example for tabs and default tool (using string IDs which are generally safe)
+    // Refer to Filerobot docs for exact string IDs if TABS/TOOLS enums aren't used/available
+    tabsIds: ['Adjust', 'Finetune', 'Filter', 'Annotate', 'Watermark'],
+    defaultTabId: 'Adjust', 
+    defaultToolId: 'crop', 
+    language: 'en', // Or use a language detection logic
+    // avoidChangesNotSavedAlertOnLeave: true, // Good for UX
+    // closeAfterSave: true, // Good for UX
   }), [filerobotThemeColors]);
 
 
@@ -205,33 +224,34 @@ export default function EditorPage() {
             )}
             {!imageSource && (
               <p className="text-sm text-muted-foreground mt-3">
-                Upload an image (PNG, JPG, WEBP) to start editing.
+                Upload an image (PNG, JPG, WEBP) to start editing. Your chosen image will replace the default editor image.
               </p>
             )}
           </div>
         )}
 
-        {isEditorOpen && imageSource && (
+        {/* Filerobot editor rendering area */}
+        {isEditorOpen && imageSource && editorReadyToRender ? (
           <div 
-             style={{ height: 'calc(100vh - 250px)', minHeight: 600 }}
+             style={{ height: 'calc(100vh - 250px)', minHeight: 600 }} // Ensure container has defined height for Filerobot
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
-            {editorReadyToRender ? ( 
-              <DynamicEditorClient
-                key={imageSource} 
-                source={imageSource}
-                onSave={onSaveImage}
-                onClose={closeEditor}
-                config={editorConfigObject}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full w-full">
-                <p className="text-muted-foreground">Preparing editor...</p>
-              </div>
-            )}
+            <DynamicEditorClient
+              key={imageSource} // Re-mount if source changes
+              source={imageSource}
+              onSave={onSaveImage}
+              onClose={closeEditor}
+              config={editorConfigObject}
+            />
           </div>
-        )}
+        ) : isEditorOpen && imageSource && !editorReadyToRender ? (
+           // Shows while editorReadyToRender is false (briefly after clicking "Edit Image")
+          <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
+            <p className="text-muted-foreground">Preparing editor interface...</p>
+          </div>
+        ) : null}
         
+        {/* Image preview before opening editor */}
         {imageSource && !isEditorOpen && (
           <div className="mt-8 p-4 border border-dashed border-border rounded-lg text-center bg-muted/30">
             <Image
