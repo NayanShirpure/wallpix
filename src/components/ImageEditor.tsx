@@ -1,17 +1,35 @@
+// src/components/ImageEditor.tsx
 'use client';
 
 import React from 'react';
+// Import FilerobotImageEditor from the React wrapper
+import FilerobotImageEditor from 'react-filerobot-image-editor';
+// Import types as named exports from the React wrapper
+import type { SaveData, FilerobotImageEditorConfig } from 'react-filerobot-image-editor';
 
-// Simple diagnostic component
-export default function ImageEditorClient(props: any) {
-  console.log("DIAGNOSTIC ImageEditorClient rendered. Props received:", props);
+interface ImageEditorClientProps {
+  source: string;
+  onSave: (editedImageObject: SaveData, designState?: any) => void;
+  onClose: () => void;
+  config?: FilerobotImageEditorConfig;
+}
+
+export default function ImageEditorClient(props: ImageEditorClientProps) {
+  if (!props.source) {
+    return <p>Image source is not available for the editor.</p>;
+  }
+
   return (
-    <div style={{ padding: '20px', border: '2px dashed red', margin: '20px', backgroundColor: 'lightyellow' }}>
-      <h2>Diagnostic ImageEditorClient Loaded Successfully!</h2>
-      <p>This confirms `next/dynamic` can load a component from this path.</p>
-      {props.source && <p>Image source prop received: {props.source.substring(0,50)}...</p>}
-      {props.config && <p>Config prop received.</p>}
-      <p>If you see this, the issue is likely within the FilerobotImageEditorComponent usage in the original ImageEditorClient.</p>
+    // Filerobot editor typically needs its container to have dimensions.
+    // The parent div in EditorPage provides this via style={{ height: '...', width: '...' }}
+    // or Tailwind classes ensuring fixed height.
+    <div style={{ height: '100%', width: '100%' }}>
+      <FilerobotImageEditor
+        source={props.source}
+        onSave={props.onSave}
+        onClose={props.onClose}
+        config={props.config}
+      />
     </div>
   );
 }
