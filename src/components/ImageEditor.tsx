@@ -1,34 +1,35 @@
 'use client';
 
 import React from 'react';
-// Correctly import the main component from the library
-import FilerobotImageEditorComponent from 'filerobot-image-editor';
+import FilerobotImageEditorComponent from 'filerobot-image-editor'; // Use default import
 import type { FilerobotImageEditorConfig, SaveData } from 'filerobot-image-editor';
-
 
 interface EditorClientProps {
   source: string;
-  onSave: (data: SaveData) => void;
-  onClose: () => void;
-  config?: Partial<FilerobotImageEditorConfig>; // Make config optional for now
+  onSave: (data: SaveData, designState?: any) => void;
+  onClose: (closingReason?: string, editorInstance?: any) => void;
+  config?: Partial<FilerobotImageEditorConfig>;
 }
 
 // Renamed function to EditorClient as per user's example structure
-export default function EditorClient({ source, onSave, onClose, config }: EditorClientProps) {
+// and exporting as default so dynamic import in page.tsx works as expected
+export default function ImageEditorClient({ source, onSave, onClose, config }: EditorClientProps) {
   if (!source) {
     // Optional: render nothing or a placeholder if no source
-    return <p>No image source provided to editor.</p>;
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-muted">
+            <p className="text-muted-foreground">Error: No image source provided to editor.</p>
+        </div>
+    );
   }
 
-  // FilerobotImageEditor is often a class component, so we use it directly.
-  // If it were a function component from a library, direct usage is also fine.
   return (
-    <div style={{ height: 'calc(100vh - 150px)', minHeight: '500px' }} className="w-full">
+    <div style={{ height: '100%', width: '100%' }} className="w-full h-full"> {/* Ensure wrapper takes up space */}
       <FilerobotImageEditorComponent
         source={source}
         onSave={onSave}
         onClose={onClose}
-        config={config} // Pass the config object
+        config={config} 
       />
     </div>
   );
