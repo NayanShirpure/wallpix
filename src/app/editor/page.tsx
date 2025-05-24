@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react'; // Added useEffect
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -13,13 +13,13 @@ import { UploadCloud, Edit3, Download as DownloadIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { downloadFile } from '@/lib/utils';
-import type { SaveData, FilerobotImageEditorConfig, TABS, TOOLS } from 'react-filerobot-image-editor';
+import type { SaveData, FilerobotImageEditorConfig, TABS as FilerobotTabs, TOOLS as FilerobotTools } from 'react-filerobot-image-editor'; // Renamed to avoid conflict if TABS/TOOLS are also global
 
-// ✅ Declare the dynamic import BEFORE using it
+// Dynamically import the client-side editor component
 const DynamicEditorClient = dynamic(
-  () => import('@/components/ImageEditor'), // Points to our client wrapper
+  () => import('@/components/ImageEditor').then(mod => mod.ImageEditorClient),
   {
-    ssr: false, // <--- ABSOLUTELY ESSENTIAL.
+    ssr: false,
     loading: () => (
         <div className="flex items-center justify-center h-[600px] w-full border rounded-lg bg-muted">
           <p className="text-muted-foreground">Loading Editor Interface...</p>
@@ -83,10 +83,9 @@ export default function EditorPage() {
     }
   };
 
-  // Defer rendering the editor slightly after it's been "opened"
   useEffect(() => {
     if (isEditorOpen && imageSource) {
-      const timer = setTimeout(() => setEditorReadyToRender(true), 0); // Small delay
+      const timer = setTimeout(() => setEditorReadyToRender(true), 0);
       return () => clearTimeout(timer);
     } else {
       setEditorReadyToRender(false);
@@ -124,7 +123,7 @@ export default function EditorPage() {
           variant: 'destructive',
         });
       }
-      setIsEditorOpen(false); // Close editor after save
+      setIsEditorOpen(false); 
       setEditorReadyToRender(false);
     },
     [imageName, toast]
@@ -138,9 +137,9 @@ export default function EditorPage() {
 
   const filerobotThemeColors = useMemo(() => {
     const isDark = currentTheme === 'dark';
-    const accentColor = isDark ? '#27D2F5' : '#0DCAF0'; // Vibrant Cyan for primary accent
-    const primaryBg = isDark ? '#1B232E' : '#FFFFFF'; 
-    const secondaryBg = isDark ? '#121821' : '#F8F9FA'; 
+    const accentColor = isDark ? '#27D2F5' : '#0DCAF0'; 
+    const primaryBg = isDark ? '#121821' : '#FFFFFF'; 
+    const secondaryBg = isDark ? '#1B232E' : '#F8F9FA'; 
     const text = isDark ? '#EFF2F5' : '#212529'; 
     const textMuted = isDark ? '#9AA5B1' : '#6C757D'; 
     const borders = isDark ? '#313A48' : '#DEE2E6'; 
@@ -164,13 +163,13 @@ export default function EditorPage() {
       },
     },
     tools: [
-      TOOLS.ADJUST, TOOLS.FINETUNE, TOOLS.FILTER, TOOLS.CROP, 
-      TOOLS.ROTATE, TOOLS.TEXT, TOOLS.IMAGE, TOOLS.SHAPES, 
-      TOOLS.DRAW, TOOLS.WATERMARK, TOOLS.BACKGROUND,
+      FilerobotTools.ADJUST, FilerobotTools.FINETUNE, FilerobotTools.FILTER, FilerobotTools.CROP, 
+      FilerobotTools.ROTATE, FilerobotTools.TEXT, FilerobotTools.IMAGE, FilerobotTools.SHAPES, 
+      FilerobotTools.DRAW, FilerobotTools.WATERMARK, FilerobotTools.BACKGROUND,
     ],
-    tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK, TABS.FINETUNE, TABS.FILTER],
-    defaultTabId: TABS.ADJUST, 
-    defaultToolId: TOOLS.CROP,
+    tabsIds: [FilerobotTabs.ADJUST, FilerobotTabs.ANNOTATE, FilerobotTabs.WATERMARK, FilerobotTabs.FINETUNE, FilerobotTabs.FILTER],
+    defaultTabId: FilerobotTabs.ADJUST, 
+    defaultToolId: FilerobotTools.CROP,
     language: 'en',
   }), [filerobotThemeColors]);
 
@@ -240,7 +239,7 @@ export default function EditorPage() {
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
           >
             <DynamicEditorClient
-              key={imageSource} // Re-mount if source changes, helps Filerobot re-initialize
+              key={imageSource} // Re-mount if source changes
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
