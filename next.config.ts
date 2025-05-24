@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
       // Alias @opentelemetry/exporter-jaeger to false to prevent module not found errors
       // for this optional dependency.
       (config.resolve.alias as Record<string, string | false>)['@opentelemetry/exporter-jaeger'] = false;
+      
+      // Alias 'canvas' to false for server-side builds as well to prevent errors
+      // from libraries like Konva trying to load the native canvas module.
+      (config.resolve.alias as Record<string, string | false>)['canvas'] = false;
 
       // Add handlebars to externals for server builds.
       if (!config.externals) { 
@@ -50,6 +54,7 @@ const nextConfig: NextConfig = {
     }
     
     // Use fallback for 'canvas' module in client-side bundles to prevent build errors from Konva
+    // This is still good practice for client-side, complementing the server-side alias.
     if (!isServer) {
       if (typeof config.resolve.fallback !== 'object' || config.resolve.fallback === null) {
         config.resolve.fallback = {};
