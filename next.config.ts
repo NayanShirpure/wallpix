@@ -1,5 +1,6 @@
 
 import type {NextConfig} from 'next';
+import path from 'path'; // Ensure path is imported
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -34,16 +35,13 @@ const nextConfig: NextConfig = {
   webpack: (config, { isServer, webpack }) => {
     // For server-side builds
     if (isServer) {
-      // Ensure config.resolve.alias exists and is an object
       if (typeof config.resolve.alias !== 'object' || config.resolve.alias === null) {
         config.resolve.alias = {};
       }
       // Alias @opentelemetry/exporter-jaeger to false to prevent module not found errors
-      // for this optional dependency.
       (config.resolve.alias as Record<string, string | false>)['@opentelemetry/exporter-jaeger'] = false;
       
-      // Alias 'canvas' to false for server-side builds as well to prevent errors
-      // from libraries like Konva trying to load the native canvas module.
+      // Alias 'canvas' to false for server-side builds as well
       (config.resolve.alias as Record<string, string | false>)['canvas'] = false;
 
       // Add handlebars to externals for server builds.
@@ -53,8 +51,8 @@ const nextConfig: NextConfig = {
       config.externals.push('handlebars');
     }
     
-    // Use fallback for 'canvas' module in client-side bundles to prevent build errors from Konva
-    // This is still good practice for client-side, complementing the server-side alias.
+    // Use fallback for 'canvas' module in client-side bundles
+    // This is often more appropriate than an alias for optional browser dependencies.
     if (!isServer) {
       if (typeof config.resolve.fallback !== 'object' || config.resolve.fallback === null) {
         config.resolve.fallback = {};

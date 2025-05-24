@@ -1,11 +1,9 @@
 
-// 'use client'; // Removed to make it a Server Component
-
 import Link from 'next/link';
 import { Twitter, Instagram, Github } from 'lucide-react';
 
 export function GlobalFooter() {
-  const currentYear = new Date().getFullYear(); // Safe to use in Server Component
+  const currentYear = new Date().getFullYear(); 
 
   return (
     <footer className="text-center text-muted-foreground text-sm py-4 sm:py-6 border-t border-border bg-card/80 backdrop-blur-sm print:hidden">
@@ -61,7 +59,6 @@ export function GlobalFooter() {
             <Link href="/discover" className="hover:text-accent hover:underline">Discover</Link>
             <Link href="/what-we-offer" className="hover:text-accent hover:underline">What We Offer</Link>
             <Link href="/generate" className="hover:text-accent hover:underline">Generate</Link>
-            <Link href="/editor" className="hover:text-accent hover:underline">Image Editor</Link>
             <Link href="/blog" className="hover:text-accent hover:underline">Blog</Link>
             <Link href="/about" className="hover:text-accent hover:underline">About</Link>
             <Link href="/privacy-policy" className="hover:text-accent hover:underline">Privacy</Link>

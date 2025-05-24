@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone, Image as ImageIconLucide } from 'lucide-react'; // Added ImageIconLucide
+import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone, ShoppingBag } from 'lucide-react'; 
 import {
   Sheet,
   SheetClose,
@@ -48,9 +48,6 @@ export function GlobalHeader({
     if (queryParam) {
       displaySearchTerm = queryParam;
     }
-  } else if (pathname === '/') {
-    // Do not pre-fill on home page
-    displaySearchTerm = '';
   }
 
 
@@ -58,22 +55,22 @@ export function GlobalHeader({
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 print:hidden">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between gap-x-2 px-3 sm:px-4">
 
-        <Link href="/" className="flex items-center space-x-2 shrink-0 mr-auto" aria-label="Wallify Home">
+        <Link href="/" className="flex items-center space-x-2 shrink-0 mr-2" aria-label="Wallify Home">
           <Palette className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           <span className="font-bold text-lg sm:text-xl text-primary hidden xxs:inline">Wallify</span>
         </Link>
 
-        <div className="absolute left-1/2 -translate-x-1/2 flex justify-center items-center px-2 sm:px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
+        <div className="flex-1 flex justify-center items-center px-1 sm:px-2 md:px-4 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
            <SearchBar
             initialValue={displaySearchTerm}
             navigateToSearchPage={true} 
            />
         </div>
         
-        <nav className="flex items-center shrink-0 gap-x-1.5 sm:gap-x-2 ml-auto">
+        <nav className="flex items-center shrink-0 gap-x-1 sm:gap-x-1.5 ml-1">
           {/* Desktop Navigation */}
-          <div className="hidden sm:flex items-center gap-1.5 sm:gap-x-2">
-            <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)} className="hidden md:block">
+          <div className="hidden sm:flex items-center gap-1 sm:gap-x-1.5">
+            <Tabs value={currentDeviceOrientation} onValueChange={(value) => onDeviceOrientationChange(value as DeviceOrientationCategory)}>
               <TabsList className="h-9">
                 <TabsTrigger
                   value="desktop"
@@ -94,7 +91,7 @@ export function GlobalHeader({
 
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Button variant="outline" className="h-9 text-xs sm:text-sm px-2.5">
                   <ListFilter className="mr-1 h-3.5 w-3.5" />
                   Categories
                 </Button>
@@ -133,7 +130,7 @@ export function GlobalHeader({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
+                 <DropdownMenuItem asChild>
                   <Link href="/discover" className="flex items-center">
                     <Compass className="mr-2 h-4 w-4" />
                     Discover
@@ -149,12 +146,6 @@ export function GlobalHeader({
                   <Link href="/generate" className="flex items-center">
                     <Wand2 className="mr-2 h-4 w-4" />
                     AI Generate
-                  </Link>
-                </DropdownMenuItem>
-                 <DropdownMenuItem asChild>
-                  <Link href="/editor" className="flex items-center">
-                    <ImageIconLucide className="mr-2 h-4 w-4" /> {/* Using ImageIconLucide */}
-                    Image Editor
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -228,7 +219,6 @@ export function GlobalHeader({
                   <SheetClose asChild><Link href="/discover" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/what-we-offer" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/generate" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></Link></SheetClose>
-                  <SheetClose asChild><Link href="/editor" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><ImageIconLucide className="mr-2 h-4 w-4" /> Image Editor</Button></Link></SheetClose>
                   <Separator className="my-1.5" />
                   <SheetClose asChild><Link href="/about" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/blog" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><FileText className="mr-2 h-4 w-4" /> Blog</Button></Link></SheetClose>
