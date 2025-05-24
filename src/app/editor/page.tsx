@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useCallback, useMemo } from 'react';
@@ -9,13 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { UploadCloud, Edit3, Download, Image as ImageIcon } from 'lucide-react';
+import { UploadCloud, Image as ImageIcon } from 'lucide-react';
 import { downloadFile } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import type { FilerobotImageEditorConfig, TabsIds, ToolsIds } from 'filerobot-image-editor';
 
 // Dynamically import the client-only editor component
-const EditorClient = dynamic(() => import('@/components/ImageEditor'), {
+const DynamicEditorClient = dynamic(() => import('@/components/ImageEditor'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[600px] flex items-center justify-center border rounded-lg bg-muted/30">
@@ -42,7 +41,7 @@ export default function EditorPage() {
           variant: 'destructive',
         });
         if (fileInputRef.current) {
-          fileInputRef.current.value = ''; 
+          fileInputRef.current.value = '';
         }
         return;
       }
@@ -50,7 +49,7 @@ export default function EditorPage() {
       reader.onload = (e) => {
         setImageSource(e.target?.result as string);
         setImageName(file.name);
-        setIsEditorOpen(true); 
+        setIsEditorOpen(true);
       };
       reader.readAsDataURL(file);
     }
@@ -88,7 +87,7 @@ export default function EditorPage() {
       });
     }
     setIsEditorOpen(false);
-    setImageSource(null); 
+    setImageSource(null);
     setImageName(null);
     if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -105,12 +104,12 @@ export default function EditorPage() {
   }, []);
 
   const filerobotThemeColors = useMemo(() => {
-    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)'; 
-    const primaryBg = currentTheme === 'dark' ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)';    
-    const secondaryBg = currentTheme === 'dark' ? 'hsl(220 13% 15%)' : 'hsl(210 17% 98%)'; 
-    const text = currentTheme === 'dark' ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';       
-    const textMuted = currentTheme === 'dark' ? 'hsl(210 8% 65%)' : 'hsl(210 10% 35%)';  
-    const borders = currentTheme === 'dark' ? 'hsl(220 13% 25%)' : 'hsl(210 14% 80%)';   
+    const accentColor = currentTheme === 'dark' ? 'hsl(190 88% 55%)' : 'hsl(190 88% 50%)';
+    const primaryBg = currentTheme === 'dark' ? 'hsl(220 13% 10%)' : 'hsl(0 0% 100%)';
+    const secondaryBg = currentTheme === 'dark' ? 'hsl(220 13% 15%)' : 'hsl(210 17% 98%)';
+    const text = currentTheme === 'dark' ? 'hsl(210 17% 95%)' : 'hsl(210 10% 15%)';
+    const textMuted = currentTheme === 'dark' ? 'hsl(210 8% 65%)' : 'hsl(210 10% 35%)';
+    const borders = currentTheme === 'dark' ? 'hsl(220 13% 25%)' : 'hsl(210 14% 80%)';
 
     return {
       primaryBg,
@@ -124,48 +123,41 @@ export default function EditorPage() {
   }, [currentTheme]);
 
   const editorConfigObject: FilerobotImageEditorConfig = useMemo(() => {
-    // Filerobot specific TABS and TOOLS if needed and exported, otherwise use string arrays
-    // Example: const TABS = { ADJUST: 'Adjust', ANNOTATE: 'Annotate', WATERMARK: 'Watermark' };
-    // Example: const TOOLS = { CROP: 'Crop', TEXT: 'Text' };
-    // For safety, assuming string arrays if TABS/TOOLS enums are not directly available or cause issues.
-
     return {
       theme: {
         colors: {
           primaryBg: filerobotThemeColors.primaryBg,
-          primaryBgHover: filerobotThemeColors.accent, 
+          primaryBgHover: filerobotThemeColors.accent,
           secondaryBg: filerobotThemeColors.secondaryBg,
           secondaryBgHover: filerobotThemeColors.accent,
           text: filerobotThemeColors.text,
           textHover: filerobotThemeColors.accent,
           textMuted: filerobotThemeColors.textMuted,
-          textWarn: '#f7931e', 
+          textWarn: '#f7931e',
           accent: filerobotThemeColors.accent,
           accentHover: currentTheme === 'dark' ? 'hsl(190 88% 65%)' : 'hsl(190 88% 40%)',
           borders: filerobotThemeColors.borders,
-          border: filerobotThemeColors.borders, 
+          border: filerobotThemeColors.borders,
           icons: filerobotThemeColors.text,
           iconsHover: filerobotThemeColors.accent,
           disabled: filerobotThemeColors.textMuted,
           activeTabBg: filerobotThemeColors.activeTabBg,
         },
         typography: {
-          fontFamily: 'Inter, Arial, sans-serif', 
+          fontFamily: 'Inter, Arial, sans-serif',
           fontSize: '14px',
         },
       },
       language: 'en',
-      tabsIds: ['Adjust', 'Annotate', 'Watermark', 'Finetune', 'Filters', 'Resize'] as TabsIds,
-      defaultTabId: 'Adjust' as TabsIds[number], 
-      defaultToolId: 'Crop' as ToolsIds, 
+      tabsIds: ['Adjust', 'Annotate', 'Watermark', 'Finetune', 'Filters', 'Resize'] as TabsIds[],
+      defaultTabId: 'Adjust' as TabsIds[number],
+      defaultToolId: 'Crop' as ToolsIds,
       tools: [
-        'adjust', 'rotate', 'brightness', 'contrast', 'saturation', 'exposure', 
-        'filters', 
-        'annotate', 'text', 'rect', 'ellipse', 'arrow', 'draw', 
-        'resize', 
-        'watermark',
-        'crop'
+        'adjust', 'rotate', 'brightness', 'contrast', 'saturation', 'exposure', 'filters',
+        'annotate', 'text', 'rect', 'ellipse', 'arrow', 'draw',
+        'resize', 'watermark', 'crop'
       ] as ToolsIds[],
+      // Removed source, onSave, onClose from here, as they are top-level props
     };
   }, [filerobotThemeColors, currentTheme]);
 
@@ -211,7 +203,7 @@ export default function EditorPage() {
            <div 
              className="border rounded-lg overflow-hidden bg-background shadow-lg"
            >
-            <EditorClient
+            <DynamicEditorClient
               source={imageSource}
               onSave={onSaveImage}
               onClose={closeEditor}
