@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone, Edit } from 'lucide-react'; 
+import { Menu, Palette, ListFilter, MoreVertical, Compass, Info, Wand2, Users, FileText, Shield, Home, MessageSquare, Monitor, Smartphone } from 'lucide-react'; 
 import {
   Sheet,
   SheetClose,
@@ -30,15 +30,15 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface GlobalHeaderProps {
   currentDeviceOrientation: DeviceOrientationCategory;
   onDeviceOrientationChange: (orientation: DeviceOrientationCategory) => void;
-  onWallpaperCategorySelect?: (categoryValue: string) => void; // Made optional
-  onSearchSubmit?: (searchTerm: string) => void; // Made optional
+  onWallpaperCategorySelect: (categoryValue: string) => void;
+  onSearchSubmit?: (searchTerm: string) => void; 
 }
 
 export function GlobalHeader({
   currentDeviceOrientation,
   onDeviceOrientationChange,
   onWallpaperCategorySelect,
-  onSearchSubmit,
+  onSearchSubmit, 
 }: GlobalHeaderProps) {
   const pathname = usePathname();
   const searchParamsHook = useSearchParams();
@@ -56,6 +56,12 @@ export function GlobalHeader({
       onWallpaperCategorySelect(categoryValue);
     }
   };
+  
+  const handleSearch = (term: string) => {
+    if (onSearchSubmit) {
+      onSearchSubmit(term);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 print:hidden">
@@ -70,6 +76,7 @@ export function GlobalHeader({
            <SearchBar
             initialValue={displaySearchTerm}
             navigateToSearchPage={true} 
+            onSubmitSearch={handleSearch}
            />
         </div>
         
@@ -154,12 +161,6 @@ export function GlobalHeader({
                     AI Generate
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/editor" className="flex items-center">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Image Editor
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/about" className="flex items-center">
@@ -231,7 +232,6 @@ export function GlobalHeader({
                   <SheetClose asChild><Link href="/discover" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Compass className="mr-2 h-4 w-4" /> Discover</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/what-we-offer" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Info className="mr-2 h-4 w-4" /> What We Offer</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/generate" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Wand2 className="mr-2 h-4 w-4" /> AI Generate</Button></Link></SheetClose>
-                  <SheetClose asChild><Link href="/editor" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Edit className="mr-2 h-4 w-4" /> Image Editor</Button></Link></SheetClose>
                   <Separator className="my-1.5" />
                   <SheetClose asChild><Link href="/about" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><Users className="mr-2 h-4 w-4" /> About</Button></Link></SheetClose>
                   <SheetClose asChild><Link href="/blog" className="block"><Button variant="ghost" className="w-full justify-start text-sm h-auto py-2 mb-1"><FileText className="mr-2 h-4 w-4" /> Blog</Button></Link></SheetClose>

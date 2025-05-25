@@ -14,7 +14,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/discover', changeFrequency: 'weekly', priority: 0.8 },
     { url: '/what-we-offer', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/generate', changeFrequency: 'monthly', priority: 0.7 },
-    // { url: '/editor', changeFrequency: 'monthly', priority: 0.6 }, // Editor removed
     { url: '/blog', changeFrequency: 'weekly', priority: 0.9 },
     { url: '/search', changeFrequency: 'weekly', priority: 0.7 },
     { url: '/about', changeFrequency: 'monthly', priority: 0.7 },
