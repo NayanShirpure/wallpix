@@ -54,36 +54,16 @@ const nextConfig: NextConfig = {
     // Use fallback for 'canvas' module in client-side bundles
     // This is often more appropriate than an alias for optional browser dependencies.
     if (!isServer) {
-      if (typeof config.resolve.fallback !== 'object' || config.resolve.fallback === null) {
-        config.resolve.fallback = {};
-      }
-      (config.resolve.fallback as Record<string, string | false>)['canvas'] = false; 
+      config.resolve.fallback = {
+        ...(config.resolve.fallback || {}),
+        canvas: false, 
+      };
     }
     
     // Important: return the modified config
     return config;
   },
-  async headers() {
-    return [
-      {
-        source: '/sitemap.xml',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-        ],
-      },
-    ];
-  },
+  // Removed custom headers for /sitemap.xml as next-sitemap generates a static file
   productionBrowserSourceMaps: true,
 };
 
