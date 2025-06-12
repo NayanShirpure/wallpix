@@ -7,7 +7,7 @@ User-agent: *
 Disallow: /api
 
 # Host
-Host: https://wallpix.vercel.app/
+Host: https://wall-pix.netlify.app/
 
 # Sitemaps
-Sitemap: https://wallpix.vercel.app/sitemap.xml
+Sitemap: https://wall-pix.netlify.app/sitemap.xml
