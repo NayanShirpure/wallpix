@@ -34,5 +34,5 @@ module.exports = {
   //   // return paths;
   //   return [];
   // },
-  // generateIndexSitemap: false, // Set to true if you have a very large number of pages
+  generateIndexSitemap: false, // Set to false to generate a single sitemap file
 };
