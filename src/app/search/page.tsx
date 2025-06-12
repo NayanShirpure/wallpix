@@ -5,7 +5,7 @@ import { StructuredData } from '@/components/structured-data';
 import type { SearchResultsPage as SchemaSearchResultsPage, WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schema-dts';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
 
 interface SearchPageProps {
   searchParams?: { [key: string]: string | string[] | undefined };

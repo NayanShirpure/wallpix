@@ -3,7 +3,7 @@ import type { Metadata, ResolvingMetadata } from 'next';
 // Removed getPhotoById import as we can't fetch specific photo details here anymore
 // import type { PexelsPhoto } from '@/types/pexels'; // Keep if needed for other layout elements, but not for dynamic metadata
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
 
 type PhotoPageLayoutProps = {
   params: { id: string };

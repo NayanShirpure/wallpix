@@ -7,7 +7,7 @@ import type { WebPage as SchemaWebPage, MinimalWithContext } from '@/types/schem
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PageHeader } from '@/components/layout/PageHeader';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
 
 export default function PrivacyPolicyPage() {
   const actualPolicyModificationDate = "2024-07-20"; 

@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
 
 export const metadata: Metadata = {
   title: 'About Wallify - Our Mission, Story, and Team',
@@ -39,4 +39,3 @@ export default function AboutLayout({
 }) {
   return <>{children}</>;
 }
-

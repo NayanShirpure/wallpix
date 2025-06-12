@@ -2,7 +2,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
 
 // Metadata for the /search page (more generic as query is client-side)
 export const metadata: Metadata = {

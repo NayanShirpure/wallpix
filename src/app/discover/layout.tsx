@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
 
 export const metadata: Metadata = {
   title: 'Discover Wallpapers - Curated Collections & Trends | Wallify',
@@ -39,4 +39,3 @@ export default function DiscoverLayout({
 }) {
   return <>{children}</>;
 }
-

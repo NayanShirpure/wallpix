@@ -26,7 +26,7 @@ export default async function PhotoPage({ params }: PhotoPageProps) {
   // Generic schema for the photo page container.
   // Specific ImageObject schema would need to be client-rendered or omitted
   // if critical SEO for the image itself is impacted by client-side fetching.
-  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
   const pageSchema: MinimalWithContext<SchemaWebPage> = {
     '@context': 'https://schema.org',
     '@type': 'WebPage', // Could be 'ItemPage' or a more specific type

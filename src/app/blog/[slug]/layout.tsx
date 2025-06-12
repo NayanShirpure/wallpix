@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { blogPosts } from '@/config/blog';
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/';
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/';
 
 // Async metadata generator
 export async function generateMetadata(

@@ -148,7 +148,7 @@ export function PhotoPageClientWrapper({ photoId }: PhotoPageClientWrapperProps)
   const displayAlt = (photo.alt && photo.alt.trim() !== '') ? photo.alt : `Wallpaper by ${photo.photographer}`;
   const relatedQuery = photo.alt ? photo.alt.split(' ').slice(0, 3).join(' ') || 'abstract nature wallpaper' : 'abstract nature wallpaper';
 
-  const BASE_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app/');
+  const BASE_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/');
   const imageSchema: MinimalWithContext<SchemaImageObject> = {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',

@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://wallpix.vercel.app',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://wall-pix.netlify.app/',
   generateRobotsTxt: true,
   robotsTxtOptions: {
     policies: [
